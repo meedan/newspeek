@@ -75,7 +75,7 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
     public_suffix (4.0.5)
-    rack (2.2.2)
+    rack (2.2.3)
     rack-protection (2.0.8.1)
       rack
     rake (13.0.1)
@@ -149,7 +149,7 @@ DEPENDENCIES
   parallel (= 1.19.1)
   pry
   public_suffix (= 4.0.5)
-  rack (= 2.2.2)
+  rack (= 2.2.3)
   rake
   redis (= 4.1.4)
   rest-client
