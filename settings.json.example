@@ -1,0 +1,1 @@
+{"es_host": "http://localhost:9200", "es_index_name": "claim_reviews", "google_api_key": "API_KEY", "boom_live_api_key": "API_KEY"}
