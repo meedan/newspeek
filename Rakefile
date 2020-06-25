@@ -22,3 +22,5 @@ task :collect_all do
     ReviewParser.run(datasource)
   }
 end
+
+task :default => [:test]
