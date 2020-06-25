@@ -1,6 +1,7 @@
 version: '2'
 volumes:
   elasticsearch:
+  redis:
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.8.9
@@ -18,6 +19,12 @@ services:
       - "5601:5601"
     environment:
       ELASTICSEARCH_URL: http://elasticsearch:9200
+  redis:
+    image: redis:5
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redis:/data"
   newspeek:
     build: .
     ports:
@@ -27,5 +34,6 @@ services:
     depends_on:
       - elasticsearch
       - kibana
+      - redis
     env_file:
       - .env_file
