@@ -5,15 +5,13 @@ class GESISClaims < ReviewParser
   
   def get_claims
     gesis_ids = CSV.read("../datasets/gesis_claim_ids.csv").flatten.shuffle
-    all_results = {}
     gesis_ids.each_slice(100) do |id_set|
       new_ids = id_set-ClaimReview.existing_ids(id_set, self.class.service)
       results = Parallel.map(new_ids, in_processes: 10, progress: "Downloading GESIS Corpus") { |id|
         [id, (get_fact(id) rescue nil)]
       }
-      all_results = all_results.merge(Hash[results])
+      process_claims(results.compact.collect{|x| parse_raw_claim(Hashie::Mash[{id: x[0], content: x[1]}])})
     end
-    all_results.collect{|x| parse_raw_claim(Hashie::Mash[{id: x[0], content: x[1]}])}
   end
 
   def parse_raw_claim(raw_claim)

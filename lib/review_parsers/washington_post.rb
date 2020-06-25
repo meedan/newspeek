@@ -1,7 +1,7 @@
 class WashingtonPost < ReviewParser
   include PaginatedReviewClaims
-  def initialize
-    super
+  def initialize(cursor_back_to_date=nil)
+    super(cursor_back_to_date)
     @fact_list_page_parser = "json"
   end
 

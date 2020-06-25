@@ -118,14 +118,14 @@ describe PaginatedReviewClaims do
       allow(ClaimReview).to receive(:client).and_return(double('client'))
       ClaimReview.client.stub(:search).with(anything()).and_return({"hits" => {"hits" => [{"_source" => {"claim_url" => 1}}]}})
       response = StubReviewJSON.new.get_claims
-      expect(response).to eq([])
+      expect(response).to eq(nil)
     end
 
     it 'expects get_parsed_fact_pages_from_urls' do
       allow(ClaimReview).to receive(:client).and_return(double('client'))
       ClaimReview.client.stub(:search).with(anything()).and_return({"hits" => {"hits" => [{"_source" => {"claim_url" => 1}}]}})
       response = StubReviewJSON.new.get_parsed_fact_pages_from_urls([1])
-      expect(response).to eq({})
+      expect(response).to eq([])
     end
   end
 end
