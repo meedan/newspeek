@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 gem 'i18n', '1.8.2'
 gem 'activesupport', '6.0.3.1'
 gem 'ffi', '1.12.2'
