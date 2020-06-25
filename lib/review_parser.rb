@@ -4,7 +4,7 @@ class ReviewParser
   def initialize(cursor_back_to_date=nil)
     @fact_list_page_parser = "html"
     @run_in_parallel = true
-    @logger = Logger.new("log/"+self.class.service.to_s+'_claim_review_parser.log', 0, 100 * 1024 * 1024)
+    @logger = Logger.new(STDOUT)
     @current_claims = []
     @cursor_back_to_date = cursor_back_to_date
   end
