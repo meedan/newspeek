@@ -2,16 +2,14 @@ language: ruby
 dist: bionic
 before_install:
 - cp settings.json.example settings.json
-- sudo apt-get update
-- sudo apt-get install -y wget golang-go golang-glide
 before_script:
-- export GOPATH=/tmp/go
-- mkdir -p /tmp/go/src/github.com/codeclimate
-- git clone https://github.com/codeclimate/test-reporter /tmp/go/src/github.com/codeclimate/test-reporter
-- printf '#!/bin/bash\ngo run /tmp/go/src/github.com/codeclimate/test-reporter/main.go $@\n' > spec/cc-test-reporter && chmod +x spec/cc-test-reporter
+- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+- chmod +x ./cc-test-reporter
+- ./cc-test-reporter before-build
+script:
+- bundle exec rake
 after_script:
-- echo 'Combining and uploading coverage...' && cd spec && ./sum-upload-coverage.sh && cd -
-- echo 'Parallel tests runtime log' && cat tmp/parallel_runtime_test.log
+- ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 rvm:
 - 2.7
 env:
