@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class ClaimReviewRepository
   include Elasticsearch::Persistence::Repository
   include Elasticsearch::Persistence::Repository::DSL
 
-  index_name SETTINGS["es_index_name"]||"claim_reviews"
+  index_name SETTINGS['es_index_name'] || 'claim_reviews'
   document_type 'claim_review'
   klass ClaimReview
 
