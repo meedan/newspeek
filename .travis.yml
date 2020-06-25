@@ -1,5 +1,8 @@
 language: ruby
 before_install:
- - cp settings.json.example settings.json
+- cp settings.json.example settings.json
 rvm:
- - 2.7
+- 2.7
+env:
+  global:
+    secure: cXDnvMTKGLuEVqZ6GrNQl5VTHrwILS5uJIVJ66UqH8YwmYKPnJdfZQHvScJWbfRK9YfHI/KqfsU/JxCfnOvGms6O6jpOJ7Zgb+6LHjbG5sTMPIg6XFs6zCmviRDDuJVTqQmMqF62Ln8/+RrU83glWLo4HV1OoL8GzKJiKLHaqEWfjGgWCbmfuaixRhNQ55Q8CSJS/jVyJY1eWU7CQq1bC0JHaDkuv65/RPbSRcoBjYijJTsPEj0w49+EoijRGFR45iPbSQm8AP6S1X3LEowgh9G9fA0VUSJBq+2ZZUeCR+O+AVajpvqqryyGzKfAViwHAtptAz1Rq+fOx7eXoFijzX58sZedWEzLeK7hsMdSqHoHxcSsqRxlN6etX0tKqvFzjnfwvxOf8NFwC5eqwgseCJVrzqNHfN5DswnBnfVxryHiZYWUChdzpagqhjtdVMv8bAjp7qg8ImSYEdoHZCAPhNZz6QvV2JZPiLLrI/tJ422FJSxuPauNaHvG/Iq+hf6b52VGy9J8/FNh50ZzH1hI7I2fgQVapZpywg1czFx9k0VUqqL8WzI1y4vPlb40x/gtUU21A4GQNSi+Lv/swYRhsPbZ4QTwNwOOpwNpEs4gwy2wVM8Nj8ytnFryyV+KZTWMe4IoGfLWZeHIO7KwNqJYcldRN6aYjgPgrxn4aFw5UT4=

@@ -70,7 +70,7 @@ module PaginatedReviewClaims
         parsed_fact_page(fact_page_url) rescue nil
       }.compact].values
     else
-      Hash[urls.collect { |fact_page_url| 
+      Hash[urls.collect { |fact_page_url|
         parsed_fact_page(fact_page_url)
       }.compact].values
     end
