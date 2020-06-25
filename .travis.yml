@@ -1,3 +1,5 @@
 language: ruby
+before_install:
+ - cp settings.json.example settings.json
 rvm:
  - 2.7
