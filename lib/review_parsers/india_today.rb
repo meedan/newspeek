@@ -8,7 +8,7 @@ class IndiaToday < ReviewParser
     #they start with 0-indexes, so push back internally
     "/fact-check?page=#{page-1}"
   end
-  
+
   def url_extraction_search
     "div.detail h2 a"
   end
@@ -17,27 +17,26 @@ class IndiaToday < ReviewParser
     hostname+atag.attributes["href"].value
   end
 
-  def parse_raw_claim(raw_claim)
-    image_filename = raw_claim["page"].search("div.factcheck-result-img img").first.attributes["src"].value.split("/").last rescue nil
-    if image_filename == "1c.gif"
-      claim_result = "Partly True"
-      claim_result_score = 0.66
-    elsif image_filename == "2c.gif"
-      claim_result = "Partly False"
-      claim_result_score = 0.33
-    elsif image_filename == "3c.gif"
-      claim_result = "False"
-      claim_result_score = 0
-    elsif image_filename.nil?
-      claim_result = "Inconclusive"
-      claim_result_score = 0.5
-    end
-    time = Time.parse(raw_claim["page"].search("div.byline div.profile-detail dt.pubdata").text) rescue nil
+  def claim_result_and_score_from_page(page)
+    image_filename = page.search("div.factcheck-result-img img").first.attributes["src"].value.split("/").last rescue nil
+    {
+      "1c.gif" => ["Partly True", 0.66], 
+      "2c.gif" => ["Partly False", 0.33], 
+      "3c.gif" => ["False", 0.0], 
+    }[image_filename] || ["Inconclusive", 0.5]
+  end
+
+  def time_from_page(page)
+    time = Time.parse(.search("div.byline div.profile-detail dt.pubdata").text) rescue nil
     time = Time.parse(raw_claim["page"].search("p.upload-date span.date-display-single").first.attributes["content"].value) rescue nil if time.nil?
-    binding.pry if time.nil?
+    time
+  end
+
+  def parse_raw_claim(raw_claim)
+    claim_result, claim_result_score = claim_result_and_score_from_page(raw_claim["page"])
     {
       service_id: Digest::MD5.hexdigest(raw_claim["url"]),
-      created_at: time,
+      created_at: time_from_page(raw_claim["page"]),
       author: raw_claim["page"].search("div.byline dl.profile-byline dt.title").text.strip,
       author_link: nil,
       claim_headline: raw_claim["page"].search("div.story-section h1").text.strip,

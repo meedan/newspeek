@@ -23,10 +23,10 @@ class TheQuint < ReviewParser
     all_raw_claims = raw_claims
     while !raw_claims.empty?
       page += 1
+      yield raw_claims
       raw_claims = get_new_claims_for_page(page)
-        raw_claims.collect{|r| all_raw_claims << r}
     end
-    Hash[all_raw_claims.collect{|raw_claim| [raw_claim["url"], parse_raw_claim(raw_claim)]}].values
+    yield raw_claims
   end
 
   def parse_raw_claim(raw_claim)

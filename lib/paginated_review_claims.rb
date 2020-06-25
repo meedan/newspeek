@@ -45,28 +45,34 @@ module PaginatedReviewClaims
     page_urls-existing_urls
   end
 
+  def store_claims_for_page(page)
+    process_claims(
+      get_parsed_fact_pages_from_urls(
+        get_new_fact_page_urls(
+          page
+        )
+      )
+    )
+  end
+
   def get_claims
     page = 1
-    all_results = {}
-    page_results = get_parsed_fact_pages_from_urls(get_new_fact_page_urls(page))
-    all_results = all_results.merge(page_results)
-    while !page_results.empty?
+    processed_claims = store_claims_for_page(page)
+    while !finished_iterating?(processed_claims)
       page += 1
-      page_results = get_parsed_fact_pages_from_urls(get_new_fact_page_urls(page))
-      all_results = all_results.merge(page_results)
+      processed_claims = store_claims_for_page(page)
     end
-    all_results.values
   end
 
   def get_parsed_fact_pages_from_urls(urls)
     if @run_in_parallel
       Hash[Parallel.map(urls, in_processes: 5, progress: "Downloading #{self.class} Corpus") { |fact_page_url| 
         parsed_fact_page(fact_page_url) rescue nil
-      }.compact]
+      }.compact].values
     else
       Hash[urls.collect { |fact_page_url| 
         parsed_fact_page(fact_page_url)
-      }.compact]
+      }.compact].values
     end
   end
 end

@@ -1,15 +1,13 @@
 class DataCommons < ReviewParser
   def get_claims
     raw_set = JSON.parse(File.read("../datasets/datacommons_claims.json"))["dataFeedElement"].sort_by{|c| c["item"][0]["url"].to_s rescue ""}.reverse
-    claims = []
     raw_set.each_slice(100) do |claim_set|
       urls = claim_set.collect{|claim| claim["item"][0]["url"] rescue nil}.compact
       existing_urls = ClaimReview.existing_urls(urls, self.class.service)
       new_claims = claim_set.select{|claim| !existing_urls.include?((claim["item"][0]["url"] rescue nil))}
       next if new_claims.empty?
-      new_claims.collect{|raw_claim| claims << parse_raw_claim(raw_claim)}
+      process_claims(new_claims.collect{|raw_claim| parse_raw_claim(raw_claim)})
     end
-    claims
   end
 
   def parse_raw_claim(raw_claim)
