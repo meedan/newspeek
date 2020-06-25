@@ -3,6 +3,7 @@
 # Eventually all subclasses here will need standardization about
 class ReviewParser
   attr_accessor :fact_list_page_parser, :run_in_parallel
+
   def initialize(cursor_back_to_date = nil)
     @fact_list_page_parser = 'html'
     @run_in_parallel = true
@@ -17,7 +18,7 @@ class ReviewParser
 
   def self.parsers
     Hashie::Mash[
-      Hash[ReviewParser.subclasses.collect do |sc|
+      Hash[ReviewParser.subclasses.map do |sc|
         [sc.service, sc]
       end]
     ]
@@ -41,7 +42,7 @@ class ReviewParser
   end
 
   def finished_iterating?(claims)
-    oldest_time = claims.collect { |x| x[:created_at] }.min
+    oldest_time = claims.map { |x| x[:created_at] }.min
     claims.empty? || (!@cursor_back_to_date.nil? && oldest_time > @cursor_back_to_date)
   end
 
@@ -51,7 +52,7 @@ class ReviewParser
         parse_raw_claim(raw_claim)
       end.compact
     else
-      raw_claims.collect { |raw_claim| parse_raw_claim(raw_claim) }
+      raw_claims.map { |raw_claim| parse_raw_claim(raw_claim) }
     end
   end
 end

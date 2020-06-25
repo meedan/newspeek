@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'afp'
+require_relative('afp')
 class AFPChecamos < AFP
   include PaginatedReviewClaims
   def hostname

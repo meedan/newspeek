@@ -20,30 +20,33 @@ class IndiaToday < ReviewParser
   end
 
   def claim_result_and_score_from_page(page)
-    image_filename = begin
-                       page.search('div.factcheck-result-img img').first.attributes['src'].value.split('/').last
-                     rescue StandardError
-                       nil
-                     end
+    image_filename =
+      begin
+                            page.search('div.factcheck-result-img img').first.attributes['src'].value.split('/').last
+      rescue StandardError
+        nil
+                          end
     {
-      '1c.gif' => ['Partly True', 0.66],
-      '2c.gif' => ['Partly False', 0.33],
-      '3c.gif' => ['False', 0.0]
+      "1c.gif": ['Partly True', 0.66],
+      "2c.gif": ['Partly False', 0.33],
+      "3c.gif": ['False', 0.0]
     }[image_filename] || ['Inconclusive', 0.5]
   end
 
   def time_from_page(page)
-    time = begin
-             Time.parse(page.search('div.byline div.profile-detail dt.pubdata').text)
-           rescue StandardError
-             nil
-           end
+    time =
+      begin
+                  Time.parse(page.search('div.byline div.profile-detail dt.pubdata').text)
+      rescue StandardError
+        nil
+                end
     if time.nil?
-      time = begin
-               Time.parse(page.search('p.upload-date span.date-display-single').first.attributes['content'].value)
-             rescue StandardError
-               nil
-             end
+      time =
+        begin
+                      Time.parse(page.search('p.upload-date span.date-display-single').first.attributes['content'].value)
+        rescue StandardError
+          nil
+                    end
     end
     time
   end
