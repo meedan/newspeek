@@ -7,7 +7,7 @@ class AfricaCheck < ReviewParser
   def fact_list_path(page=1)
     "/latest-reports/page/#{page}/"
   end
-  
+
   def url_extraction_search
     "div#main div.article-content h2 a"
   end
@@ -45,4 +45,3 @@ class AfricaCheck < ReviewParser
     }
   end
 end
-

@@ -9,7 +9,7 @@ class API
       opts[:per_page]||0
     )
   end
-  
+
   def self.about
     {
       live_urls: {

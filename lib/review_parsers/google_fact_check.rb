@@ -83,7 +83,7 @@ class GoogleFactCheck < ReviewParser
   end
   
   def snowball_claims_from_publishers(publishers)
-    Parallel.map(publishers, in_processes: 2, progress: "Downloading data from all publishers") { |publisher| 
+    Parallel.map(publishers, in_processes: 2, progress: "Downloading data from all publishers") { |publisher|
       get_all_for_publisher(publisher)
     }
   end

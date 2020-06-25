@@ -54,7 +54,7 @@ class ElasticSearchQuery
   end
   
   def self.service_scoped_limit_offset_query(service, limit, offset)
-    query = ElasticSearchQuery.base_query(limit, 0)
+    query = ElasticSearchQuery.base_query(limit, offset)
     query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause("service", service) if service
     query
   end
