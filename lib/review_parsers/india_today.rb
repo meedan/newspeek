@@ -27,8 +27,8 @@ class IndiaToday < ReviewParser
   end
 
   def time_from_page(page)
-    time = Time.parse(.search("div.byline div.profile-detail dt.pubdata").text) rescue nil
-    time = Time.parse(raw_claim["page"].search("p.upload-date span.date-display-single").first.attributes["content"].value) rescue nil if time.nil?
+    time = Time.parse(page.search("div.byline div.profile-detail dt.pubdata").text) rescue nil
+    time = Time.parse(page.search("p.upload-date span.date-display-single").first.attributes["content"].value) rescue nil if time.nil?
     time
   end
 
