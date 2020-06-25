@@ -1,4 +1,5 @@
 language: ruby
+dist: bionic
 before_install:
 - cp settings.json.example settings.json
 - sudo apt-get update
