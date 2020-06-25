@@ -3,31 +3,28 @@
 class DataCommons < ReviewParser
   def get_claims
     raw_set = JSON.parse(File.read('../datasets/datacommons_claims.json'))['dataFeedElement'].sort_by do |c|
-      begin
-                                                                                                  c['item'][0]['url'].to_s
-      rescue StandardError
-        ''
-                                                                                                end
-    end .reverse
+      c['item'][0]['url'].to_s
+              rescue StandardError
+                ''
+    end.reverse
     raw_set.each_slice(100) do |claim_set|
-      urls = claim_set.collect do |claim|
-        begin
-                                  claim['item'][0]['url']
-        rescue StandardError
-          nil
-                                end
-      end .compact
+      urls = claim_set.map do |claim|
+        claim['item'][0]['url']
+             rescue StandardError
+               nil
+      end.compact
       existing_urls = ClaimReview.existing_urls(urls, self.class.service)
-      new_claims = claim_set.reject do |claim|
-        existing_urls.include?((begin
-                                                          claim['item'][0]['url']
-                                rescue StandardError
-                                  nil
-                                                        end))
-      end
+      new_claims =
+        claim_set.reject do |claim|
+          existing_urls.include?((begin
+                                                            claim['item'][0]['url']
+                                  rescue StandardError
+                                    nil
+                                                          end))
+        end
       next if new_claims.empty?
 
-      process_claims(new_claims.collect { |raw_claim| parse_raw_claim(raw_claim) })
+      process_claims(new_claims.map { |raw_claim| parse_raw_claim(raw_claim) })
     end
   end
 
@@ -80,9 +77,11 @@ class DataCommons < ReviewParser
     worst = review_rating['worstRating']
     value = review_rating['ratingValue']
     if !best.nil? && !worst.nil? && !value.nil?
-      (value.to_i - worst.to_i) / (best.to_i - worst.to_i).to_f if best.to_i - worst.to_i > 0
+      if Integer(best, 10) - Integer(worst, 10) > 0
+        (Integer(value, 10) - Integer(worst, 10)) / Float((Integer(best, 10) - Integer(worst, 10)))
+      end
     elsif ([best, worst, value].count(nil) > 0) && ([best, worst, value].count(nil) != 3)
-      value.to_i if best.nil? && worst.nil? && !value.nil?
+      Integer(value, 10) if best.nil? && worst.nil? && !value.nil?
     end
   end
 end

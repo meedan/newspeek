@@ -11,7 +11,7 @@ module PaginatedReviewClaims
 
   def parsed_fact_list_page(page = 1)
     response = get_url(hostname + fact_list_path(page))
-    return nil if response.nil?
+    return if response.nil?
 
     if @fact_list_page_parser == 'html'
       Nokogiri.parse(response)
@@ -24,7 +24,7 @@ module PaginatedReviewClaims
     response = parsed_fact_list_page(page)
     if response
       if @fact_list_page_parser == 'html'
-        response.search(url_extraction_search).collect { |atag| url_extractor(atag) }
+        response.search(url_extraction_search).map { |atag| url_extractor(atag) }
       elsif @fact_list_page_parser == 'json'
         url_extractor(response)
       end
@@ -34,12 +34,13 @@ module PaginatedReviewClaims
   end
 
   def parsed_fact_page(fact_page_url)
-    parsed_page = begin
-                    Nokogiri.parse(get_url(fact_page_url))
-                  rescue StandardError
-                    nil
-                  end
-    return nil if parsed_page.nil?
+    parsed_page =
+      begin
+                         Nokogiri.parse(get_url(fact_page_url))
+      rescue StandardError
+        nil
+                       end
+    return if parsed_page.nil?
 
     [fact_page_url, parse_raw_claim(Hashie::Mash[{ page: parsed_page, url: fact_page_url }])]
   end
@@ -72,14 +73,12 @@ module PaginatedReviewClaims
   def get_parsed_fact_pages_from_urls(urls)
     if @run_in_parallel
       Hash[Parallel.map(urls, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |fact_page_url|
-        begin
-          parsed_fact_page(fact_page_url)
-        rescue StandardError
-          nil
-        end
+        parsed_fact_page(fact_page_url)
+           rescue StandardError
+             nil
       end.compact].values
     else
-      Hash[urls.collect do |fact_page_url|
+      Hash[urls.map do |fact_page_url|
         parsed_fact_page(fact_page_url)
       end.compact].values
     end

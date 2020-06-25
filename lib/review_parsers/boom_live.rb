@@ -16,10 +16,10 @@ class BoomLive < ReviewParser
 
   def fact_categories
     {
-      '/fact-file' => 15,
-      '/factcheck' => 16,
-      '/fake-news' => 17,
-      '/fast-check' => 18
+      "/fact-file": 15,
+      "/factcheck": 16,
+      "/fake-news": 17,
+      "/fast-check": 18
     }
   end
 
@@ -29,8 +29,8 @@ class BoomLive < ReviewParser
 
   def get_new_stories_by_category(category_id, page)
     stories = get_stories_by_category(category_id, page)['news']
-    existing_urls = ClaimReview.existing_urls(stories.collect { |s| s['url'] }, self.class.service)
-    Hash[stories.reject { |s| existing_urls.include?(s['url']) }.collect { |s| [s['url'], s] }].values
+    existing_urls = ClaimReview.existing_urls(stories.map { |s| s['url'] }, self.class.service)
+    Hash[stories.reject { |s| existing_urls.include?(s['url']) }.map { |s| [s['url'], s] }].values
   end
 
   def store_claims_for_category_id_and_page(category_id, page)
@@ -61,9 +61,9 @@ class BoomLive < ReviewParser
   def get_claim_result_for_raw_claim(raw_claim)
     Nokogiri.parse(
       RestClient.get(raw_claim['url'])
-    ).search('div.claim-review-block div.claim-value').select do |x|
+    ).search('div.claim-review-block div.claim-value').find do |x|
       x.text.downcase.include?('fact check')
-    end.first.search('span.value').first.text
+    end.search('span.value').first.text
   rescue StandardError
     nil
   end

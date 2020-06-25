@@ -31,7 +31,7 @@ class ElasticSearchQuery
   def self.multi_match_query(match_type, matches)
     {
       "bool": {
-        "should": matches.collect { |match| { "match_phrase": { match_type => match } } },
+        "should": matches.map { |match| { "match_phrase": { match_type => match } } },
         "minimum_should_match": 1
       }
     }

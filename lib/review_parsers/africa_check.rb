@@ -20,14 +20,14 @@ class AfricaCheck < ReviewParser
 
   def claim_result_text_map
     {
-      'correct' => 1,
-      'mostly-correct' => 0.75,
-      'unproven' => 0.5,
-      'misleading' => 0.5,
-      'exaggerated' => 0.5,
-      'downplayed' => 0.5,
-      'incorrect' => 0,
-      'checked' => 0.5
+      correct: 1,
+      "mostly-correct": 0.75,
+      unproven: 0.5,
+      misleading: 0.5,
+      exaggerated: 0.5,
+      downplayed: 0.5,
+      incorrect: 0,
+      checked: 0.5
     }
   end
 
