@@ -33,3 +33,4 @@ A Fact / Claim Review aggregation service.
 8. Errbit integration?
 9. Deployment automation with gitlab
 10. Add webhooks for subscribing to claim reviews
+11. Generate "pristine" dataset of all facts and provide to staging / prod to prevent re-mining exact same data
