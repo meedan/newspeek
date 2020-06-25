@@ -52,18 +52,23 @@ class GoogleFactCheck < ReviewParser
     claims.select{|claim| claim["claimReview"] && claim["claimReview"].first && !existing_urls.include?(claim["claimReview"].first["url"])}
   end
 
+  def store_claims_for_publisher_and_offset(publisher, offset)
+    process_claims(
+      parse_raw_claims(
+        get_new_from_publisher(
+          publisher, offset
+        )
+      )
+    )
+  end
+
   def get_all_for_publisher(publisher)
     offset = 0
-    results_page = get_new_from_publisher(publisher, offset)
-    results = results_page
+    results_page = store_claims_for_publisher_and_offset(publisher, offset)
     while !results_page.empty?
       offset += 100
-      results_page = get_new_from_publisher(publisher, offset)
-      results_page.each do |r|
-        results << r
-      end
+      results_page = store_claims_for_publisher_and_offset(publisher, offset)
     end
-    results
   end
 
   def snowball_publishers_from_queries(queries)
@@ -78,18 +83,9 @@ class GoogleFactCheck < ReviewParser
   end
   
   def snowball_claims_from_publishers(publishers)
-    publisher_results = Parallel.map(publishers, in_processes: 2, progress: "Downloading data from all publishers") { |publisher| 
-      Hash[publisher, Hash[get_all_for_publisher(publisher).collect { |claim|
-        [claim["claimReview"].first["url"], claim] rescue nil
-      }.compact]]
+    Parallel.map(publishers, in_processes: 2, progress: "Downloading data from all publishers") { |publisher| 
+      get_all_for_publisher(publisher)
     }
-    claims = {}
-    publisher_results.collect(&:values).each do |results|
-      results.each do |resultset|
-        claims = claims.merge(resultset)
-      end
-    end
-    return claims
   end
 
   def default_queries
@@ -97,12 +93,11 @@ class GoogleFactCheck < ReviewParser
   end
 
   def get_claims(seed_queries=default_queries)
-    claims = snowball_claims_from_publishers(
+    snowball_claims_from_publishers(
       snowball_publishers_from_queries(
         seed_queries
       )
     )
-    claims.values.collect{|raw_claim| parse_raw_claim(raw_claim)}
   end
   
   def parse_raw_claim(raw_claim)
