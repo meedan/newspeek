@@ -15,6 +15,8 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 require 'rspec/autorun'
 require 'webmock/rspec'
+require 'simplecov'
+SimpleCov.start
 load 'environment.rb'
 WebMock.disable_net_connect!(allow_localhost: true)
 
