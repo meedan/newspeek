@@ -14,7 +14,7 @@ describe ReviewParser do
     
     it 'expects parsers map' do
       expect(ReviewParser.parsers.keys.collect(&:class).uniq).to eq([String])
-      expect(ReviewParser.parsers.values.collect(&:superclass).uniq).to eq([ReviewParser])
+      expect(ReviewParser.parsers.values.collect(&:superclass).uniq).to eq([ReviewParser, AFP])
     end
   end
 end
