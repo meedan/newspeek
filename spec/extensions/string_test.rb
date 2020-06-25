@@ -2,9 +2,9 @@
 
 describe String do
   describe 'instance' do
-    it 'should underscore' do
-      expect('BlahBloop'.underscore).to eq('blah_bloop')
-      expect('GESIS'.underscore).to eq('gesis')
+    it 'underscores' do
+      expect('BlahBloop'.underscore).to(eq('blah_bloop'))
+      expect('GESIS'.underscore).to(eq('gesis'))
     end
   end
 end

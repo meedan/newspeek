@@ -22,7 +22,7 @@ class AFP < ReviewParser
   def parse_raw_claim(raw_claim)
     {
       service_id: Digest::MD5.hexdigest(raw_claim['url']),
-      created_at: Time.at(raw_claim['page'].search('div.main-post div.content-meta span.meta-date span').first.attributes['timestamp'].value.to_i),
+      created_at: Time.at(Integer(raw_claim['page'].search('div.main-post div.content-meta span.meta-date span').first.attributes['timestamp'].value, 10)),
       author: raw_claim['page'].search('div.main-post div.content-meta span.meta-author').text.strip,
       author_link: (begin
                       raw_claim['page'].search('div.main-post div.content-meta span.meta-author a').first.attributes['href'].value

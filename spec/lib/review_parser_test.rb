@@ -3,20 +3,20 @@
 describe ReviewParser do
   describe 'instance' do
     it 'expects default attributes' do
-      rp = ReviewParser.new
-      expect(rp.send('fact_list_page_parser')).to eq('html')
-      expect(rp.run_in_parallel).to eq(true)
+      rp = described_class.new
+      expect(rp.send('fact_list_page_parser')).to(eq('html'))
+      expect(rp.run_in_parallel).to(eq(true))
     end
   end
 
   describe 'class' do
     it 'expects service symbol' do
-      expect(ReviewParser.service).to eq(:review_parser)
+      expect(described_class.service).to(eq(:review_parser))
     end
 
     it 'expects parsers map' do
-      expect(ReviewParser.parsers.keys.collect(&:class).uniq).to eq([String])
-      expect(ReviewParser.parsers.values.collect(&:superclass).uniq).to eq([ReviewParser, AFP])
+      expect(described_class.parsers.keys.map(&:class).uniq).to(eq([String]))
+      expect(described_class.parsers.values.map(&:superclass).uniq).to(eq([described_class, AFP]))
     end
   end
 end

@@ -9,23 +9,28 @@ class GESISClaims < ReviewParser
     gesis_ids = CSV.read('../datasets/gesis_claim_ids.csv').flatten.shuffle
     gesis_ids.each_slice(100) do |id_set|
       new_ids = id_set - ClaimReview.existing_ids(id_set, self.class.service)
-      results = Parallel.map(new_ids, in_processes: 10, progress: 'Downloading GESIS Corpus') do |id|
-        [id, (begin
-                get_fact(id)
-              rescue StandardError
-                nil
-              end)]
-      end
-      process_claims(results.compact.collect { |x| parse_raw_claim(Hashie::Mash[{ id: x[0], content: x[1] }]) })
+      results =
+        Parallel.map(new_ids, in_processes: 10, progress: 'Downloading GESIS Corpus') do |id|
+          [
+            id,
+            (begin
+                            get_fact(id)
+             rescue StandardError
+               nil
+                          end)
+          ]
+        end
+      process_claims(results.compact.map { |x| parse_raw_claim(Hashie::Mash[{ id: x[0], content: x[1] }]) })
     end
   end
 
   def parse_raw_claim(raw_claim)
-    author = begin
-               raw_claim['content']['source']['value']
-             rescue StandardError
-               nil
-             end
+    author =
+      begin
+                    raw_claim['content']['source']['value']
+      rescue StandardError
+        nil
+                  end
     {
       service_id: raw_claim['id'],
       created_at: (begin

@@ -20,11 +20,12 @@ class Factly < ReviewParser
 
   def parse_raw_claim(raw_claim)
     bold_blockquotes = raw_claim['page'].search('div.post-content blockquote p strong')
-    fact_index = begin
-                   bold_blockquotes.each_with_index.select { |x, _i| x.text.downcase.include?('fact:') }.last.last
-                 rescue StandardError
-                   nil
-                 end
+    fact_index =
+      begin
+                        bold_blockquotes.each_with_index.reverse.find { |x, _i| x.text.downcase.include?('fact:') }.last
+      rescue StandardError
+        nil
+                      end
     fact_result = nil
     fact_result = bold_blockquotes[fact_index + 1].text if fact_index
     {

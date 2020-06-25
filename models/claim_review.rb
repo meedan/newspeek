@@ -35,7 +35,7 @@ class ClaimReview
   def self.get_hits(search_params)
     ClaimReview.client.search(
       { index: SETTINGS['es_index_name'] }.merge(search_params)
-    )['hits']['hits'].collect { |x| x['_source'] }
+    )['hits']['hits'].map { |x| x['_source'] }
   end
 
   def self.extract_matches(matches, match_type, service)
@@ -43,7 +43,7 @@ class ClaimReview
     matches.each_slice(100) do |match_set|
       matched_set << ClaimReview.get_hits(
         body: ElasticSearchQuery.multi_match_against_service(match_set, match_type, service)
-      ).collect { |x| x[match_type] }
+      ).map { |x| x[match_type] }
     end
     matched_set.flatten.uniq
   end
@@ -65,7 +65,7 @@ class ClaimReview
   def self.search(search_query = nil, service = nil, created_at_start = nil, created_at_end = nil, limit = 20, offset = 0)
     ClaimReview.get_hits(
       body: ElasticSearchQuery.claim_review_search_query(search_query, service, created_at_start, created_at_end, limit, offset)
-    ).collect { |r| ClaimReview.convert_to_claim_review(r) }
+    ).map { |r| ClaimReview.convert_to_claim_review(r) }
   end
 
   def self.convert_to_claim_review(claim_review)

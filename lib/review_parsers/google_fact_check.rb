@@ -49,13 +49,14 @@ class GoogleFactCheck < ReviewParser
 
   def get_new_from_publisher(publisher, offset)
     claims = get_publisher(publisher, offset)['claims'] || []
-    existing_urls = ClaimReview.existing_urls(claims.collect do |claim|
-                                                begin
-                                                                       claim['claimReview'].first['url']
-                                                rescue StandardError
-                                                  nil
-                                                                     end
-                                              end .compact, self.class.service)
+    existing_urls = ClaimReview.existing_urls(
+      claims.map do |claim|
+        claim['claimReview'].first['url']
+      rescue StandardError
+        nil
+      end.compact,
+      self.class.service
+    )
     claims.select { |claim| claim['claimReview']&.first && !existing_urls.include?(claim['claimReview'].first['url']) }
   end
 
@@ -79,14 +80,14 @@ class GoogleFactCheck < ReviewParser
   end
 
   def snowball_publishers_from_queries(queries)
-    queries.collect do |query|
+    queries.map do |query|
       snowball_publishers_from_query(query)
     end.flatten.uniq
   end
 
   def snowball_publishers_from_query(query = 'election')
-    claims = Hash[get_all_for_query(query).collect { |r| [r['claimReview'].first['url'], r] }]
-    claims.values.collect { |r| r['claimReview'].collect { |cr| cr['publisher']['site'] } }.flatten.uniq
+    claims = Hash[get_all_for_query(query).map { |r| [r['claimReview'].first['url'], r] }]
+    claims.values.map { |r| r['claimReview'].map { |cr| cr['publisher']['site'] } }.flatten.uniq
   end
 
   def snowball_claims_from_publishers(publishers)
@@ -108,11 +109,12 @@ class GoogleFactCheck < ReviewParser
   end
 
   def parse_raw_claim(raw_claim)
-    time = begin
-             Time.parse(raw_claim['claimReview'][0]['reviewDate'] || raw_claim['claimDate'])
-           rescue StandardError
-             nil
-           end
+    time =
+      begin
+                  Time.parse(raw_claim['claimReview'][0]['reviewDate'] || raw_claim['claimDate'])
+      rescue StandardError
+        nil
+                end
     {
       service_id: Digest::MD5.hexdigest(raw_claim['claimReview'][0]['url']),
       created_at: time,

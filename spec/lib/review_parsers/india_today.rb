@@ -20,11 +20,12 @@ class IndiaToday < ReviewParser
   end
 
   def parse_raw_claim(raw_claim)
-    image_filename = begin
-                       raw_claim['page'].search('div.factcheck-result-img img').first.attributes['src'].value.split('/').last
-                     rescue StandardError
-                       nil
-                     end
+    image_filename =
+      begin
+                            raw_claim['page'].search('div.factcheck-result-img img').first.attributes['src'].value.split('/').last
+      rescue StandardError
+        nil
+                          end
     if image_filename == '1c.gif'
       claim_result = 'Partly True'
       claim_result_score = 0.66
@@ -38,17 +39,19 @@ class IndiaToday < ReviewParser
       claim_result = 'Inconclusive'
       claim_result_score = 0.5
     end
-    time = begin
-             Time.parse(raw_claim['page'].search('div.byline div.profile-detail dt.pubdata').text)
-           rescue StandardError
-             nil
-           end
+    time =
+      begin
+                  Time.parse(raw_claim['page'].search('div.byline div.profile-detail dt.pubdata').text)
+      rescue StandardError
+        nil
+                end
     if time.nil?
-      time = begin
-               Time.parse(raw_claim['page'].search('p.upload-date span.date-display-single').first.attributes['content'].value)
-             rescue StandardError
-               nil
-             end
+      time =
+        begin
+                      Time.parse(raw_claim['page'].search('p.upload-date span.date-display-single').first.attributes['content'].value)
+        rescue StandardError
+          nil
+                    end
     end
     binding.pry if time.nil?
     {
