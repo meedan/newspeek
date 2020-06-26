@@ -1,5 +1,5 @@
 ifndef MAKE_CMD
-	MAKE_CMD=run_worker
+	MAKE_CMD=start_server
 endif
 run: wait
 	make $(MAKE_CMD)
