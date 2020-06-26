@@ -32,4 +32,4 @@ A Fact / Claim Review aggregation service.
 9. Deployment automation with gitlab
 10. Add webhooks for subscribing to claim reviews
 11. Generate "pristine" dataset of all facts and provide to staging / prod to prevent re-mining exact same data
-12. Get back to 100% code coverage
+12. ~Get back to 100% code coverage~

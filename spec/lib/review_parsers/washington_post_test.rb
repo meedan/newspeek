@@ -29,35 +29,35 @@ describe WashingtonPost do
     end
 
     it 'geppetto extracts correctly' do
-      expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse("<h3>Geppetto</h3>"))).to(eq(["True", 1]))
+      expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse('<h3>Geppetto</h3>'))).to(eq(['True', 1]))
     end
 
     it 'expects a fully false from claim_result_and_claim_result_score_from_page' do
-      expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse("<h3>Pinocchios: Four</h3>"))).to(eq(["False", 0.0]))
+      expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse('<h3>Pinocchios: Four</h3>'))).to(eq(['False', 0.0]))
     end
 
     it 'expects a partly false from claim_result_and_claim_result_score_from_page' do
-      expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse("<h3>Pinocchios: Three</h3>"))).to(eq(["Partly False", 0.25]))
+      expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse('<h3>Pinocchios: Three</h3>'))).to(eq(['Partly False', 0.25]))
     end
 
     it 'expects a rescue from claim_result_and_claim_result_score_from_page' do
-      expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse(""))).to(eq(["Inconclusive", 0.5]))
+      expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse(''))).to(eq(['Inconclusive', 0.5]))
     end
 
     it 'expects a rescue from time_from_page' do
-      expect(described_class.new.time_from_page(Nokogiri.parse(""))).to(eq(nil))
+      expect(described_class.new.time_from_page(Nokogiri.parse(''))).to(eq(nil))
     end
 
     it 'expects a rescue from author_from_page' do
-      expect(described_class.new.author_from_page(Nokogiri.parse(""))).to(eq(nil))
+      expect(described_class.new.author_from_page(Nokogiri.parse(''))).to(eq(nil))
     end
 
     it 'expects a rescue from author_link_from_page' do
-      expect(described_class.new.author_link_from_page(Nokogiri.parse(""))).to(eq(nil))
+      expect(described_class.new.author_link_from_page(Nokogiri.parse(''))).to(eq(nil))
     end
 
     it 'expects a rescue from claim_headline_from_page' do
-      expect(described_class.new.claim_headline_from_page(Nokogiri.parse(""))).to(eq(nil))
+      expect(described_class.new.claim_headline_from_page(Nokogiri.parse(''))).to(eq(nil))
     end
   end
 end

@@ -4,8 +4,9 @@ class DataCommons < ReviewParser
   def self.dataset_path
     '../datasets/datacommons_claims.json'
   end
-  def get_claims(path=self.class.dataset_path)
-    raw_set = JSON.parse(File.read(path))['dataFeedElement'].sort_by do |c| 
+
+  def get_claims(path = self.class.dataset_path)
+    raw_set = JSON.parse(File.read(path))['dataFeedElement'].sort_by do |c|
       claim_url_from_raw_claim(c, '')
     end.reverse
     raw_set.each_slice(100) do |claim_set|
@@ -22,63 +23,48 @@ class DataCommons < ReviewParser
       process_claims(new_claims.map { |raw_claim| parse_raw_claim(raw_claim) })
     end
   end
-  
+
   def service_id_from_raw_claim(raw_claim)
-    begin
-      raw_claim['item'][0]['url']
-    rescue StandardError
-      ''
-    end
+    raw_claim['item'][0]['url']
+  rescue StandardError
+    ''
   end
 
   def created_at_from_raw_claim(raw_claim)
-    begin
-      Time.parse(raw_claim['item'][0]['datePublished'])
-    rescue StandardError
-      nil
-    end
+    Time.parse(raw_claim['item'][0]['datePublished'])
+  rescue StandardError
+    nil
   end
 
   def author_from_raw_claim(raw_claim)
-    begin
-      raw_claim['item'][0]['author']['name']
-    rescue StandardError
-      nil
-    end
+    raw_claim['item'][0]['author']['name']
+  rescue StandardError
+    nil
   end
 
   def author_link_from_raw_claim(raw_claim)
-    begin
-      raw_claim['item'][0]['author']['url']
-    rescue StandardError
-      nil
-    end
+    raw_claim['item'][0]['author']['url']
+  rescue StandardError
+    nil
   end
 
   def claim_headline_from_raw_claim(raw_claim)
-    begin
-      raw_claim['item'][0]['claimReviewed']
-    rescue StandardError
-      nil
-    end
+    raw_claim['item'][0]['claimReviewed']
+  rescue StandardError
+    nil
   end
 
   def claim_result_from_raw_claim(raw_claim)
-    begin
-      raw_claim['item'][0]['reviewRating']['alternateName']
-    rescue StandardError
-      nil
-    end
+    raw_claim['item'][0]['reviewRating']['alternateName']
+  rescue StandardError
+    nil
   end
 
-  def claim_url_from_raw_claim(raw_claim, default=nil)
-    begin
-      raw_claim['item'][0]['url']
-    rescue StandardError
-      default
-    end
+  def claim_url_from_raw_claim(raw_claim, default = nil)
+    raw_claim['item'][0]['url']
+  rescue StandardError
+    default
   end
-
 
   def parse_raw_claim(raw_claim)
     {
@@ -102,7 +88,7 @@ class DataCommons < ReviewParser
     value = String(review_rating['ratingValue']) if review_rating['ratingValue']
     if !best.nil? && !worst.nil? && !value.nil?
       if Integer(best, 10) - Integer(worst, 10) > 0
-        return (Integer(value, 10) - Integer(worst, 10)) / Float((Integer(best, 10) - Integer(worst, 10)))
+        (Integer(value, 10) - Integer(worst, 10)) / Float((Integer(best, 10) - Integer(worst, 10)))
       end
     elsif ([best, worst, value].count(nil) > 0) && ([best, worst, value].count(nil) != 3)
       return Integer(value, 10) if best.nil? && worst.nil? && !value.nil?

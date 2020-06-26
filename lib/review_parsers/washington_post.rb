@@ -45,9 +45,9 @@ class WashingtonPost < ReviewParser
       end
       claim_result_score = (4 - score) / 4.0
     end
-    return [claim_result, claim_result_score]
+    [claim_result, claim_result_score]
   end
-  
+
   def time_from_page(page)
     time = nil
     begin
@@ -66,27 +66,21 @@ class WashingtonPost < ReviewParser
   end
 
   def author_from_page(page)
-    begin
-      page.search('div.author-names span.author-name').first.text
-    rescue StandardError
-      nil
-    end
+    page.search('div.author-names span.author-name').first.text
+  rescue StandardError
+    nil
   end
-  
+
   def author_link_from_page(page)
-    begin
-      page.search('div.author-names a.author-name-link').first.attributes['href'].value
-    rescue StandardError
-      nil
-    end
+    page.search('div.author-names a.author-name-link').first.attributes['href'].value
+  rescue StandardError
+    nil
   end
 
   def claim_headline_from_page(page)
-    begin
-     page.search('header div').last.text
-    rescue StandardError
-     nil
-    end
+    page.search('header div').last.text
+  rescue StandardError
+    nil
   end
 
   def claim_body_from_page(page)

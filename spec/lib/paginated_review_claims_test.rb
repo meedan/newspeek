@@ -132,7 +132,7 @@ describe PaginatedReviewClaims do
     end
 
     it 'iterates on get_claims' do
-      StubReviewJSON.any_instance.stub(:store_claims_for_page).with(1).and_return([{'created_at': Time.now-7*24*24*60}])
+      StubReviewJSON.any_instance.stub(:store_claims_for_page).with(1).and_return([{ 'created_at': Time.now - 7 * 24 * 24 * 60 }])
       StubReviewJSON.any_instance.stub(:store_claims_for_page).with(2).and_return([])
       response = StubReviewJSON.new.get_claims
       expect(response).to(eq(nil))

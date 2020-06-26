@@ -17,7 +17,7 @@ class Reuters < ReviewParser
   def url_extractor(atag)
     hostname + atag.attributes['href'].value
   end
-  
+
   def claim_result_from_page(page)
     claim_result = nil
     begin

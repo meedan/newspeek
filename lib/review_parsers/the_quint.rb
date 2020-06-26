@@ -29,37 +29,28 @@ class TheQuint < ReviewParser
   end
 
   def author_from_raw_claim(raw_claim)
-    begin
-      raw_claim['authors'][0]['name']
-    rescue StandardError
-      nil
-    end
+    raw_claim['authors'][0]['name']
+  rescue StandardError
+    nil
   end
 
   def author_link_from_raw_claim(raw_claim)
-    begin
-      raw_claim['authors'][0]['avatar-url']
-    rescue StandardError
-      nil
-    end
+    raw_claim['authors'][0]['avatar-url']
+  rescue StandardError
+    nil
   end
 
   def claim_result_from_raw_claim(raw_claim)
-    begin
-      raw_claim['metadata']['story-attributes']['factcheck'].first
-    rescue StandardError
-      nil
-    end
+    raw_claim['metadata']['story-attributes']['factcheck'].first
+  rescue StandardError
+    nil
   end
 
   def claim_result_score_from_raw_claim(raw_claim)
-    begin
-      Integer(raw_claim['metadata']['story-attributes']['claimreviewrating'].first, 10)
-    rescue StandardError
-      nil
-    end
+    Integer(raw_claim['metadata']['story-attributes']['claimreviewrating'].first, 10)
+  rescue StandardError
+    nil
   end
-
 
   def parse_raw_claim(raw_claim)
     {

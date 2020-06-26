@@ -46,6 +46,7 @@ class GoogleFactCheck < ReviewParser
     end
     results
   end
+
   def get_new_from_publisher(publisher, offset)
     claims = get_publisher(publisher, offset)['claims'] || []
     existing_urls = ClaimReview.existing_urls(
@@ -106,19 +107,15 @@ class GoogleFactCheck < ReviewParser
   end
 
   def claim_url_from_raw_claim(raw_claim)
-    begin
-      raw_claim['claimReview'][0]['url']
-    rescue StandardError
-      nil
-    end
+    raw_claim['claimReview'][0]['url']
+  rescue StandardError
+    nil
   end
-  
+
   def created_at_from_raw_claim(raw_claim)
-    begin
-      Time.parse(raw_claim['claimReview'][0]['reviewDate'] || raw_claim['claimDate'])
-    rescue StandardError
-      nil
-    end
+    Time.parse(raw_claim['claimReview'][0]['reviewDate'] || raw_claim['claimDate'])
+  rescue StandardError
+    nil
   end
 
   def parse_raw_claim(raw_claim)

@@ -3,14 +3,14 @@
 describe GESISClaims do
   describe 'instance' do
     it 'walks through the get_request' do
-      RestClient.stub(:post).with(anything(), anything(), anything()).and_return({})
-      expect(described_class.new.get_fact("123")).to(eq(nil))
+      RestClient.stub(:post).with(anything, anything, anything).and_return({})
+      expect(described_class.new.get_fact('123')).to(eq(nil))
     end
 
     it 'parses the in-repo dataset' do
-      CSV.stub(:read).with(described_class.dataset_path).and_return([["123"]])
-      ClaimReview.stub(:existing_ids).with(["123"], described_class.service).and_return([])
-      RestClient.stub(:post).with(anything(), anything(), anything()).and_return({})
+      CSV.stub(:read).with(described_class.dataset_path).and_return([['123']])
+      ClaimReview.stub(:existing_ids).with(['123'], described_class.service).and_return([])
+      RestClient.stub(:post).with(anything, anything, anything).and_return({})
       expect(described_class.new.get_claims).to(eq(nil))
     end
 
@@ -50,6 +50,5 @@ describe GESISClaims do
     it 'rescues from claim_url_from_raw_claim' do
       expect(described_class.new.claim_url_from_raw_claim({})).to(eq(nil))
     end
-
   end
 end

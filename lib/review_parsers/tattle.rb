@@ -5,10 +5,10 @@ class Tattle < ReviewParser
     '../datasets/tattle_claims.json'
   end
 
-  def get_claims(path=self.class.dataset_path)
+  def get_claims(path = self.class.dataset_path)
     raw_set = JSON.parse(File.read(path)).sort_by { |c| c['Post URL'].to_s }.reverse
     raw_set.each_slice(100) do |claim_set|
-      urls = claim_set.compact.collect{|claim| claim['Post URL']}
+      urls = claim_set.compact.collect { |claim| claim['Post URL'] }
       existing_urls = ClaimReview.existing_urls(urls, self.class.service)
       new_claims = claim_set.reject { |claim| existing_urls.include?(claim['Post URL']) }
       next if new_claims.empty?

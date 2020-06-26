@@ -27,13 +27,13 @@ describe IndiaToday do
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))
       end
     end
-    
+
     it 'properly rescues claim_result_and_score_from_page' do
-      expect(IndiaToday.new.claim_result_and_score_from_page(Nokogiri.parse(""))).to(eq(["Inconclusive", 0.5]))
+      expect(IndiaToday.new.claim_result_and_score_from_page(Nokogiri.parse(''))).to(eq(['Inconclusive', 0.5]))
     end
 
     it 'properly rescues time_from_page' do
-      expect(IndiaToday.new.time_from_page(Nokogiri.parse(""))).to(eq(nil))
+      expect(IndiaToday.new.time_from_page(Nokogiri.parse(''))).to(eq(nil))
     end
   end
 end
