@@ -23,7 +23,7 @@ require('elasticsearch/dsl')
 require('elasticsearch/persistence')
 
 SETTINGS = JSON.parse(File.read(ENV['settings_filename'] || 'settings.json'))
-redis_config = { host: SETTINGS['redis_host'] || '127.0.0.1' }
+redis_config = { host: SETTINGS['redis_host'] || 'redis' }
 redis_config[:password] = SETTINGS['redis_password'] if SETTINGS['redis_password']
 Sidekiq.configure_client do |config|
   config.redis = redis_config

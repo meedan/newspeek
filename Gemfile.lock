@@ -184,6 +184,7 @@ DEPENDENCIES
   rest-client
   rspec
   rubocop
+  rubocop-ast (= 0.0.3)
   rubocop-performance
   rubocop-rspec
   ruby-progressbar
