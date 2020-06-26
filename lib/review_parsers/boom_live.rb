@@ -5,11 +5,15 @@ class BoomLive < ReviewParser
     'http://boomlive.in/'
   end
 
+  def api_params
+    { "s-id": SETTINGS['boom_live_api_key'] }
+  end
+
   def get_path(path)
     JSON.parse(
       RestClient.get(
         hostname + path,
-        { "s-id": SETTINGS['boom_live_api_key'] }
+        api_params
       )
     )
   end
@@ -44,7 +48,7 @@ class BoomLive < ReviewParser
   def get_all_stories_by_category(category_id)
     page = 1
     stories = store_claims_for_category_id_and_page(category_id, page)
-    until finished_iterating?(processed_claims)
+    until finished_iterating?(stories)
       page += 1
       stories = store_claims_for_category_id_and_page(category_id, page)
     end

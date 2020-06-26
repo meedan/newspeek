@@ -17,31 +17,34 @@ class Reuters < ReviewParser
   def url_extractor(atag)
     hostname + atag.attributes['href'].value
   end
-
-  def parse_raw_claim(raw_claim)
-    claim_result =
+  
+  def claim_result_from_page(page)
+    claim_result = nil
+    begin
+      claim_result = page.search('div.StandardArticleBody_body h3').first.next_sibling.text.split('.').first
+    rescue StandardError
+      nil
+    end
+    if claim_result.nil?
       begin
-                          raw_claim['page'].search('div.StandardArticleBody_body h3').first.next_sibling.text.split('.').first
+        claim_result = page.search('div.StandardArticleBody_body p').find { |x| x.text.split(/[: ]/).first.casecmp('verdict').zero? }.text.split(/[: ]/).reject(&:empty?)[1].split('.')[0].strip
       rescue StandardError
         nil
-                        end
-    if claim_result.nil?
-      claim_result =
-        begin
-                              raw_claim['page'].search('div.StandardArticleBody_body p').find { |x| x.text.split(/[: ]/).first.casecmp('verdict').zero? }.text.split(/[: ]/).reject(&:empty?)[1].split('.')[0].strip
-        rescue StandardError
-          nil
-                            end
+      end
     end
     if claim_result.nil?
-      words = raw_claim['page'].search('div.StandardArticleBody_body p').text.downcase.split(/\W/).map(&:strip).reject(&:empty?)
-      claim_result =
-        begin
-                              words[words.index('verdict') + 1]
-        rescue StandardError
-          nil
-                            end
+      begin
+        words = page.search('div.StandardArticleBody_body p').text.downcase.split(/\W/).map(&:strip).reject(&:empty?)
+        claim_result = words[words.index('verdict') + 1]
+      rescue StandardError
+        nil
+      end
     end
+    claim_result
+  end
+
+  def parse_raw_claim(raw_claim)
+    claim_result = claim_result_from_page(raw_claim['page'])
     {
       service_id: Digest::MD5.hexdigest(raw_claim['url']),
       created_at: Time.parse(raw_claim['page'].search('div.ArticleHeader_date').text.split('/')[0..1].join('')),

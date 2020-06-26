@@ -18,6 +18,10 @@ services:
       - "5601:5601"
     environment:
       ELASTICSEARCH_URL: http://elasticsearch:9200
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
   newspeek:
     build: .
     ports:
@@ -27,5 +31,6 @@ services:
     depends_on:
       - elasticsearch
       - kibana
+      - redis
     env_file:
       - .env_file

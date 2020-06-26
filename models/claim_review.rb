@@ -59,7 +59,7 @@ class ClaimReview
   def self.store_claim(parsed_claim, service)
     save_claim(parsed_claim, service) if existing_ids([parsed_claim[:service_id]], service).empty?
   rescue StandardError
-    binding.pry
+    # binding.pry
   end
 
   def self.search(search_query = nil, service = nil, created_at_start = nil, created_at_end = nil, limit = 20, offset = 0)

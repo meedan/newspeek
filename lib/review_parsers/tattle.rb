@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 class Tattle < ReviewParser
-  def get_claims
-    raw_set = JSON.parse(File.read('../datasets/tattle_claims.json')).sort_by { |c| c['Post URL'].to_s }.reverse
+  def self.dataset_path
+    '../datasets/tattle_claims.json'
+  end
+
+  def get_claims(path=self.class.dataset_path)
+    raw_set = JSON.parse(File.read(path)).sort_by { |c| c['Post URL'].to_s }.reverse
     raw_set.each_slice(100) do |claim_set|
-      urls = claim_set.map do |claim|
-        claim['Post URL']
-             rescue StandardError
-               nil
-      end.compact
+      urls = claim_set.compact.collect{|claim| claim['Post URL']}
       existing_urls = ClaimReview.existing_urls(urls, self.class.service)
       new_claims = claim_set.reject { |claim| existing_urls.include?(claim['Post URL']) }
       next if new_claims.empty?

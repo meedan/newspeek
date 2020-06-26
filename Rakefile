@@ -19,7 +19,7 @@ task :collect_datasource do
 end
 
 task :collect_all do
-  Parallel.map(ReviewParser.subclasses.map(&:service), in_processes: 20, progress: 'Updating Claims') do |datasource|
+  ReviewParser.subclasses.map(&:service).each do |datasource|
     puts "Updating #{datasource}..."
     RunReviewParser.perform_async(datasource)
   end

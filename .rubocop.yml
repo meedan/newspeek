@@ -4135,24 +4135,6 @@ Style/WordArray:
   # The regular expression `WordRegex` decides what is considered a word.
   WordRegex: !ruby/regexp '/\A(?:\p{Word}|\p{Word}-\p{Word}|\n|\t)+\z/'
 
-Style/YodaCondition:
-  Description: 'Forbid or enforce yoda conditions.'
-  Reference: 'https://en.wikipedia.org/wiki/Yoda_conditions'
-  Enabled: true
-  EnforcedStyle: all_comparison_operators
-  SupportedStyles:
-    # check all comparison operators
-    - forbid_for_all_comparison_operators
-    # check only equality operators: `!=` and `==`
-    - forbid_for_equality_operators_only
-    # enforce yoda for all comparison operators
-    - require_for_all_comparison_operators
-    # enforce yoda only for equality operators: `!=` and `==`
-    - require_for_equality_operators_only
-  Safe: false
-  VersionAdded: '0.49'
-  VersionChanged: '0.75'
-
 Style/ZeroLengthPredicate:
   Description: 'Use #empty? when testing for objects of length 0.'
   Enabled: true

@@ -22,41 +22,55 @@ class TheQuint < ReviewParser
   def get_claims
     page = 1
     raw_claims = get_new_claims_for_page(page)
-    all_raw_claims = raw_claims
-    until raw_claims.empty?
+    until finished_iterating?(raw_claims)
       page += 1
-      yield(raw_claims)
       raw_claims = get_new_claims_for_page(page)
     end
-    yield(raw_claims)
   end
+
+  def author_from_raw_claim(raw_claim)
+    begin
+      raw_claim['authors'][0]['name']
+    rescue StandardError
+      nil
+    end
+  end
+
+  def author_link_from_raw_claim(raw_claim)
+    begin
+      raw_claim['authors'][0]['avatar-url']
+    rescue StandardError
+      nil
+    end
+  end
+
+  def claim_result_from_raw_claim(raw_claim)
+    begin
+      raw_claim['metadata']['story-attributes']['factcheck'].first
+    rescue StandardError
+      nil
+    end
+  end
+
+  def claim_result_score_from_raw_claim(raw_claim)
+    begin
+      Integer(raw_claim['metadata']['story-attributes']['claimreviewrating'].first, 10)
+    rescue StandardError
+      nil
+    end
+  end
+
 
   def parse_raw_claim(raw_claim)
     {
       service_id: raw_claim['story-content-id'],
       created_at: Time.at(raw_claim['first-published-at'] / 1000.0),
-      author: (begin
-                 raw_claim['authors'][0]['name']
-               rescue StandardError
-                 nil
-               end),
-      author_link: (begin
-                      raw_claim['authors'][0]['avatar-url']
-                    rescue StandardError
-                      nil
-                    end),
+      author: author_from_raw_claim(raw_claim),
+      author_link: author_link_from_raw_claim(raw_claim),
       claim_headline: raw_claim['headline'],
       claim_body: Nokogiri.parse('<html>' + raw_claim['cards'].map { |x| x['story-elements'] }.flatten.map { |x| x['text'] }.join('') + '</html>').text,
-      claim_result: (begin
-                       raw_claim['metadata']['story-attributes']['factcheck'].first
-                     rescue StandardError
-                       nil
-                     end),
-      claim_result_score: (begin
-                             Integer(raw_claim['metadata']['story-attributes']['claimreviewrating'].first, 10)
-                           rescue StandardError
-                             nil
-                           end),
+      claim_result: claim_result_from_raw_claim(raw_claim),
+      claim_result_score: claim_result_score_from_raw_claim(raw_claim),
       claim_url: raw_claim['url'],
       raw_claim: raw_claim
     }

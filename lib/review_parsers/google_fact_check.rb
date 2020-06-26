@@ -21,7 +21,7 @@ class GoogleFactCheck < ReviewParser
     rescue RestClient::ServiceUnavailable
       retry_count += 1
       sleep(1)
-      retry if retry_count < 10
+      retry if retry_count < 3
     end
   end
 
@@ -46,14 +46,11 @@ class GoogleFactCheck < ReviewParser
     end
     results
   end
-
   def get_new_from_publisher(publisher, offset)
     claims = get_publisher(publisher, offset)['claims'] || []
     existing_urls = ClaimReview.existing_urls(
       claims.map do |claim|
-        claim['claimReview'].first['url']
-      rescue StandardError
-        nil
+        claim_url_from_raw_claim(claim)
       end.compact,
       self.class.service
     )
@@ -108,23 +105,33 @@ class GoogleFactCheck < ReviewParser
     )
   end
 
+  def claim_url_from_raw_claim(raw_claim)
+    begin
+      raw_claim['claimReview'][0]['url']
+    rescue StandardError
+      nil
+    end
+  end
+  
+  def created_at_from_raw_claim(raw_claim)
+    begin
+      Time.parse(raw_claim['claimReview'][0]['reviewDate'] || raw_claim['claimDate'])
+    rescue StandardError
+      nil
+    end
+  end
+
   def parse_raw_claim(raw_claim)
-    time =
-      begin
-                  Time.parse(raw_claim['claimReview'][0]['reviewDate'] || raw_claim['claimDate'])
-      rescue StandardError
-        nil
-                end
     {
       service_id: Digest::MD5.hexdigest(raw_claim['claimReview'][0]['url']),
-      created_at: time,
+      created_at: created_at_from_raw_claim(raw_claim),
       author: raw_claim['claimReview'][0]['publisher']['name'],
       author_link: raw_claim['claimReview'][0]['publisher']['site'],
       claim_headline: raw_claim['claimReview'][0]['title'],
       claim_body: raw_claim['text'],
       claim_result: raw_claim['claimReview'][0]['textualRating'],
       claim_result_score: nil,
-      claim_url: raw_claim['claimReview'][0]['url'],
+      claim_url: claim_url_from_raw_claim(raw_claim),
       raw_claim: raw_claim
     }
   end

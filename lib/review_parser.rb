@@ -42,17 +42,13 @@ class ReviewParser
   end
 
   def finished_iterating?(claims)
-    oldest_time = claims.map { |x| x[:created_at] }.min
+    oldest_time = claims.map { |x| x['created_at'] }.min
     claims.empty? || (!@cursor_back_to_date.nil? && oldest_time > @cursor_back_to_date)
   end
 
   def parse_raw_claims(raw_claims)
-    if @run_in_parallel
-      Parallel.map(parse_raw_claims, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |raw_claim|
-        parse_raw_claim(raw_claim)
-      end.compact
-    else
-      raw_claims.map { |raw_claim| parse_raw_claim(raw_claim) }
-    end
+    Parallel.map(raw_claims, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |raw_claim|
+      parse_raw_claim(raw_claim)
+    end.compact
   end
 end
