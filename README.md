@@ -12,7 +12,7 @@ A Fact / Claim Review aggregation service.
 - Open http://localhost:9292/about for the Claim Review API
 - Open http://localhost:5601 for the Kibana UI
 - Open http://localhost:9200 for the Elasticsearch API
-- `docker-compose exec claim_review_api bash` to get inside the claim review API bash and directly debug issues.
+- `docker-compose exec newspeek bash` to get inside the claim review API bash and directly debug issues.
 
 ## Testing
 
