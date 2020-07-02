@@ -27,5 +27,16 @@ describe AFP do
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))
       end
     end
+
+    it 'parses a raw_claim with no author link' do
+      raw = JSON.parse(File.read('spec/fixtures/afp_raw.json'))
+      raw['page'].gsub!('meta-author', 'meta-author-name-some-other-class-that-breaks-extraction')
+      raw['page'] = Nokogiri.parse(raw['page'])
+      parsed_claim = described_class.new.parse_raw_claim(raw)
+      expect(parsed_claim.class).to(eq(Hash))
+      ClaimReview.mandatory_fields.each do |field|
+        expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))
+      end
+    end
   end
 end

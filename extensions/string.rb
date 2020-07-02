@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Loaning a method from activerecord without pulling activerecord into this
 class String
   def underscore
     word = to_s.dup
