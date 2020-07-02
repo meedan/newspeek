@@ -22,6 +22,7 @@ class GoogleFactCheck < ReviewParser
       retry_count += 1
       sleep(1)
       retry if retry_count < 3
+      return {} if retry_count >= 3
     end
   end
 
@@ -49,11 +50,10 @@ class GoogleFactCheck < ReviewParser
 
   def get_new_from_publisher(publisher, offset)
     claims = get_publisher(publisher, offset)['claims'] || []
-    existing_urls = ClaimReview.existing_urls(
+    existing_urls = get_existing_urls(
       claims.map do |claim|
         claim_url_from_raw_claim(claim)
-      end.compact,
-      self.class.service
+      end.compact
     )
     claims.select { |claim| claim['claimReview']&.first && !existing_urls.include?(claim['claimReview'].first['url']) }
   end
@@ -89,7 +89,7 @@ class GoogleFactCheck < ReviewParser
   end
 
   def snowball_claims_from_publishers(publishers)
-    Parallel.map(publishers, in_processes: 2, progress: 'Downloading data from all publishers') do |publisher|
+    Parallel.map(publishers, in_processes: 1, progress: 'Downloading data from all publishers') do |publisher|
       get_all_for_publisher(publisher)
     end
   end
@@ -120,7 +120,7 @@ class GoogleFactCheck < ReviewParser
 
   def parse_raw_claim(raw_claim)
     {
-      service_id: Digest::MD5.hexdigest(raw_claim['claimReview'][0]['url']),
+      id: Digest::MD5.hexdigest(raw_claim['claimReview'][0]['url']),
       created_at: created_at_from_raw_claim(raw_claim),
       author: raw_claim['claimReview'][0]['publisher']['name'],
       author_link: raw_claim['claimReview'][0]['publisher']['site'],

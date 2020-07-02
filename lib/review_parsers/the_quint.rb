@@ -5,18 +5,18 @@ class TheQuint < ReviewParser
     'https://www.thequint.com'
   end
 
-  def fact_list_path(page = 1)
-    "/news/webqoof/#{page}"
+  def fact_list_path(page = 1, limit = 100)
+    "/api/v1/collections/webqoof?item-type=story&offset=#{(page - 1) * limit}&limit=#{limit}"
   end
 
   def get_claims_for_page(page = 1)
-    JSON.parse(Nokogiri.parse(RestClient.get(hostname + fact_list_path(page))).search('script').find { |x| x.text.include?('app.render') }.text.split('app.render(')[1].split(");\n      });\n    ")[0])['args']['collection']['items']
+    JSON.parse(RestClient.get(hostname + fact_list_path(page)))['items']
   end
 
   def get_new_claims_for_page(page = 1)
-    claims = get_claims_for_page(page)
-    existing_urls = ClaimReview.existing_urls(claims.map { |claim| claim['url'] }.compact, self.class.service)
-    claims.reject { |claim| existing_urls.include?(claim['url']) }
+    claims = parse_raw_claims(get_claims_for_page(page))
+    existing_urls = get_existing_urls(claims.map { |claim| claim['url'] }.compact)
+    process_claims(claims.reject { |claim| existing_urls.include?(claim['url']) })
   end
 
   def get_claims
@@ -28,41 +28,65 @@ class TheQuint < ReviewParser
     end
   end
 
+  def created_at_from_raw_claim(raw_claim)
+    Time.at(raw_claim['story']['published-at'] / 1000.0)
+  rescue StandardError
+    nil
+  end
+
   def author_from_raw_claim(raw_claim)
-    raw_claim['authors'][0]['name']
+    raw_claim['story']['authors'][0]['name']
   rescue StandardError
     nil
   end
 
   def author_link_from_raw_claim(raw_claim)
-    raw_claim['authors'][0]['avatar-url']
+    raw_claim['story']['authors'][0]['avatar-url']
   rescue StandardError
     nil
   end
 
   def claim_result_from_raw_claim(raw_claim)
-    raw_claim['metadata']['story-attributes']['factcheck'].first
+    raw_claim['story']['metadata']['story-attributes']['factcheck'].first
   rescue StandardError
     nil
   end
 
   def claim_result_score_from_raw_claim(raw_claim)
-    Integer(raw_claim['metadata']['story-attributes']['claimreviewrating'].first, 10)
+    Integer(raw_claim['story']['metadata']['story-attributes']['claimreviewrating'].first, 10)
+  rescue StandardError
+    nil
+  end
+
+  def claim_headline_from_raw_claim(raw_claim)
+    raw_claim['story']['headline']
+  rescue StandardError
+    nil
+  end
+
+  def claim_body_from_raw_claim(raw_claim)
+    raw_claim['story']['seo']['meta-description']
+  rescue StandardError
+    nil
+  end
+
+  def claim_url_from_raw_claim(raw_claim)
+    raw_claim['story']['url']
   rescue StandardError
     nil
   end
 
   def parse_raw_claim(raw_claim)
     {
-      service_id: raw_claim['story-content-id'],
-      created_at: Time.at(raw_claim['first-published-at'] / 1000.0),
+      id: Digest::MD5.hexdigest(raw_claim['id']),
+      created_at: created_at_from_raw_claim(raw_claim),
       author: author_from_raw_claim(raw_claim),
       author_link: author_link_from_raw_claim(raw_claim),
-      claim_headline: raw_claim['headline'],
-      claim_body: Nokogiri.parse('<html>' + raw_claim['cards'].map { |x| x['story-elements'] }.flatten.map { |x| x['text'] }.join('') + '</html>').text,
+      claim_headline: claim_headline_from_raw_claim(raw_claim),
+      claim_body: claim_body_from_raw_claim(raw_claim),
       claim_result: claim_result_from_raw_claim(raw_claim),
       claim_result_score: claim_result_score_from_raw_claim(raw_claim),
-      claim_url: raw_claim['url'],
+      claim_url: claim_url_from_raw_claim(raw_claim),
       raw_claim: raw_claim
     }
   end

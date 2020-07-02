@@ -90,7 +90,7 @@ class WashingtonPost < ReviewParser
   def parse_raw_claim(raw_claim)
     claim_result, claim_result_score = claim_result_and_claim_result_score_from_page(raw_claim['page'])
     {
-      service_id: Digest::MD5.hexdigest(raw_claim['url']),
+      id: Digest::MD5.hexdigest(raw_claim['url']),
       created_at: time_from_page(raw_claim['page']),
       author: author_from_page(raw_claim['page']),
       author_link: author_link_from_page(raw_claim['page']),

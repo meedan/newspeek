@@ -1,5 +1,5 @@
 ifndef MAKE_CMD
-	MAKE_CMD=start_server
+	MAKE_CMD=run_worker
 endif
 run: wait
 	make $(MAKE_CMD)
@@ -8,7 +8,7 @@ start_server:
 collect_all:
 	bundle exec rake collect_all
 run_worker:
-	bundle exec sidekiq -r ./environment.rb -c 10
+	bundle exec sidekiq -r ./environment.rb -c 5
 test:
 	bundle exec rake test
 wait:

@@ -2,6 +2,11 @@
 
 describe ReviewParser do
   describe 'instance' do
+    it 'expects forcefully-emptied get_existing_urls' do
+      rp = described_class.new(Time.now - 60 * 60 * 24)
+      expect(rp.get_existing_urls(['123'])).to(eq([]))
+    end
+
     it 'expects default attributes' do
       rp = described_class.new
       expect(rp.send('fact_list_page_parser')).to(eq('html'))

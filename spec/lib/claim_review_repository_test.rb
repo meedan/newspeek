@@ -17,5 +17,10 @@ describe ClaimReviewRepository do
     it 'expects klass' do
       expect(described_class.klass).to(eq(ClaimReview))
     end
+
+    it 'expects perfunctory walkthrough of index creator' do
+      described_class.any_instance.stub(:create_index!).and_return(nil)
+      expect(described_class.init_index).to(eq(nil))
+    end
   end
 end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Parser for https://www.altnews.in
 class AltNewsIn < ReviewParser
   include PaginatedReviewClaims
   def hostname
@@ -20,7 +21,7 @@ class AltNewsIn < ReviewParser
 
   def parse_raw_claim(raw_claim)
     {
-      service_id: Digest::MD5.hexdigest(raw_claim['url']),
+      id: Digest::MD5.hexdigest(raw_claim['url']),
       created_at: Time.parse(raw_claim['page'].search('div.herald-date').text),
       author: raw_claim['page'].search('span.vcard.author a').first.text,
       author_link: raw_claim['page'].search('span.vcard.author a').first.attributes['href'].value,

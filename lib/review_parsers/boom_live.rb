@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Parser for http://boomlive.in/ - does not follow standard Pagination scheme from PaginatedReviewClaims!
 class BoomLive < ReviewParser
   def hostname
     'http://boomlive.in/'
@@ -33,14 +34,16 @@ class BoomLive < ReviewParser
 
   def get_new_stories_by_category(category_id, page)
     stories = get_stories_by_category(category_id, page)['news']
-    existing_urls = ClaimReview.existing_urls(stories.map { |s| s['url'] }, self.class.service)
+    existing_urls = get_existing_urls(stories.map { |s| s['url'] })
     Hash[stories.reject { |s| existing_urls.include?(s['url']) }.map { |s| [s['url'], s] }].values
   end
 
   def store_claims_for_category_id_and_page(category_id, page)
     process_claims(
-      get_new_stories_by_category(
-        category_id, page
+      parse_raw_claims(
+        get_new_stories_by_category(
+          category_id, page
+        )
       )
     )
   end
@@ -56,9 +59,7 @@ class BoomLive < ReviewParser
 
   def get_claims
     fact_categories.each do |_category_path, category_id|
-      get_all_stories_by_category(category_id) do |category_stories|
-        parse_raw_claims(category_stories.values)
-      end
+      get_all_stories_by_category(category_id)
     end
   end
 
@@ -75,7 +76,7 @@ class BoomLive < ReviewParser
   def parse_raw_claim(raw_claim)
     claim_result = get_claim_result_for_raw_claim(raw_claim)
     {
-      service_id: raw_claim['newsId'],
+      id: Digest::MD5.hexdigest(raw_claim['newsId'].to_s),
       created_at: Time.parse(raw_claim['date_created']),
       author: raw_claim['source'],
       author_link: nil,

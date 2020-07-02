@@ -13,15 +13,25 @@ task :list_datasource do
 end
 
 task :collect_datasource do
-  ARGV.each { |a| task a.to_sym do; end }
+  ARGV.each do |a|
+    task a.to_sym do
+    end
+  end
   datasource = ARGV[1]
+  ClaimReviewRepository.init_index
   RunReviewParser.perform_async(datasource)
 end
 
 task :collect_all do
+  ARGV.each do |a|
+    task a.to_sym do
+    end
+  end
+  cursor_back_to_date = ARGV[1]
+  ClaimReviewRepository.init_index
   ReviewParser.subclasses.map(&:service).each do |datasource|
     puts "Updating #{datasource}..."
-    RunReviewParser.perform_async(datasource)
+    RunReviewParser.perform_async(datasource, cursor_back_to_date)
   end
 end
 

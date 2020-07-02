@@ -14,7 +14,9 @@ describe DataCommons do
     it 'parses the in-repo dataset' do
       single_case = JSON.parse(File.read('spec/fixtures/data_commons_raw.json'))
       File.stub(:read).with(described_class.dataset_path).and_return({ 'dataFeedElement' => [single_case] }.to_json)
+      ClaimReview.stub(:existing_ids).with([Digest::MD5.hexdigest(single_case['item'][0]['url'])], described_class.service).and_return([])
       ClaimReview.stub(:existing_urls).with([single_case['item'][0]['url']], described_class.service).and_return([])
+      ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
       expect(described_class.new.get_claims).to(eq(nil))
     end
 
@@ -26,8 +28,8 @@ describe DataCommons do
       expect(described_class.new.parse_datacommons_rating({ 'reviewRating' => { 'ratingValue' => 5 } })).to(eq(5))
     end
 
-    it 'rescues from service_id_from_raw_claim' do
-      expect(described_class.new.service_id_from_raw_claim({})).to(eq(''))
+    it 'rescues from id_from_raw_claim' do
+      expect(described_class.new.id_from_raw_claim({})).to(eq('d41d8cd98f00b204e9800998ecf8427e'))
     end
 
     it 'rescues from author_from_raw_claim' do

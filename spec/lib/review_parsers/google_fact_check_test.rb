@@ -66,7 +66,7 @@ describe GoogleFactCheck do
 
     it 'runs get' do
       RestClient.stub(:get).with(anything).and_raise(RestClient::ServiceUnavailable)
-      expect(described_class.new.get('foo', {})).to(eq(nil))
+      expect(described_class.new.get('foo', {})).to(eq({}))
     end
 
     it 'runs get_new_from_publisher' do

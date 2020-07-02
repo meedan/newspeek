@@ -46,7 +46,7 @@ class Reuters < ReviewParser
   def parse_raw_claim(raw_claim)
     claim_result = claim_result_from_page(raw_claim['page'])
     {
-      service_id: Digest::MD5.hexdigest(raw_claim['url']),
+      id: Digest::MD5.hexdigest(raw_claim['url']),
       created_at: Time.parse(raw_claim['page'].search('div.ArticleHeader_date').text.split('/')[0..1].join('')),
       author: 'Reuters Fact Check',
       author_link: nil,

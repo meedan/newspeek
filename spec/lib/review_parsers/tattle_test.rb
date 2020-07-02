@@ -15,6 +15,8 @@ describe Tattle do
       single_case = JSON.parse(File.read('spec/fixtures/tattle_raw.json'))
       File.stub(:read).with(described_class.dataset_path).and_return([single_case].to_json)
       ClaimReview.stub(:existing_urls).with([single_case['Post URL']], described_class.service).and_return([])
+      ClaimReview.stub(:existing_ids).with([Digest::MD5.hexdigest(single_case['Post URL'])], described_class.service).and_return([])
+      ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
       expect(described_class.new.get_claims).to(eq(nil))
     end
 
@@ -23,6 +25,8 @@ describe Tattle do
       single_case['Docs'] = []
       File.stub(:read).with(described_class.dataset_path).and_return([single_case].to_json)
       ClaimReview.stub(:existing_urls).with([single_case['Post URL']], described_class.service).and_return([])
+      ClaimReview.stub(:existing_ids).with([Digest::MD5.hexdigest(single_case['Post URL'])], described_class.service).and_return([])
+      ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
       expect(described_class.new.get_claims).to(eq(nil))
     end
   end

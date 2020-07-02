@@ -2,34 +2,44 @@
 
 class ClaimReview
   include Elasticsearch::DSL
+  attr_reader :attributes
+
+  def initialize(attributes = {})
+    @attributes = attributes
+  end
+
+  def to_hash
+    @attributes
+  end
+
   def self.mandatory_fields
-    %w[claim_headline claim_url created_at service_id]
+    %w[claim_headline claim_url created_at id]
   end
 
   def self.validate_claim(parsed_claim)
-    parsed_claim.delete('_id')
-    parsed_claim.delete('raw_claim')
     mandatory_fields.each do |field|
       return nil if parsed_claim[field].nil?
     end
+    parsed_claim.delete('raw_claim')
     parsed_claim['created_at'] = Time.parse(parsed_claim['created_at'].to_s).strftime('%Y-%m-%dT%H:%M:%SZ')
     parsed_claim
   end
 
   def self.save_claim(parsed_claim, service)
-    f = File.open("#{service}_raw.json", 'w')
-    f.write(parsed_claim['raw_claim'].to_json)
-    f.close
     validated_claim = validate_claim(parsed_claim)
-    repository.save(validated_claim.merge(service: service)) if validated_claim
+    repository.save(ClaimReview.new(validated_claim.merge(service: service))) if validated_claim
   end
 
   def self.repository
     ClaimReviewRepository.new(client: client)
   end
 
+  def self.es_hostname
+    SETTINGS['es_host'] || 'http://localhost:9200'
+  end
+
   def self.client
-    Elasticsearch::Client.new(url: SETTINGS['es_host'] || 'http://localhost:9200')
+    Elasticsearch::Client.new(url: es_hostname)
   end
 
   def self.get_hits(search_params)
@@ -49,7 +59,7 @@ class ClaimReview
   end
 
   def self.existing_ids(ids, service)
-    extract_matches(ids, 'service_id', service)
+    extract_matches(ids, 'id', service)
   end
 
   def self.existing_urls(urls, service)
@@ -57,9 +67,7 @@ class ClaimReview
   end
 
   def self.store_claim(parsed_claim, service)
-    save_claim(parsed_claim, service) if existing_ids([parsed_claim[:service_id]], service).empty?
-  rescue StandardError
-    # binding.pry
+    save_claim(parsed_claim, service) if existing_ids([parsed_claim[:id]], service).empty?
   end
 
   def self.search(search_query = nil, service = nil, created_at_start = nil, created_at_end = nil, limit = 20, offset = 0)

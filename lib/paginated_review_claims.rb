@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Base-level ReviewParser code where claim providers have a paginated
+# index page of claims and then require visting each URL-specified claim directly
 module PaginatedReviewClaims
   def get_url(url)
     response = RestClient.get(
@@ -47,7 +49,7 @@ module PaginatedReviewClaims
 
   def get_new_fact_page_urls(page)
     page_urls = get_fact_page_urls(page)
-    existing_urls = ClaimReview.existing_urls(page_urls, self.class.service)
+    existing_urls = get_existing_urls(page_urls)
     page_urls - existing_urls
   end
 
@@ -70,16 +72,20 @@ module PaginatedReviewClaims
     end
   end
 
+  def safe_parsed_fact_page(fact_page_url)
+    parsed_fact_page(fact_page_url)
+  rescue StandardError
+    nil
+  end
+
   def get_parsed_fact_pages_from_urls(urls)
     if @run_in_parallel
       Hash[Parallel.map(urls, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |fact_page_url|
-        parsed_fact_page(fact_page_url)
-           rescue StandardError
-             nil
+        safe_parsed_fact_page(fact_page_url)
       end.compact].values
     else
       Hash[urls.map do |fact_page_url|
-        parsed_fact_page(fact_page_url)
+        safe_parsed_fact_page(fact_page_url)
       end.compact].values
     end
   end

@@ -15,4 +15,8 @@ class ClaimReviewRepository
       indexes :created_at, type: 'date'
     end
   end
+
+  def self.init_index
+    ClaimReviewRepository.new.create_index!
+  end
 end

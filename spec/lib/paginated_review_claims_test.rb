@@ -151,5 +151,18 @@ describe PaginatedReviewClaims do
       response = StubReview.new.get_parsed_fact_pages_from_urls([1])
       expect(response).to(eq([]))
     end
+
+    it 'expects safe_parsed_fact_page' do
+      response = StubReviewJSON.new.safe_parsed_fact_page(StubReviewJSON.new.hostname)
+      expect(response[0]).to(eq('http://examplejson.com'))
+      expect(response[1].class).to(eq(Hashie::Mash))
+      expect(response[1].keys.sort).to(eq(%w[page url]))
+    end
+
+    it 'expects safe_parsed_fact_page' do
+      StubReviewJSON.any_instance.stub(:parsed_fact_page).with(anything).and_raise(StandardError)
+      response = StubReviewJSON.new.safe_parsed_fact_page(StubReviewJSON.new.hostname)
+      expect(response).to(eq(nil))
+    end
   end
 end

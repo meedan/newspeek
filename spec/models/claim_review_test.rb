@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
 describe ClaimReview do
+  describe 'instance' do
+    it 'responds to to_hash' do
+      expect(ClaimReview.new({}).to_hash).to(eq({}))
+    end
+  end
   describe 'class' do
     it 'has mandatory fields' do
-      expect(described_class.mandatory_fields).to(eq(%w[claim_headline claim_url created_at service_id]))
+      expect(described_class.mandatory_fields).to(eq(%w[claim_headline claim_url created_at id]))
     end
 
     it 'fails validation on nil fields' do
@@ -11,13 +16,13 @@ describe ClaimReview do
     end
 
     it 'validates MVP claim' do
-      validated = described_class.validate_claim(Hashie::Mash[{ _id: 1, raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.parse('2020-01-01'), service_id: 123 }])
-      expect(validated).to(eq({ 'claim_headline' => 'wow', 'claim_url' => 'http://example.com', 'created_at' => '2020-01-01T00:00:00Z', 'service_id' => 123 }))
+      validated = described_class.validate_claim(Hashie::Mash[{ raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.parse('2020-01-01'), id: 123 }])
+      expect(validated).to(eq({ 'claim_headline' => 'wow', 'claim_url' => 'http://example.com', 'created_at' => '2020-01-01T00:00:00Z', 'id' => 123 }))
     end
 
     it 'saves MVP claim' do
-      claim = Hashie::Mash[{ claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.parse('2020-01-01').strftime('%Y-%m-%dT%H:%M:%SZ'), service_id: 123 }]
-      ClaimReviewRepository.any_instance.stub(:save).with(claim.merge(service: 'google')).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
+      claim = Hashie::Mash[{ claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.parse('2020-01-01').strftime('%Y-%m-%dT%H:%M:%SZ'), id: 123 }]
+      ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
       expect(described_class.save_claim(claim, 'google')).to(eq({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 }))
     end
 
@@ -50,7 +55,7 @@ describe ClaimReview do
     end
 
     it 'expects non-empty existing_ids' do
-      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'service_id' => 1 } }] } })
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'id' => 1 } }] } })
       expect(described_class.existing_ids([1], 'google')).to(eq([1]))
     end
 
@@ -71,16 +76,16 @@ describe ClaimReview do
   end
 
   it 'fails to store MVP claim' do
-    claim = Hashie::Mash[{ _id: 1, raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.parse('2020-01-01'), service_id: 123 }]
-    Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'service_id' => 123 } }] } })
+    claim = Hashie::Mash[{ raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.parse('2020-01-01'), id: 123 }]
+    Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'id' => 123 } }] } })
     ClaimReviewRepository.any_instance.stub(:save).with(claim.merge(service: 'google')).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
     expect(described_class.store_claim(claim, 'google')).to(eq(nil))
   end
 
   it 'stores MVP claim' do
-    claim = Hashie::Mash[{ _id: 1, raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.parse('2020-01-01'), service_id: 123 }]
+    claim = Hashie::Mash[{ raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.parse('2020-01-01'), id: 123 }]
     Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [] } })
-    ClaimReviewRepository.any_instance.stub(:save).with({ claim_headline: 'wow', claim_url: 'http://example.com', created_at: '2020-01-01T00:00:00Z', service: 'google', service_id: 123 }).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
+    ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
     expect(described_class.store_claim(claim, 'google')).to(eq({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 }))
   end
 
@@ -95,7 +100,8 @@ describe ClaimReview do
   end
 
   it 'converts a claim review' do
-    described_class.convert_to_claim_review(Hashie::Mash[{ _id: 1, raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.now.to_s, service_id: 123 }])
-    { :@context => 'http://schema.org', :@type => 'ClaimReview', :datePublished => '2020-06-23', :url => 'http://example.com', :author => { name: nil, url: nil }, :claimReviewed => 'wow', :text => nil, :reviewRating => { :@type => 'Rating', :ratingValue => nil, :bestRating => 1, :alternateName => nil } }
+    expect(described_class.convert_to_claim_review(Hashie::Mash[{ raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.now.to_s, id: 123 }])).to(eq(
+                                                                                                                                                                                      { :@context => 'http://schema.org', :@type => 'ClaimReview', :datePublished => Time.now.strftime('%Y-%m-%d'), :url => 'http://example.com', :author => { name: nil, url: nil }, :claimReviewed => 'wow', :text => nil, :reviewRating => { :@type => 'Rating', :ratingValue => nil, :bestRating => 1, :alternateName => nil } }
+                                                                                                                                                                                    ))
   end
 end
