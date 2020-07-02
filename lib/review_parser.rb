@@ -30,8 +30,18 @@ class ReviewParser
     end
   end
 
-  def self.run(service)
-    parsers[service].new.get_claims
+  def self.run(service, cursor_back_to_date = nil)
+    parsers[service].new(cursor_back_to_date).get_claims
+  end
+
+  def get_existing_urls(urls)
+    existing_urls = if @cursor_back_to_date
+                      # force checking every URL directly instead of bypassing quietly...
+                      []
+                    else
+                      ClaimReview.existing_urls(urls, self.class.service)
+                    end
+    existing_urls
   end
 
   def process_claims(claims)
@@ -42,17 +52,18 @@ class ReviewParser
   end
 
   def finished_iterating?(claims)
-    oldest_time = claims.map { |x| x[:created_at] }.min
-    claims.empty? || (!@cursor_back_to_date.nil? && oldest_time > @cursor_back_to_date)
+    times = claims.map { |x| Hashie::Mash[x][:created_at] }.compact
+    oldest_time = if times.empty?
+                    @cursor_back_to_date
+                  else
+                    times.min
+                  end
+    claims.empty? || (!@cursor_back_to_date.nil? && oldest_time < @cursor_back_to_date)
   end
 
   def parse_raw_claims(raw_claims)
-    if @run_in_parallel
-      Parallel.map(parse_raw_claims, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |raw_claim|
-        parse_raw_claim(raw_claim)
-      end.compact
-    else
-      raw_claims.map { |raw_claim| parse_raw_claim(raw_claim) }
-    end
+    Parallel.map(raw_claims, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |raw_claim|
+      parse_raw_claim(raw_claim)
+    end.compact
   end
 end
