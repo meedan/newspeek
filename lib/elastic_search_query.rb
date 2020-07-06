@@ -50,12 +50,17 @@ class ElasticSearchQuery
   def self.formatted_time(time)
     Time.parse(time).strftime('%FT%R:%S.%LZ')
   end
+  
   def self.start_end_date_range(key, start_time, end_time)
+    time_clause = self.default_time_clause(key)
+    time_clause[:range][key][:gte] = self.formatted_time(start_time) if start_time
+    time_clause[:range][key][:lte] = self.formatted_time(end_time) if end_time
+    time_clause
+  end
+
+  def self.start_end_date_range_query(key, start_time, end_time)
     if start_time || end_time
-      time_clause = self.default_time_clause(key)
-      time_clause[:range][key][:gte] = self.formatted_time(start_time) if start_time
-      time_clause[:range][key][:lte] = self.formatted_time(end_time) if end_time
-      time_clause
+      return self.start_end_date_range(key, start_time, end_time)
     else
       {}
     end
@@ -78,7 +83,7 @@ class ElasticSearchQuery
     if opts[:search_query]
       query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('claim_headline', opts[:search_query])
     end
-    time_clause = ElasticSearchQuery.start_end_date_range('created_at', opts[:start_time], opts[:end_time])
+    time_clause = ElasticSearchQuery.start_end_date_range_query('created_at', opts[:start_time], opts[:end_time])
     query[:query][:bool][:filter] << time_clause unless time_clause.empty?
     query
   end
