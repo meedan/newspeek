@@ -34,28 +34,48 @@ class IndiaToday < ReviewParser
   end
 
   def time_from_page(page)
-    time =
+    time = nil
+    begin
+      time = Time.parse(page.search('meta').select { |x| x.attributes['itemprop'] && x.attributes['itemprop'].value == 'datePublished' }.first.attributes['content'].value)
+    rescue StandardError
+      nil
+    end
+    if time.nil?
       begin
-                  Time.parse(page.search('div.byline div.profile-detail dt.pubdata').text)
+        time = Time.parse(page.search('meta').select { |x| x.attributes['itemprop'] && x.attributes['itemprop'].value == 'dateModified' }.first.attributes['content'].value)
       rescue StandardError
         nil
-                end
+      end
+    end
     if time.nil?
-      time =
-        begin
-                      Time.parse(page.search('p.upload-date span.date-display-single').first.attributes['content'].value)
-        rescue StandardError
-          nil
-                    end
+      begin
+        time = Time.parse(page.search('meta').select { |x| x.attributes['property'] && x.attributes['property'].value == 'og:updated_time' }.first.attributes['content'].value)
+      rescue StandardError
+        nil
+      end
+    end
+    if time.nil?
+      begin
+        time = Time.parse(page.search('div.byline div.profile-detail dt.pubdata').text)
+      rescue StandardError
+        nil
+      end
+    end
+    if time.nil?
+      begin
+        time = Time.parse(page.search('p.upload-date span.date-display-single').first.attributes['content'].value)
+      rescue StandardError
+        nil
+      end
     end
     time
   end
 
   def parse_raw_claim(raw_claim)
-    claim_result, claim_result_score = claim_result_and_score_from_page(raw_claim['page'])
+    claim_result, claim_result_score = IndiaToday.new.claim_result_and_score_from_page(raw_claim['page'])
     {
-      service_id: Digest::MD5.hexdigest(raw_claim['url']),
-      created_at: time_from_page(raw_claim['page']),
+      id: Digest::MD5.hexdigest(raw_claim['url']),
+      created_at: IndiaToday.new.time_from_page(raw_claim['page']),
       author: raw_claim['page'].search('div.byline dl.profile-byline dt.title').text.strip,
       author_link: nil,
       claim_headline: raw_claim['page'].search('div.story-section h1').text.strip,
@@ -63,7 +83,7 @@ class IndiaToday < ReviewParser
       claim_result: claim_result,
       claim_result_score: claim_result_score,
       claim_url: raw_claim['url'],
-      raw_claim: { url: raw_claim['url'], page: raw_claim['page'].to_s }
+      rarw_claim: { url: raw_claim['url'], page: raw_claim['page'].to_s }
     }
   end
 end

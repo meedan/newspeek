@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Parser for https://africacheck.org
 class AfricaCheck < ReviewParser
   include PaginatedReviewClaims
   def hostname
@@ -20,21 +21,21 @@ class AfricaCheck < ReviewParser
 
   def claim_result_text_map
     {
-      correct: 1,
-      "mostly-correct": 0.75,
-      unproven: 0.5,
-      misleading: 0.5,
-      exaggerated: 0.5,
-      downplayed: 0.5,
-      incorrect: 0,
-      checked: 0.5
+      'correct' => 1,
+      'mostly-correct' => 0.75,
+      'unproven' => 0.5,
+      'misleading' => 0.5,
+      'exaggerated' => 0.5,
+      'downplayed' => 0.5,
+      'incorrect' => 0,
+      'checked' => 0.5
     }
   end
 
   def parse_raw_claim(raw_claim)
     claim_result = raw_claim['page'].search('div#content div.verdict-stamp').text
     {
-      service_id: Digest::MD5.hexdigest(raw_claim['url']),
+      id: Digest::MD5.hexdigest(raw_claim['url']),
       created_at: Time.parse(raw_claim['page'].search('div#content div.time-subscribe-wrapper time').first.attributes['datetime'].value),
       author: raw_claim['page'].search('div#content div.entry-meta p.editor-name').text.split(' by ')[1],
       author_link: nil,

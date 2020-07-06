@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Parser for https://factly.in
 class Factly < ReviewParser
   include PaginatedReviewClaims
   def hostname
@@ -29,7 +30,7 @@ class Factly < ReviewParser
     fact_result = nil
     fact_result = bold_blockquotes[fact_index + 1].text if fact_index
     {
-      service_id: Digest::MD5.hexdigest(raw_claim['url']),
+      id: Digest::MD5.hexdigest(raw_claim['url']),
       created_at: Time.parse(raw_claim['page'].search('span.posted-on span.dtreviewed time').text),
       author: raw_claim['page'].search('span.posted-by span.reviewer').text,
       author_link: raw_claim['page'].search('span.posted-by span.reviewer a').first.attributes['href'].value,
