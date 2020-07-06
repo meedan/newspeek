@@ -25,7 +25,7 @@ describe ElasticSearchQuery do
 
     it 'expects claim_review_search_query hash, full params' do
       t = Time.parse('2020-01-01').to_s
-      expect(described_class.claim_review_search_query('blah', 'google', t, t, 20, 0)).to(eq({
+      expect(described_class.claim_review_search_query({search_query: 'blah', service: 'google', start_time: t, end_time: t, per_page: 20, offset: 0})).to(eq({
                                                                                                size: 20,
                                                                                                from: 0,
                                                                                                query: { bool: {
@@ -38,12 +38,12 @@ describe ElasticSearchQuery do
     end
 
     it 'expects claim_review_search_query hash, empty params' do
-      expect(described_class.claim_review_search_query).to(eq({ size: 20, from: 0, query: { bool: { must: [{ match_all: {} }], filter: [], should: [], must_not: [] } } }))
+      expect(described_class.claim_review_search_query({})).to(eq({ size: 20, from: 0, query: { bool: { must: [{ match_all: {} }], filter: [], should: [], must_not: [] } } }))
     end
 
     it 'expects claim_review_search_query hash, empty single time' do
       t = Time.parse('2020-01-01').to_s
-      expect(described_class.claim_review_search_query(nil, 'google', nil, t)).to(eq({ size: 20, from: 0, query: { bool: { must: [{ match_all: {} }], filter: [{ match_phrase: { 'service' => 'google' } }, { range: { 'created_at' => { format: 'strict_date_optional_time', lte: '2020-01-01T00:00:00.000Z' } } }], should: [], must_not: [] } } }))
+      expect(described_class.claim_review_search_query({service: 'google', start_time: t})).to(eq({ size: 20, from: 0, query: { bool: { must: [{ match_all: {} }], filter: [{ match_phrase: { 'service' => 'google' } }, { range: { 'created_at' => { format: 'strict_date_optional_time', gte: '2020-01-01T00:00:00.000Z' } } }], should: [], must_not: [] } } }))
     end
   end
 end

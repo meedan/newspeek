@@ -18,29 +18,35 @@ class Reuters < ReviewParser
     hostname + atag.attributes['href'].value
   end
 
-  def claim_result_from_page(page)
-    claim_result = nil
+  def claim_result_from_headline(page)
     begin
-      claim_result = page.search('div.StandardArticleBody_body h3').first.next_sibling.text.split('.').first
+      page.search('div.StandardArticleBody_body h3').first.next_sibling.text.split('.').first
     rescue StandardError
       nil
     end
-    if claim_result.nil?
-      begin
-        claim_result = page.search('div.StandardArticleBody_body p').find { |x| x.text.split(/[: ]/).first.casecmp('verdict').zero? }.text.split(/[: ]/).reject(&:empty?)[1].split('.')[0].strip
-      rescue StandardError
-        nil
-      end
+  end
+
+  def claim_result_from_body_lead(page)
+    begin
+      page.search('div.StandardArticleBody_body p').find { |x| x.text.split(/[: ]/).first.casecmp('verdict').zero? }.text.split(/[: ]/).reject(&:empty?)[1].split('.')[0].strip
+    rescue StandardError
+      nil
     end
-    if claim_result.nil?
-      begin
-        words = page.search('div.StandardArticleBody_body p').text.downcase.split(/\W/).map(&:strip).reject(&:empty?)
-        claim_result = words[words.index('verdict') + 1]
-      rescue StandardError
-        nil
-      end
+  end
+
+  def claim_result_from_body_inline(page)
+    begin
+      words = page.search('div.StandardArticleBody_body p').text.downcase.split(/\W/).map(&:strip).reject(&:empty?)
+      words[words.index('verdict') + 1]
+    rescue StandardError
+      nil
     end
-    claim_result
+  end
+
+  def claim_result_from_page(page)
+    claim_result_from_headline(page) ||
+    claim_result_from_body_lead(page) ||
+    claim_result_from_body_inline(page)
   end
 
   def parse_raw_claim(raw_claim)

@@ -3,8 +3,8 @@
 class ElasticSearchQuery
   def self.base_query(limit, offset)
     {
-      "size": limit,
-      "from": offset,
+      "size": limit||20,
+      "from": offset||0,
       "query": {
         "bool": {
           "must": [
@@ -37,15 +37,19 @@ class ElasticSearchQuery
     }
   end
 
-  def self.start_end_date_range(key, start_time, end_time)
-    if start_time || end_time
-      time_clause = {
-        range: {
-          key => {
-            format: 'strict_date_optional_time'
-          }
+  def self.default_time_clause(key)
+    {
+      range: {
+        key => {
+          format: 'strict_date_optional_time'
         }
       }
+    }
+  end
+
+  def self.start_end_date_range(key, start_time, end_time)
+    if start_time || end_time
+      time_clause = self.default_time_clause(key)
       time_clause[:range][key][:gte] = Time.parse(start_time).strftime('%FT%R:%S.%LZ') if start_time
       time_clause[:range][key][:lte] = Time.parse(end_time).strftime('%FT%R:%S.%LZ') if end_time
       time_clause
@@ -66,12 +70,12 @@ class ElasticSearchQuery
     query
   end
 
-  def self.claim_review_search_query(search_query = nil, service = nil, start_time = nil, end_time = nil, limit = 20, offset = 0)
-    query = ElasticSearchQuery.service_scoped_limit_offset_query(service, limit, offset)
-    if search_query
-      query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('claim_headline', search_query)
+  def self.claim_review_search_query(opts)
+    query = ElasticSearchQuery.service_scoped_limit_offset_query(opts[:service], opts[:per_page], opts[:offset])
+    if opts[:search_query]
+      query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('claim_headline', opts[:search_query])
     end
-    time_clause = ElasticSearchQuery.start_end_date_range('created_at', start_time, end_time)
+    time_clause = ElasticSearchQuery.start_end_date_range('created_at', opts[:start_time], opts[:end_time])
     query[:query][:bool][:filter] << time_clause unless time_clause.empty?
     query
   end

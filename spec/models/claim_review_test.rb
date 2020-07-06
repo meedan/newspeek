@@ -91,17 +91,24 @@ describe ClaimReview do
 
   it 'runs a search' do
     Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'created_at' => Time.now.to_s, 'claim_url' => 1 } }] } })
-    expect(described_class.search('', 'nil', Time.now.to_s, Time.now.to_s, 20, 0)).to(eq([{ :@context => 'http://schema.org', :@type => 'ClaimReview', :datePublished => Time.now.strftime('%Y-%m-%d'), :url => 1, :author => { name: nil, url: nil }, :claimReviewed => nil, :text => nil, :reviewRating => { :@type => 'Rating', :ratingValue => nil, :bestRating => 1, :alternateName => nil } }]))
+    query = {search_query: '', service: 'nil', start_time: Time.now.to_s, end_time: Time.now.to_s, per_page: 20, offset: 0}
+    expect(described_class.search(query)).to(eq([{ :@context => 'http://schema.org', :@type => 'ClaimReview', :datePublished => Time.now.strftime('%Y-%m-%d'), :url => 1, :author => { name: nil, url: nil }, :claimReviewed => nil, :text => nil, :reviewRating => { :@type => 'Rating', :ratingValue => nil, :bestRating => 1, :alternateName => nil } }]))
   end
 
   it 'runs an empty search' do
     Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [] } })
-    expect(described_class.search('', 'nil', Time.now.to_s, Time.now.to_s, 20, 0)).to(eq([]))
+    query = {search_query: '', service: 'nil', start_time: Time.now.to_s, end_time: Time.now.to_s, per_page: 20, offset: 0}
+    expect(described_class.search(query)).to(eq([]))
   end
 
   it 'converts a claim review' do
-    expect(described_class.convert_to_claim_review(Hashie::Mash[{ raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.now.to_s, id: 123 }])).to(eq(
-                                                                                                                                                                                      { :@context => 'http://schema.org', :@type => 'ClaimReview', :datePublished => Time.now.strftime('%Y-%m-%d'), :url => 'http://example.com', :author => { name: nil, url: nil }, :claimReviewed => 'wow', :text => nil, :reviewRating => { :@type => 'Rating', :ratingValue => nil, :bestRating => 1, :alternateName => nil } }
-                                                                                                                                                                                    ))
+    expect(
+      described_class.convert_to_claim_review(
+        Hashie::Mash[{ raw_claim: {}, claim_headline: 'wow', claim_url: 'http://example.com', created_at: Time.now.to_s, id: 123 }]
+      )
+    ).to(eq(
+        { :@context => 'http://schema.org', :@type => 'ClaimReview', :datePublished => Time.now.strftime('%Y-%m-%d'), :url => 'http://example.com', :author => { name: nil, url: nil }, :claimReviewed => 'wow', :text => nil, :reviewRating => { :@type => 'Rating', :ratingValue => nil, :bestRating => 1, :alternateName => nil } }
+      )
+    )
   end
 end

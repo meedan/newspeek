@@ -70,9 +70,9 @@ class ClaimReview
     save_claim(parsed_claim, service) if existing_ids([parsed_claim[:id]], service).empty?
   end
 
-  def self.search(search_query = nil, service = nil, created_at_start = nil, created_at_end = nil, limit = 20, offset = 0)
+  def self.search(opts)
     ClaimReview.get_hits(
-      body: ElasticSearchQuery.claim_review_search_query(search_query, service, created_at_start, created_at_end, limit, offset)
+      body: ElasticSearchQuery.claim_review_search_query(opts)
     ).map { |r| ClaimReview.convert_to_claim_review(r) }
   end
 
