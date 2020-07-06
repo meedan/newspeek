@@ -17,6 +17,13 @@ class Tattle < ReviewParser
     end
   end
 
+  def claim_body_from_raw_claim(page)
+    begin
+     raw_claim['Docs'][0]['content']
+   rescue StandardError
+     nil
+   end
+  end
   def parse_raw_claim(raw_claim)
     {
       id: Digest::MD5.hexdigest(raw_claim['Post URL']),
@@ -24,11 +31,7 @@ class Tattle < ReviewParser
       author: raw_claim['Author']['name'],
       author_link: raw_claim['Author']['link'],
       claim_headline: raw_claim['Headline'],
-      claim_body: (begin
-                     raw_claim['Docs'][0]['content']
-                   rescue StandardError
-                     nil
-                   end),
+      claim_body: claim_body_from_raw_claim(raw_claim),
       claim_result: nil,
       claim_result_score: nil,
       claim_url: raw_claim['Post URL'],
