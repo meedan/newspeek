@@ -3,7 +3,7 @@
 describe Site do
   describe 'endpoints' do
     it 'returns an empty GET claim_reviews.json response' do
-      ClaimReview.stub(:search).with(nil, nil, nil, nil, 20, 0).and_return([])
+      ClaimReview.stub(:search).with({:offset=>0, :per_page=>20}).and_return([])
       code, headers, body = described_class.call(
         'REQUEST_METHOD' => 'GET',
         'PATH_INFO' => '/claim_reviews.json',
@@ -14,7 +14,7 @@ describe Site do
     end
 
     it 'returns a non-empty GET claim_reviews.json response' do
-      ClaimReview.stub(:search).with(nil, nil, nil, nil, 20, 0).and_return([{ bloop: 1 }])
+      ClaimReview.stub(:search).with({:offset=>0, :per_page=>20}).and_return([{ bloop: 1 }])
       code, headers, body = described_class.call(
         'REQUEST_METHOD' => 'GET',
         'PATH_INFO' => '/claim_reviews.json',

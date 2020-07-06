@@ -33,42 +33,36 @@ class IndiaToday < ReviewParser
     }[image_filename] || ['Inconclusive', 0.5]
   end
 
-  def time_from_page(page)
-    time = nil
+  def time_from_page_meta_tag(page, att_name, att_value)
     begin
-      time = Time.parse(page.search('meta').select { |x| x.attributes['itemprop'] && x.attributes['itemprop'].value == 'datePublished' }.first.attributes['content'].value)
+      Time.parse(page.search('meta').select { |x| x.attributes[att_name] && x.attributes[att_name].value == att_value }.first.attributes['content'].value)
     rescue StandardError
       nil
     end
-    if time.nil?
-      begin
-        time = Time.parse(page.search('meta').select { |x| x.attributes['itemprop'] && x.attributes['itemprop'].value == 'dateModified' }.first.attributes['content'].value)
-      rescue StandardError
-        nil
-      end
+  end
+
+  def time_from_pubdata_text(page)
+    begin
+      time = Time.parse(page.search('div.byline div.profile-detail dt.pubdata').text)
+    rescue StandardError
+      nil
     end
-    if time.nil?
-      begin
-        time = Time.parse(page.search('meta').select { |x| x.attributes['property'] && x.attributes['property'].value == 'og:updated_time' }.first.attributes['content'].value)
-      rescue StandardError
-        nil
-      end
+  end
+  
+  def time_from_upload_date(page)
+    begin
+      time = Time.parse(page.search('p.upload-date span.date-display-single').first.attributes['content'].value)
+    rescue StandardError
+      nil
     end
-    if time.nil?
-      begin
-        time = Time.parse(page.search('div.byline div.profile-detail dt.pubdata').text)
-      rescue StandardError
-        nil
-      end
-    end
-    if time.nil?
-      begin
-        time = Time.parse(page.search('p.upload-date span.date-display-single').first.attributes['content'].value)
-      rescue StandardError
-        nil
-      end
-    end
-    time
+  end
+
+  def time_from_page(page)
+    time_from_page_meta_tag(page, 'itemprop', 'datePublished') ||
+    time_from_page_meta_tag(page, 'itemprop', 'dateModified') ||
+    time_from_page_meta_tag(page, 'property', 'og:updated_time') ||
+    time_from_pubdata_text(page) ||
+    time_from_upload_date(page)
   end
 
   def parse_raw_claim(raw_claim)

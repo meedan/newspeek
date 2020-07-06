@@ -84,17 +84,18 @@ class DataCommons < ReviewParser
     }
   end
 
-  def parse_datacommons_rating(item)
+  def get_rating(item, rating_key)
     review_rating = item['reviewRating'] || {}
-    best = String(review_rating['bestRating']) if review_rating['bestRating']
-    worst = String(review_rating['worstRating']) if review_rating['worstRating']
-    value = String(review_rating['ratingValue']) if review_rating['ratingValue']
-    if !best.nil? && !worst.nil? && !value.nil?
-      if Integer(best, 10) - Integer(worst, 10) > 0
-        (Integer(value, 10) - Integer(worst, 10)) / Float((Integer(best, 10) - Integer(worst, 10)))
-      end
-    elsif ([best, worst, value].count(nil) > 0) && ([best, worst, value].count(nil) != 3)
-      return Integer(value, 10) if best.nil? && worst.nil? && !value.nil?
+    Float(String(review_rating[rating_key])) if review_rating[rating_key]
+  end
+
+  def parse_datacommons_rating(item)
+    best = get_rating(item, 'bestRating')
+    worst = get_rating(item, 'worstRating')
+    value = get_rating(item, 'ratingValue')
+    if !best.nil? && !worst.nil? && !value.nil? && best - worst > 0
+      return (value - worst) / (best - worst)
     end
+    return value
   end
 end

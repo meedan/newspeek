@@ -9,15 +9,19 @@ class GoogleFactCheck < ReviewParser
     '/v1alpha1/claims:search'
   end
 
+  def make_get_request(path, params)
+    url = host + path + '?' + URI.encode_www_form(params.merge(key: SETTINGS['google_api_key']))
+    JSON.parse(
+      RestClient.get(
+        url
+      ).body
+    )
+  end
+
   def get(path, params)
     retry_count = 0
     begin
-      url = host + path + '?' + URI.encode_www_form(params.merge(key: SETTINGS['google_api_key']))
-      JSON.parse(
-        RestClient.get(
-          url
-        ).body
-      )
+      make_get_request(path, params)
     rescue RestClient::ServiceUnavailable
       retry_count += 1
       sleep(1)

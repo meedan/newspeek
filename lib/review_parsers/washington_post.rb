@@ -19,32 +19,60 @@ class WashingtonPost < ReviewParser
     Nokogiri.parse('<html>' + json_response['rendering'] + '</html>').search('div.story-headline h2 a').map { |x| hostname + x.attributes['href'].value }
   end
 
-  def claim_result_and_claim_result_score_from_page(page)
-    pinocchios = page.search('h3').map(&:text).select { |x| x.include?('Pinocchio') && !x.include?('Test') }[0]
-    geppettos = page.search('h3').map(&:text).select { |x| x.include?('Geppetto') }[0]
-    pinocchio_map = { 'One' => 1, 'Two' => 2, 'Three' => 3, 'Four' => 4 }
+  def get_pinocchios(page)
+    page.search('h3').map(&:text).select { |x| x.include?('Pinocchio') && !x.include?('Test') }[0]
+  end
+
+  def get_geppettos(page)
+    page.search('h3').map(&:text).select { |x| x.include?('Geppetto') }[0]
+  end
+  
+  def pinocchio_map
+    {
+      'One' => 1,
+      'Two' => 2,
+      'Three' => 3,
+      'Four' => 4
+    }
+  end
+
+  def parse_partial_truthfulness(pinocchios, geppettos)
+    claim_result = nil
+    claim_result_score = nil
+    score = nil
+    begin
+      score = pinocchios.split(' ').map { |x| pinocchio_map[x] }.compact.first
+    rescue StandardError
+      nil
+    end
+    if score == 4
+      claim_result = 'False'
+    elsif score.nil?
+      claim_result = 'Inconclusive'
+      score = 2
+    else
+      claim_result = 'Partly False'
+    end
+    claim_result_score = (4 - score) / 4.0
+    [claim_result, claim_result_score]
+  end
+
+  def parse_truthfulness(pinocchios, geppettos)
     claim_result = nil
     claim_result_score = nil
     if pinocchios.nil? && !geppettos.nil?
       claim_result = 'True'
       claim_result_score = 1
     else
-      score = nil
-      begin
-        score = pinocchios.split(' ').map { |x| pinocchio_map[x] }.compact.first
-      rescue StandardError
-        nil
-      end
-      if score == 4
-        claim_result = 'False'
-      elsif score.nil?
-        claim_result = 'Inconclusive'
-        score = 2
-      else
-        claim_result = 'Partly False'
-      end
-      claim_result_score = (4 - score) / 4.0
+      claim_result, claim_result_score = parse_partial_truthfulness(pinocchios, geppettos)
     end
+    [claim_result, claim_result_score]
+  end
+
+  def claim_result_and_claim_result_score_from_page(page)
+    pinocchios = get_pinocchios(page)
+    geppettos = get_geppettos(page)
+    claim_result, claim_result_score = parse_truthfulness(pinocchios, geppettos)
     [claim_result, claim_result_score]
   end
 
