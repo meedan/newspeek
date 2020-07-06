@@ -20,12 +20,12 @@ describe DataCommons do
       expect(described_class.new.get_claims).to(eq(nil))
     end
 
-    it 'parses non-empty parse_datacommons_rating' do
-      expect(described_class.new.parse_datacommons_rating({ 'reviewRating' => { 'bestRating' => 10, 'worstRating' => 0, 'ratingValue' => 5 } })).to(eq(0.5))
+    it 'parses non-empty claim_result_score_from_raw_claim' do
+      expect(described_class.new.claim_result_score_from_raw_claim({ 'reviewRating' => { 'bestRating' => 10, 'worstRating' => 0, 'ratingValue' => 5 } })).to(eq(0.5))
     end
 
-    it 'parses partially-empty parse_datacommons_rating' do
-      expect(described_class.new.parse_datacommons_rating({ 'reviewRating' => { 'ratingValue' => 5 } })).to(eq(5))
+    it 'parses partially-empty claim_result_score_from_raw_claim' do
+      expect(described_class.new.claim_result_score_from_raw_claim({ 'reviewRating' => { 'ratingValue' => 5 } })).to(eq(5))
     end
 
     it 'rescues from id_from_raw_claim' do

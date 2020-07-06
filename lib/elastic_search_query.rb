@@ -47,11 +47,14 @@ class ElasticSearchQuery
     }
   end
 
+  def self.formatted_time(time)
+    Time.parse(time).strftime('%FT%R:%S.%LZ')
+  end
   def self.start_end_date_range(key, start_time, end_time)
     if start_time || end_time
       time_clause = self.default_time_clause(key)
-      time_clause[:range][key][:gte] = Time.parse(start_time).strftime('%FT%R:%S.%LZ') if start_time
-      time_clause[:range][key][:lte] = Time.parse(end_time).strftime('%FT%R:%S.%LZ') if end_time
+      time_clause[:range][key][:gte] = self.formatted_time(start_time) if start_time
+      time_clause[:range][key][:lte] = self.formatted_time(end_time) if end_time
       time_clause
     else
       {}

@@ -3,7 +3,9 @@
 class ClaimReview
   include Elasticsearch::DSL
   attr_reader :attributes
-
+  def self.persistable_raw_claims
+    %w[data_commons]
+  end
   def initialize(attributes = {})
     @attributes = attributes
   end
@@ -16,18 +18,22 @@ class ClaimReview
     %w[claim_headline claim_url created_at id]
   end
 
+  def self.parse_created_at(parsed_claim)
+    Time.parse(parsed_claim['created_at'].to_s).strftime('%Y-%m-%dT%H:%M:%SZ')
+  end
+
   def self.validate_claim(parsed_claim)
     mandatory_fields.each do |field|
       return nil if parsed_claim[field].nil?
     end
-    parsed_claim.delete('raw_claim')
-    parsed_claim['created_at'] = Time.parse(parsed_claim['created_at'].to_s).strftime('%Y-%m-%dT%H:%M:%SZ')
+    parsed_claim.delete('raw_claim') if !self.persistable_raw_claims.include?(parsed_claim['service'])
+    parsed_claim['created_at'] = self.parse_created_at(parsed_claim)
     parsed_claim
   end
 
   def self.save_claim(parsed_claim, service)
-    validated_claim = validate_claim(parsed_claim)
-    repository.save(ClaimReview.new(validated_claim.merge(service: service))) if validated_claim
+    validated_claim = validate_claim(Hashie::Mash[parsed_claim.merge(service: service)])
+    repository.save(ClaimReview.new(validated_claim)) if validated_claim
   end
 
   def self.repository
