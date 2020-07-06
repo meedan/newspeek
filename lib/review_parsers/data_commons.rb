@@ -4,6 +4,7 @@
 # from https://www.datacommons.org/factcheck/download#fcmt-data, and
 # appears to end around June 2019. Almost solely included for research purposes.
 class DataCommons < ReviewParser
+  include GenericRawClaimParser
   def self.dataset_path
     'datasets/datacommons_claims.json'
   end
@@ -69,27 +70,12 @@ class DataCommons < ReviewParser
     default
   end
 
-  def parse_raw_claim(raw_claim)
-    {
-      id: id_from_raw_claim(raw_claim),
-      created_at: created_at_from_raw_claim(raw_claim),
-      author: author_from_raw_claim(raw_claim),
-      author_link: author_link_from_raw_claim(raw_claim),
-      claim_headline: claim_headline_from_raw_claim(raw_claim),
-      claim_body: nil,
-      claim_result: claim_result_from_raw_claim(raw_claim),
-      claim_result_score: parse_datacommons_rating(raw_claim),
-      claim_url: claim_url_from_raw_claim(raw_claim),
-      raw_claim: raw_claim
-    }
-  end
-
   def get_rating(item, rating_key)
     review_rating = item['reviewRating'] || {}
     Float(String(review_rating[rating_key])) if review_rating[rating_key]
   end
 
-  def parse_datacommons_rating(item)
+  def claim_result_score_from_raw_claim(item)
     best = get_rating(item, 'bestRating')
     worst = get_rating(item, 'worstRating')
     value = get_rating(item, 'ratingValue')

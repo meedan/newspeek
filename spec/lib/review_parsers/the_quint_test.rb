@@ -4,6 +4,7 @@ describe TheQuint do
   describe 'instance' do
     it 'parses get_claims_for_page' do
       raw = JSON.parse(File.read('spec/fixtures/the_quint_raw.json'))
+      raw["story"].delete("cards")
       RestClient.stub(:get).with(anything).and_return({ 'items' => [raw] }.to_json)
       expect(described_class.new.get_claims_for_page(1).class).to(eq(Array))
     end
@@ -18,6 +19,7 @@ describe TheQuint do
 
     it 'parses a raw_claim' do
       raw = JSON.parse(File.read('spec/fixtures/the_quint_raw.json'))
+      raw["story"].delete("cards")
       parsed_claim = described_class.new.parse_raw_claim(raw)
       expect(parsed_claim.class).to(eq(Hash))
       ClaimReview.mandatory_fields.each do |field|
@@ -27,6 +29,7 @@ describe TheQuint do
 
     it 'walks through get_new_claims_for_page' do
       raw = JSON.parse(File.read('spec/fixtures/the_quint_raw.json'))
+      raw["story"].delete("cards")
       RestClient.stub(:get).with(anything).and_return({ 'items' => [] }.to_json)
       ClaimReview.stub(:existing_urls).with(anything, described_class.service).and_return([])
       ClaimReview.stub(:existing_ids).with(anything, described_class.service).and_return([])

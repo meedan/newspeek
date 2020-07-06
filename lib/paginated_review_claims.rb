@@ -43,7 +43,6 @@ module PaginatedReviewClaims
         nil
                        end
     return if parsed_page.nil?
-
     [fact_page_url, parse_raw_claim(Hashie::Mash[{ page: parsed_page, url: fact_page_url }])]
   end
 

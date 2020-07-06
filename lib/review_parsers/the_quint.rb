@@ -77,6 +77,8 @@ class TheQuint < ReviewParser
   end
 
   def parse_raw_claim(raw_claim)
+    # delete unnecessary key that flags Hashie key-name warnings later
+    raw_claim["story"].delete("cards")
     {
       id: Digest::MD5.hexdigest(raw_claim['id']),
       created_at: created_at_from_raw_claim(raw_claim),
