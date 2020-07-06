@@ -14,9 +14,9 @@ describe ElasticSearchQuery do
       expect(described_class.multi_match_query('foo', ['val'])).to(eq({ bool: { should: [{ match_phrase: { 'foo' => 'val' } }], minimum_should_match: 1 } }))
     end
 
-    it 'expects start_end_date_range hash' do
+    it 'expects start_end_date_range_query hash' do
       t = Time.parse('2020-01-01').to_s
-      expect(described_class.start_end_date_range('foo', t, t)).to(eq({ range: { 'foo' => { format: 'strict_date_optional_time', gte: '2020-01-01T00:00:00.000Z', lte: '2020-01-01T00:00:00.000Z' } } }))
+      expect(described_class.start_end_date_range_query('foo', t, t)).to(eq({ range: { 'foo' => { format: 'strict_date_optional_time', gte: '2020-01-01T00:00:00.000Z', lte: '2020-01-01T00:00:00.000Z' } } }))
     end
 
     it 'expects multi_match_against_service hash' do
