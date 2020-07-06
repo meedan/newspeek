@@ -4,7 +4,10 @@ require('time')
 require('csv')
 require('json')
 require('logger')
+require('delegate')
+require('rack')
 
+require('airbrake')
 require('faraday')
 require('sinatra')
 require('pry')
@@ -30,6 +33,12 @@ Sidekiq.configure_client do |config|
 end
 Sidekiq.configure_server do |config|
   config.redis = redis_config
+end
+Airbrake.configure do |config|
+  config.host = SETTINGS['airbrake_api_host']
+  config.project_id = 1 # required, but any positive integer works
+  config.project_key = SETTINGS['airbrake_api_key']
+  config.logger.level = Logger::DEBUG
 end
 Dir[File.dirname(__FILE__) + '/extensions/*.rb'].sort.each { |file| require file }
 Dir[File.dirname(__FILE__) + '/models/*.rb'].sort.each { |file| require file }

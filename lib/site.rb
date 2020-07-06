@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class Site < Sinatra::Base
+  use Airbrake::Rack::Middleware
   configure :production, :development do
     enable :logging
   end
