@@ -25,29 +25,34 @@ describe BoomLive do
       expect(described_class.new.get_new_stories_by_category(1, 1).class).to(eq(Array))
     end
 
-    it 'walks through store_claims_for_category_id_and_page' do
+    it 'walks through store_claim_reviews_for_category_id_and_page' do
       ClaimReview.stub(:existing_ids).with(anything, anything).and_return([])
       described_class.any_instance.stub(:get_new_stories_by_category).and_return([JSON.parse(File.read('spec/fixtures/boom_live_raw.json'))])
       ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({})
-      result = described_class.new.store_claims_for_category_id_and_page(1, 1)
+      result = described_class.new.store_claim_reviews_for_category_id_and_page(1, 1)
       expect(result.class).to(eq(Array))
       expect(result[0].class).to(eq(Hash))
     end
 
     it 'walks through get_all_stories_by_category' do
-      described_class.any_instance.stub(:store_claims_for_category_id_and_page).with(1, 1).and_return([{}])
-      described_class.any_instance.stub(:store_claims_for_category_id_and_page).with(1, 2).and_return([])
+      described_class.any_instance.stub(:store_claim_reviews_for_category_id_and_page).with(1, 1).and_return([{}])
+      described_class.any_instance.stub(:store_claim_reviews_for_category_id_and_page).with(1, 2).and_return([])
       expect(described_class.new.get_all_stories_by_category(1)).to(eq(nil))
     end
 
-    it 'walks through get_claims' do
+    it 'walks through get_claim_reviews' do
       described_class.any_instance.stub(:get_all_stories_by_category).with(anything).and_return([{}])
-      expect(described_class.new.get_claims).to(eq(described_class.new.fact_categories))
+      expect(described_class.new.get_claim_reviews).to(eq(described_class.new.fact_categories))
     end
 
-    it 'rescues get_claim_result_for_raw_claim' do
+    it 'rescues get_claim_result_for_raw_claim_review' do
       RestClient.stub(:get).with(anything).and_return("<html><div class='claim-review-block'><div class='claim-value'>Fact check</div></div></html>")
-      expect(described_class.new.get_claim_result_for_raw_claim({})).to(eq(nil))
+      expect(described_class.new.get_claim_result_for_raw_claim_review({})).to(eq(nil))
+    end
+
+    it 'rescues get_claim_result_for_raw_claim_review' do
+      RestClient.stub(:get).with(anything).and_return("<html><div class='claim-review-block'><div class='claim-value'>Fact check</div></div></html>")
+      expect(described_class.new.get_claim_result_for_raw_claim_review(nil)).to(eq(nil))
     end
 
     it 'walks through get_path' do
@@ -62,10 +67,10 @@ describe BoomLive do
       expect(described_class.new.fact_categories.class).to(eq(Hash))
     end
 
-    it 'parses a raw_claim' do
+    it 'parses a raw_claim_review' do
       raw = JSON.parse(File.read('spec/fixtures/boom_live_raw.json'))
       RestClient.stub(:get).with(raw['url']).and_return("<html><div class='claim-review-block'><div class='claim-value'>fact check <span class='value'>False</span></div></div></html>")
-      parsed_claim = described_class.new.parse_raw_claim(raw)
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
       expect(parsed_claim.class).to(eq(Hash))
       ClaimReview.mandatory_fields.each do |field|
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))

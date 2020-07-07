@@ -9,37 +9,32 @@ class AFP < ReviewParser
 
   def fact_list_path(page = 1)
     # appears to be zero-indexed
-    "/?page=#{page - 1}"
+    "/list?page=#{page - 1}"
   end
 
   def url_extraction_search
-    'div.view-content div.content-teaser h2.content-title a'
+    'main.container div.card a'
   end
 
   def url_extractor(atag)
     hostname + atag.attributes['href'].value
   end
-
-  def author_link_from_page(page)
-    begin
-      page.search('div.main-post div.content-meta span.meta-author a').first.attributes['href'].value
-    rescue StandardError
-      nil
-    end
-  end
-
-  def parse_raw_claim(raw_claim)
+  
+  def parse_raw_claim_review(raw_claim_review)
+    claim_review = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first.text)
     {
-      id: Digest::MD5.hexdigest(raw_claim['url']),
-      created_at: Time.at(Integer(raw_claim['page'].search('div.main-post div.content-meta span.meta-date span').first.attributes['timestamp'].value, 10)),
-      author: raw_claim['page'].search('div.main-post div.content-meta span.meta-author').text.strip,
-      author_link: author_link_from_page(raw_claim['page']),
-      claim_headline: raw_claim['page'].search('div.main-post h1.content-title').text.strip,
-      claim_body: raw_claim['page'].search('div.main-post div.article-entry').text.strip,
-      claim_result: nil,
-      claim_result_score: nil,
-      claim_url: raw_claim['url'],
-      raw_claim: { page: raw_claim['page'].to_s, url: raw_claim['url'] }
+      id: Digest::MD5.hexdigest(raw_claim_review['url']),
+      created_at: Time.parse(claim_review["@graph"][0]["datePublished"]),
+      author: claim_review["@graph"][0]["author"]["name"],
+      author_link: claim_review["@graph"][0]["author"]["url"],
+      claim_review_headline: raw_claim_review['page'].search('div.main-post h1.content-title').text.strip,
+      claim_review_body: claim_review["@graph"][0]["name"],
+      claim_review_reviewed: claim_review["@graph"][0]["claimReviewed"],
+      claim_review_image_url: claim_review_image_url_from_raw_claim_review(raw_claim_review),
+      claim_review_result: claim_review["@graph"][0]["reviewRating"]["alternateName"],
+      claim_review_result_score: claim_result_score_from_raw_claim_review(claim_review["@graph"][0]),
+      claim_review_url: raw_claim_review['url'],
+      raw_claim_review: { page: claim_review, url: raw_claim_review['url'] }
     }
   end
 end

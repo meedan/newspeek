@@ -8,7 +8,7 @@ RSpec::Core::RakeTask.new(:test) do |t|
   t.pattern = Dir.glob('spec/**/*_test.rb')
 end
 
-task :list_datasource do
+task :list_datasources do
   puts ReviewParser.subclasses.map(&:service)
 end
 
@@ -18,8 +18,9 @@ task :collect_datasource do
     end
   end
   datasource = ARGV[1]
+  cursor_back_to_date = ARGV[2]
   ClaimReviewRepository.init_index
-  RunReviewParser.perform_async(datasource)
+  RunReviewParser.new.perform(datasource, cursor_back_to_date)
 end
 
 task :collect_all do

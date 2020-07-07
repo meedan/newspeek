@@ -32,19 +32,40 @@ class AfricaCheck < ReviewParser
     }
   end
 
-  def parse_raw_claim(raw_claim)
-    claim_result = raw_claim['page'].search('div#content div.verdict-stamp').text
-    {
-      id: Digest::MD5.hexdigest(raw_claim['url']),
-      created_at: Time.parse(raw_claim['page'].search('div#content div.time-subscribe-wrapper time').first.attributes['datetime'].value),
-      author: raw_claim['page'].search('div#content div.entry-meta p.editor-name').text.split(' by ')[1],
-      author_link: nil,
-      claim_headline: raw_claim['page'].search('div#content h1.single-title').text,
-      claim_body: raw_claim['page'].search('div#content article section.entry-content').text,
-      claim_result: claim_result,
-      claim_result_score: claim_result_text_map[claim_result],
-      claim_url: raw_claim['url'],
-      raw_claim: { page: raw_claim['page'].to_s, url: raw_claim['url'] }
-    }
+  def claim_review_image_url_from_raw_claim_review(raw_claim_review)
+    raw_claim_review["page"].search("img.attachment-articleMain").first.attributes["src"].value
+  rescue StandardError => e
+    Error.log(e)
+  end
+
+  def get_claim_review_from_raw_claim_review(raw_claim_review)
+    raw_text = raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first
+    if raw_text
+      JSON.parse(raw_text.text)
+    end
+  end
+
+  def parse_raw_claim_review(raw_claim_review)
+    claim_review = get_claim_review_from_raw_claim_review(raw_claim_review)
+    if claim_review
+      {
+        id: Digest::MD5.hexdigest(raw_claim_review['url']),
+        created_at: Time.parse(claim_review["datePublished"]),
+        author: claim_review["author"]["name"],
+        author_link: claim_review["author"]["url"],
+        claim_review_headline: raw_claim_review['page'].search('div#content h1.single-title').text,
+        claim_review_body: claim_review["description"],
+        claim_review_reviewed: claim_review["claimReviewed"],
+        claim_review_image_url: claim_review_image_url_from_raw_claim_review(raw_claim_review),
+        claim_review_result: claim_review["reviewRating"]["alternateName"].strip,
+        claim_review_result_score: claim_result_score_from_raw_claim_review(claim_review),
+        claim_review_url: raw_claim_review['url'],
+        raw_claim_review: { page: claim_review, url: raw_claim_review['url'] }
+      }
+    else
+      {
+        id: Digest::MD5.hexdigest(raw_claim_review['url']),
+      }
+    end
   end
 end

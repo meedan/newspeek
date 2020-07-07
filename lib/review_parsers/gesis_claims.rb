@@ -12,8 +12,9 @@ class GESISClaims < ReviewParser
           "Accept": 'application/sparql-results+json'
         }
       )
-    )['results']['bindings'].collect { |c| [c['id']['value'].split('/').last, id_from_raw_claim({ 'content' => c })] }
-  rescue StandardError
+    )['results']['bindings'].collect { |c| [c['id']['value'].split('/').last, id_from_raw_claim_review({ 'content' => c })] }
+  rescue StandardError => e
+    Error.log(e)
     []
   end
 
@@ -41,11 +42,12 @@ class GESISClaims < ReviewParser
         }
       )
     )['results']['bindings'][0]
-  rescue StandardError
+  rescue StandardError => e
+    Error.log(e)
     {}
   end
 
-  def get_claims
+  def get_claim_reviews
     get_all_fact_ids.shuffle.each_slice(100) do |id_set|
       existing_ids = ClaimReview.existing_ids(id_set.collect(&:last), self.class.service)
       new_ids = id_set.reject { |x| existing_ids.include?(x.last) }.collect(&:first)
@@ -53,55 +55,61 @@ class GESISClaims < ReviewParser
         Parallel.map(new_ids, in_processes: 10, progress: 'Downloading GESIS Corpus') do |id|
           [id, get_fact(id)]
         end
-      process_claims(results.compact.map { |x| parse_raw_claim(Hashie::Mash[{ id: x[0], content: x[1] }]) })
+      process_claim_reviews(results.compact.map { |x| parse_raw_claim_review(Hashie::Mash[{ id: x[0], content: x[1] }]) })
     end
   end
 
-  def author_from_raw_claim(raw_claim)
-    raw_claim['content']['source']['value']
-  rescue StandardError
-    nil
+  def author_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['content']['source']['value']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def created_at_from_raw_claim(raw_claim)
-    Time.parse(raw_claim['content']['date']['value'])
-  rescue StandardError
+  def created_at_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['content'] &&
+    raw_claim_review['content']['date'] && 
+    raw_claim_review['content']['date']['value'] &&
+    !raw_claim_review['content']['date']['value'].empty? &&
+    Time.parse(raw_claim_review['content']['date']['value']) ||
     nil
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def author_link_from_raw_claim(raw_claim)
-    raw_claim['content']['sourceURL']['value']
-  rescue StandardError
-    nil
+  def author_link_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['content']['sourceURL']['value']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_headline_from_raw_claim(raw_claim)
-    raw_claim['content']['text']['value']
-  rescue StandardError
-    nil
+  def claim_headline_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['content']['text']['value']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_result_from_raw_claim(raw_claim)
-    raw_claim['content']['ratingName']['value']
-  rescue StandardError
-    nil
+  def claim_result_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['content']['ratingName']['value']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_result_score_from_raw_claim(raw_claim)
-    raw_claim['content']['truthRating']['value']
-  rescue StandardError
-    nil
+  def claim_result_score_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['content']['truthRating']['value']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_url_from_raw_claim(raw_claim)
-    raw_claim['content']['link']['value']
-  rescue StandardError
-    nil
+  def claim_url_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['content']['link']['value']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def id_from_raw_claim(raw_claim)
-    Digest::MD5.hexdigest(raw_claim['content']['id']['value'].split('/').last)
-  rescue StandardError
+  def id_from_raw_claim_review(raw_claim_review)
+    Digest::MD5.hexdigest(raw_claim_review['content']['id']['value'].split('/').last)
+  rescue StandardError => e
+    Error.log(e)
     Digest::MD5.hexdigest('')
   end
 end

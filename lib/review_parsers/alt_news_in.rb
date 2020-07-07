@@ -19,18 +19,22 @@ class AltNewsIn < ReviewParser
     atag.attributes['href'].value
   end
 
-  def parse_raw_claim(raw_claim)
+  def parse_raw_claim_review(raw_claim_review)
+    claim_review = JSON.parse(raw_claim_review["page"].search("script.yoast-schema-graph").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first.text)
+    claim_review_graph_article = claim_review["@graph"].select{|x| x["@type"] == "Article"}[0]
+    claim_review_graph_author = claim_review["@graph"].select{|x| x["@type"] == ["Person"]}[0]
     {
-      id: Digest::MD5.hexdigest(raw_claim['url']),
-      created_at: Time.parse(raw_claim['page'].search('div.herald-date').text),
-      author: raw_claim['page'].search('span.vcard.author a').first.text,
-      author_link: raw_claim['page'].search('span.vcard.author a').first.attributes['href'].value,
-      claim_headline: raw_claim['page'].search('h1.entry-title').text,
-      claim_body: raw_claim['page'].search('div.herald-entry-content p').text,
-      claim_result: nil,
-      claim_result_score: nil,
-      claim_url: raw_claim['url'],
-      raw_claim: { page: raw_claim['page'].to_s, url: raw_claim['url'] }
+      id: Digest::MD5.hexdigest(raw_claim_review['url']),
+      created_at: Time.parse(claim_review_graph_article["datePublished"]),
+      author: claim_review_graph_author["name"],
+      author_link: claim_review_graph_author["url"],
+      claim_review_headline: claim_review_graph_article["headline"],
+      claim_review_body: raw_claim_review['page'].search('div.herald-entry-content p').text,
+      claim_review_reviewed: nil,
+      claim_review_result: nil,
+      claim_review_result_score: nil,
+      claim_review_url: raw_claim_review['url'],
+      raw_claim_review: { page: claim_review, url: raw_claim_review['url'] }
     }
   end
 end

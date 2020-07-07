@@ -18,10 +18,14 @@ describe Factly do
       expect(described_class.new.url_extractor(Nokogiri.parse("<a href='/blah'>wow</a>").search('a')[0])).to(eq('/blah'))
     end
 
-    it 'parses a raw_claim' do
+    it 'rescues against a claim_review_image_url_from_raw_claim_review' do
+      expect(described_class.new.claim_review_image_url_from_raw_claim_review({"page" => Nokogiri.parse("<a href='/blah'>wow</a>")})).to(eq(nil))
+    end
+
+    it 'parses a raw_claim_review' do
       raw = JSON.parse(File.read('spec/fixtures/factly_raw.json'))
       raw['page'] = Nokogiri.parse(raw['page'])
-      parsed_claim = described_class.new.parse_raw_claim(raw)
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
       expect(parsed_claim.class).to(eq(Hash))
       ClaimReview.mandatory_fields.each do |field|
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))

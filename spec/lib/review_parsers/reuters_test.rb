@@ -26,14 +26,26 @@ describe Reuters do
       expect(described_class.new.claim_result_from_page(Nokogiri.parse("<html><div class='StandardArticleBody_body'><p>verdict True</p></div></html>"))).to(eq('True'))
     end
 
+    it 'rescues claim_result_from_headline' do
+      expect(described_class.new.claim_result_from_headline(Nokogiri.parse("<html><div class='StandardArticleBody_body'><h3>verdict True</h3></div></html>"))).to(eq(nil))
+    end
+
+    it 'succeeds with claim_result_from_body_inline' do
+      expect(described_class.new.claim_result_from_body_inline(Nokogiri.parse("<html><div class='StandardArticleBody_body'><p>verdict True</p></div></html>"))).to(eq("true"))
+    end
+
+    it 'rescues claim_result_from_body_inline' do
+      expect(described_class.new.claim_result_from_body_inline(Nokogiri.parse("<html><div class='StandardArticleBody_body'><p>True</p></div></html>"))).to(eq(nil))
+    end
+
     it 'rescues claim_result_from_page' do
       expect(described_class.new.claim_result_from_page(Nokogiri.parse(''))).to(eq(nil))
     end
 
-    it 'parses a raw_claim' do
+    it 'parses a raw_claim_review' do
       raw = JSON.parse(File.read('spec/fixtures/reuters_raw.json'))
       raw['page'] = Nokogiri.parse(raw['page'])
-      parsed_claim = described_class.new.parse_raw_claim(raw)
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
       expect(parsed_claim.class).to(eq(Hash))
       ClaimReview.mandatory_fields.each do |field|
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))

@@ -19,27 +19,33 @@ class Factly < ReviewParser
     atag.attributes['href'].value
   end
 
-  def parse_raw_claim(raw_claim)
-    bold_blockquotes = raw_claim['page'].search('div.post-content blockquote p strong')
-    fact_index =
-      begin
-                        bold_blockquotes.each_with_index.reverse.find { |x, _i| x.text.downcase.include?('fact:') }.last
-      rescue StandardError
-        nil
-                      end
+  def get_fact_index_from_page(page)
+    bold_blockquotes = page.search('div.post-content blockquote p strong')
+    found = bold_blockquotes.each_with_index.to_a.reverse.find { |x, _i| x.text.downcase.include?('fact:') }
+    [found && found.last, bold_blockquotes]
+  end
+
+  def get_claim_result_from_page(page)
     fact_result = nil
+    fact_index, bold_blockquotes = get_fact_index_from_page(page)
     fact_result = bold_blockquotes[fact_index + 1].text if fact_index
+    return fact_result
+  end
+
+  def parse_raw_claim_review(raw_claim_review)
+    article = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.last.text)
     {
-      id: Digest::MD5.hexdigest(raw_claim['url']),
-      created_at: Time.parse(raw_claim['page'].search('span.posted-on span.dtreviewed time').text),
-      author: raw_claim['page'].search('span.posted-by span.reviewer').text,
-      author_link: raw_claim['page'].search('span.posted-by span.reviewer a').first.attributes['href'].value,
-      claim_headline: raw_claim['page'].search('h1.post-title').text,
-      claim_body: raw_claim['page'].search('div.post-content p').text,
-      claim_result: fact_result,
-      claim_result_score: nil,
-      claim_url: raw_claim['url'],
-      raw_claim: { page: raw_claim['page'].to_s, url: raw_claim['url'] }
+      id: Digest::MD5.hexdigest(raw_claim_review['url']),
+      created_at: Time.parse(article["datePublished"]),
+      author: article["author"]["name"],
+      author_link: raw_claim_review['page'].search('span.posted-by span.reviewer a').first.attributes['href'].value,
+      claim_review_headline: article["headline"],
+      claim_review_body: raw_claim_review['page'].search('div.post-content p').text,
+      claim_review_image_url: claim_review_image_url_from_raw_claim_review(raw_claim_review),
+      claim_review_result: get_claim_result_from_page(raw_claim_review['page']),
+      claim_review_result_score: nil,
+      claim_review_url: raw_claim_review['url'],
+      raw_claim_review: { page: article, url: raw_claim_review['url'] }
     }
   end
 end

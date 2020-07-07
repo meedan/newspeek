@@ -2,19 +2,26 @@
 
 # Base-level ReviewParser code where claim providers have a paginated
 # index page of claims and then require visting each URL-specified claim directly
+require_relative('review_rating_parser')
 module PaginatedReviewClaims
-  def get_url(url)
-    response = RestClient.get(
-      url
-    )
-  rescue RestClient::NotFound, SocketError, Errno::ETIMEDOUT
-    nil
+  include ReviewRatingParser
+
+  def og_image_url_from_raw_claim_review(raw_claim_review)
+    image = raw_claim_review["page"].search("meta").select{|x| x.attributes["property"] && x.attributes["property"].value == "og:image"}.first
+    if image
+      image.attributes["content"].value
+    end
+  end
+
+  def claim_review_image_url_from_raw_claim_review(raw_claim_review)
+    og_image_url_from_raw_claim_review(raw_claim_review)
+  rescue StandardError => e
+    Error.log(e)
   end
 
   def parsed_fact_list_page(page = 1)
     response = get_url(hostname + fact_list_path(page))
     return if response.nil?
-
     if @fact_list_page_parser == 'html'
       Nokogiri.parse(response)
     elsif @fact_list_page_parser == 'json'
@@ -35,15 +42,17 @@ module PaginatedReviewClaims
     end
   end
 
+  def parsed_page_from_url(fact_page_url)
+    response = get_url(fact_page_url)
+    Nokogiri.parse(response) if response
+  rescue StandardError => e
+    Error.log(e)
+  end
+
   def parsed_fact_page(fact_page_url)
-    parsed_page =
-      begin
-                         Nokogiri.parse(get_url(fact_page_url))
-      rescue StandardError
-        nil
-                       end
+    parsed_page = parsed_page_from_url(fact_page_url)
     return if parsed_page.nil?
-    [fact_page_url, parse_raw_claim(Hashie::Mash[{ page: parsed_page, url: fact_page_url }])]
+    [fact_page_url, parse_raw_claim_review(Hashie::Mash[{ page: parsed_page, url: fact_page_url }])]
   end
 
   def get_new_fact_page_urls(page)
@@ -52,8 +61,8 @@ module PaginatedReviewClaims
     page_urls - existing_urls
   end
 
-  def store_claims_for_page(page)
-    process_claims(
+  def store_claim_reviews_for_page(page)
+    process_claim_reviews(
       get_parsed_fact_pages_from_urls(
         get_new_fact_page_urls(
           page
@@ -62,24 +71,24 @@ module PaginatedReviewClaims
     )
   end
 
-  def get_claims
+  def get_claim_reviews
     page = 1
-    processed_claims = store_claims_for_page(page)
-    until finished_iterating?(processed_claims)
+    processed_claim_reviews = store_claim_reviews_for_page(page)
+    until finished_iterating?(processed_claim_reviews)
       page += 1
-      processed_claims = store_claims_for_page(page)
+      processed_claim_reviews = store_claim_reviews_for_page(page)
     end
   end
 
   def safe_parsed_fact_page(fact_page_url)
     parsed_fact_page(fact_page_url)
-  rescue StandardError
-    nil
+  rescue StandardError => e
+    Error.log(e)
   end
 
   def get_parsed_fact_pages_from_urls(urls)
     if @run_in_parallel
-      Hash[Parallel.map(urls, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |fact_page_url|
+      Hash[Parallel.map(urls, in_processes: 1, progress: "Downloading #{self.class} Corpus") do |fact_page_url|
         safe_parsed_fact_page(fact_page_url)
       end.compact].values
     else

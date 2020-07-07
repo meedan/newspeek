@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
 class ElasticSearchQuery
+  def self.service_query(service)
+    {
+      "query": {
+        "match": {
+          "service": service
+        }
+      }
+    }
+  end
+
   def self.base_query(limit, offset)
     {
       "size": limit||20,
@@ -81,7 +91,7 @@ class ElasticSearchQuery
   def self.claim_review_search_query(opts)
     query = ElasticSearchQuery.service_scoped_limit_offset_query(opts[:service], opts[:per_page], opts[:offset])
     if opts[:search_query]
-      query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('claim_headline', opts[:search_query])
+      query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('claim_review_headline', opts[:search_query])
     end
     time_clause = ElasticSearchQuery.start_end_date_range_query('created_at', opts[:start_time], opts[:end_time])
     query[:query][:bool][:filter] << time_clause unless time_clause.empty?

@@ -9,87 +9,99 @@ class TheQuint < ReviewParser
     "/api/v1/collections/webqoof?item-type=story&offset=#{(page - 1) * limit}&limit=#{limit}"
   end
 
-  def get_claims_for_page(page = 1)
+  def get_claim_reviews_for_page(page = 1)
     JSON.parse(RestClient.get(hostname + fact_list_path(page)))['items']
   end
 
-  def get_new_claims_for_page(page = 1)
-    claims = parse_raw_claims(get_claims_for_page(page))
+  def get_new_claim_reviews_for_page(page = 1)
+    claims = parse_raw_claim_reviews(get_claim_reviews_for_page(page))
     existing_urls = get_existing_urls(claims.map { |claim| claim['url'] }.compact)
-    process_claims(claims.reject { |claim| existing_urls.include?(claim['url']) })
+    process_claim_reviews(claims.reject { |claim| existing_urls.include?(claim['url']) })
   end
 
-  def get_claims
+  def get_claim_reviews
     page = 1
-    raw_claims = get_new_claims_for_page(page)
+    raw_claims = get_new_claim_reviews_for_page(page)
     until finished_iterating?(raw_claims)
       page += 1
-      raw_claims = get_new_claims_for_page(page)
+      raw_claims = get_new_claim_reviews_for_page(page)
     end
   end
 
-  def created_at_from_raw_claim(raw_claim)
-    Time.at(raw_claim['story']['published-at'] / 1000.0)
-  rescue StandardError
-    nil
+  def created_at_from_raw_claim_review(raw_claim_review)
+    Time.at(raw_claim_review['story']['published-at'] / 1000.0)
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def author_from_raw_claim(raw_claim)
-    raw_claim['story']['authors'][0]['name']
-  rescue StandardError
-    nil
+  def author_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['story']['authors'][0]['name']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def author_link_from_raw_claim(raw_claim)
-    raw_claim['story']['authors'][0]['avatar-url']
-  rescue StandardError
-    nil
+  def author_link_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['story']['authors'][0]['avatar-url']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_result_from_raw_claim(raw_claim)
-    raw_claim['story']['metadata']['story-attributes']['factcheck'].first
-  rescue StandardError
-    nil
+  def claim_result_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['story'] &&
+    raw_claim_review['story']['metadata'] &&
+    raw_claim_review['story']['metadata']['story-attributes'] &&
+    raw_claim_review['story']['metadata']['story-attributes']['factcheck'] &&
+    raw_claim_review['story']['metadata']['story-attributes']['factcheck'].first
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_result_score_from_raw_claim(raw_claim)
-    Integer(raw_claim['story']['metadata']['story-attributes']['claimreviewrating'].first, 10)
-  rescue StandardError
-    nil
+  def claim_result_score_from_raw_claim_review(raw_claim_review)
+    Integer(raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'].first, 10)
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_headline_from_raw_claim(raw_claim)
-    raw_claim['story']['headline']
-  rescue StandardError
-    nil
+  def claim_headline_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['story']['headline']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_body_from_raw_claim(raw_claim)
-    raw_claim['story']['seo']['meta-description']
-  rescue StandardError
-    nil
+  def claim_body_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['story']['seo']['meta-description']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def claim_url_from_raw_claim(raw_claim)
-    raw_claim['story']['url']
-  rescue StandardError
-    nil
+  def claim_url_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['story']['url']
+  rescue StandardError => e
+    Error.log(e)
   end
 
-  def parse_raw_claim(raw_claim)
+  def claim_image_url_from_raw_claim_review(raw_claim_review)
+    "https://images.thequint.com/"+raw_claim_review['story']['hero-image-s3-key']
+  rescue StandardError => e
+    Error.log(e)
+  end
+  
+
+  def parse_raw_claim_review(raw_claim_review)
     # delete unnecessary key that flags Hashie key-name warnings later
-    raw_claim["story"].delete("cards")
+    raw_claim_review["story"].delete("cards")
     {
-      id: Digest::MD5.hexdigest(raw_claim['id']),
-      created_at: created_at_from_raw_claim(raw_claim),
-      author: author_from_raw_claim(raw_claim),
-      author_link: author_link_from_raw_claim(raw_claim),
-      claim_headline: claim_headline_from_raw_claim(raw_claim),
-      claim_body: claim_body_from_raw_claim(raw_claim),
-      claim_result: claim_result_from_raw_claim(raw_claim),
-      claim_result_score: claim_result_score_from_raw_claim(raw_claim),
-      claim_url: claim_url_from_raw_claim(raw_claim),
-      raw_claim: raw_claim
+      id: Digest::MD5.hexdigest(raw_claim_review['id']),
+      created_at: created_at_from_raw_claim_review(raw_claim_review),
+      author: author_from_raw_claim_review(raw_claim_review),
+      author_link: author_link_from_raw_claim_review(raw_claim_review),
+      claim_review_headline: claim_headline_from_raw_claim_review(raw_claim_review),
+      claim_review_body: claim_body_from_raw_claim_review(raw_claim_review),
+      claim_review_image_url: claim_image_url_from_raw_claim_review(raw_claim_review),
+      claim_review_result: claim_result_from_raw_claim_review(raw_claim_review),
+      claim_review_result_score: claim_result_score_from_raw_claim_review(raw_claim_review),
+      claim_review_url: claim_url_from_raw_claim_review(raw_claim_review),
+      raw_claim_review: raw_claim_review
     }
   end
 end
