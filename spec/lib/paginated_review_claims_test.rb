@@ -16,25 +16,6 @@ class StubReview < ReviewParser
 end
 class StubReviewJSON < ReviewParser
   include PaginatedReviewClaims
-  def initialize
-    @fact_list_page_parser = 'json'
-  end
-
-  def hostname
-    'http://examplejson.com'
-  end
-
-  def fact_list_path(page = 1)
-    "/get?page=#{page}"
-  end
-
-  def url_extractor(response)
-    response['page']
-  end
-
-  def parse_raw_claim(raw_claim)
-    raw_claim
-  end
 end
 
 describe PaginatedReviewClaims do
@@ -73,15 +54,6 @@ describe PaginatedReviewClaims do
   end
 
   describe 'instance' do
-    it 'rescues failed get_url' do
-      RestClient.stub(:get).with(StubReviewJSON.new.hostname).and_raise(RestClient::NotFound)
-      expect(StubReviewJSON.new.get_url(StubReviewJSON.new.hostname)).to(eq(nil))
-    end
-
-    it 'expects get_url' do
-      expect(StubReviewJSON.new.get_url(StubReviewJSON.new.hostname).class).to(eq(RestClient::Response))
-    end
-
     it 'expects html parsed_fact_list_page' do
       expect(StubReview.new.parsed_fact_list_page(1).class).to(eq(Nokogiri::XML::Document))
     end
@@ -124,17 +96,17 @@ describe PaginatedReviewClaims do
       expect(response).to(eq([1]))
     end
 
-    it 'expects empty get_claims' do
+    it 'expects empty get_claim_reviews' do
       allow(ClaimReview).to(receive(:client).and_return(double('client')))
       ClaimReview.client.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { claim_url: 1 } }] } })
-      response = StubReviewJSON.new.get_claims
+      response = StubReviewJSON.new.get_claim_reviews
       expect(response).to(eq(nil))
     end
 
-    it 'iterates on get_claims' do
-      StubReviewJSON.any_instance.stub(:store_claims_for_page).with(1).and_return([{ 'created_at': Time.now - 7 * 24 * 24 * 60 }])
-      StubReviewJSON.any_instance.stub(:store_claims_for_page).with(2).and_return([])
-      response = StubReviewJSON.new.get_claims
+    it 'iterates on get_claim_reviews' do
+      StubReviewJSON.any_instance.stub(:store_claim_reviews_for_page).with(1).and_return([{ 'created_at': Time.now - 7 * 24 * 24 * 60 }])
+      StubReviewJSON.any_instance.stub(:store_claim_reviews_for_page).with(2).and_return([])
+      response = StubReviewJSON.new.get_claim_reviews
       expect(response).to(eq(nil))
     end
 

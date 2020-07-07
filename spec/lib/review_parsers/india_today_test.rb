@@ -18,14 +18,24 @@ describe IndiaToday do
       expect(described_class.new.url_extractor(Nokogiri.parse("<a href='/blah'>wow</a>").search('a')[0])).to(eq('https://www.indiatoday.in/blah'))
     end
 
-    it 'parses a raw_claim' do
+    it 'stubs the resposne for a nil get_claim_review_from_raw_claim_review' do
+      expect(described_class.new.claim_review_from_raw_claim_review({"page" => Nokogiri.parse("<a href='/blah'>wow</a>")})).to(eq({}))
+    end
+
+    it 'parses a raw_claim_review' do
       raw = JSON.parse(File.read('spec/fixtures/india_today_raw.json'))
       raw['page'] = Nokogiri.parse(raw['page'])
-      parsed_claim = described_class.new.parse_raw_claim(raw)
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
       expect(parsed_claim.class).to(eq(Hash))
       ClaimReview.mandatory_fields.each do |field|
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))
       end
+    end
+
+    it 'stubs a raw_claim_review response' do
+      raw = {"page" => Nokogiri.parse("<a href='/blah'>wow</a>"), "url" => "blah"}
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
+      expect(parsed_claim.class).to(eq(Hash))
     end
 
     it 'properly rescues claim_result_and_score_from_page' do

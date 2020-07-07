@@ -14,9 +14,9 @@ describe GoogleFactCheck do
       expect(described_class.new.path).to(eq('/v1alpha1/claims:search'))
     end
 
-    it 'parses a raw_claim' do
+    it 'parses a raw_claim_review' do
       raw = JSON.parse(File.read('spec/fixtures/google_fact_check_raw.json'))
-      parsed_claim = described_class.new.parse_raw_claim(raw)
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
       expect(parsed_claim.class).to(eq(Hash))
       ClaimReview.mandatory_fields.each do |field|
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))
@@ -27,7 +27,7 @@ describe GoogleFactCheck do
       raw = JSON.parse(File.read('spec/fixtures/google_fact_check_raw.json'))
       raw['claimReview'][0]['reviewDate'] = nil
       raw['claimDate'] = nil
-      parsed_claim = described_class.new.parse_raw_claim(raw)
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
       expect(parsed_claim.class).to(eq(Hash))
       (ClaimReview.mandatory_fields - ['created_at']).each do |field|
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))
@@ -42,8 +42,8 @@ describe GoogleFactCheck do
 
     it 'runs get_all_for_publisher' do
       RestClient.stub(:get).with(anything).and_return(RestClient::Response.new('{}'))
-      described_class.any_instance.stub(:store_claims_for_publisher_and_offset).with('foo', 0).and_return([{}])
-      described_class.any_instance.stub(:store_claims_for_publisher_and_offset).with('foo', 100).and_return([])
+      described_class.any_instance.stub(:store_claim_reviews_for_publisher_and_offset).with('foo', 0).and_return([{}])
+      described_class.any_instance.stub(:store_claim_reviews_for_publisher_and_offset).with('foo', 100).and_return([])
       expect(described_class.new.get_all_for_publisher('foo')).to(eq(nil))
     end
 
@@ -79,19 +79,19 @@ describe GoogleFactCheck do
       expect(result.first.class).to(eq(Hash))
     end
 
-    it 'rescues from created_at_from_raw_claim' do
-      expect(described_class.new.created_at_from_raw_claim({})).to(eq(nil))
+    it 'rescues from created_at_from_raw_claim_review' do
+      expect(described_class.new.created_at_from_raw_claim_review({})).to(eq(nil))
     end
 
-    it 'rescues from claim_url_from_raw_claim' do
-      expect(described_class.new.claim_url_from_raw_claim({})).to(eq(nil))
+    it 'rescues from claim_url_from_raw_claim_review' do
+      expect(described_class.new.claim_url_from_raw_claim_review({})).to(eq(nil))
     end
 
-    it 'runs store_claims_fro_publisher_and_offset' do
+    it 'runs store_claim_reviews_for_publisher_and_offset' do
       raw = JSON.parse(File.read('spec/fixtures/google_fact_check_raw.json'))
       described_class.any_instance.stub(:get_new_from_publisher).with('foo', 0).and_return([raw])
       ReviewParser.stub(:store_to_db).with(anything, anything).and_return([])
-      result = described_class.new.store_claims_for_publisher_and_offset('foo', 0)
+      result = described_class.new.store_claim_reviews_for_publisher_and_offset('foo', 0)
       expect(result.class).to(eq(Array))
       expect(result.length).to(eq(1))
       expect(result.first.class).to(eq(Hash))
@@ -103,20 +103,20 @@ describe GoogleFactCheck do
       expect(described_class.new.snowball_publishers_from_queries(['election']).class).to(eq(Array))
     end
 
-    it 'runs snowball_claims_from_publishers' do
+    it 'runs snowball_claim_reviews_from_publishers' do
       RestClient.stub(:get).with(anything).and_return(RestClient::Response.new('{}'))
-      described_class.any_instance.stub(:store_claims_for_publisher_and_offset).with('foo', 0).and_return([{}])
-      described_class.any_instance.stub(:store_claims_for_publisher_and_offset).with('foo', 100).and_return([])
-      expect(described_class.new.snowball_claims_from_publishers(['foo'])).to(eq([nil]))
+      described_class.any_instance.stub(:store_claim_reviews_for_publisher_and_offset).with('foo', 0).and_return([{}])
+      described_class.any_instance.stub(:store_claim_reviews_for_publisher_and_offset).with('foo', 100).and_return([])
+      expect(described_class.new.snowball_claim_reviews_from_publishers(['foo'])).to(eq([nil]))
     end
 
-    it 'runs get_claims' do
+    it 'runs get_claim_reviews' do
       RestClient.stub(:get).with(anything).and_return(RestClient::Response.new('{}'))
-      described_class.any_instance.stub(:store_claims_for_publisher_and_offset).with(anything, 0).and_return([{}])
-      described_class.any_instance.stub(:store_claims_for_publisher_and_offset).with(anything, 100).and_return([])
+      described_class.any_instance.stub(:store_claim_reviews_for_publisher_and_offset).with(anything, 0).and_return([{}])
+      described_class.any_instance.stub(:store_claim_reviews_for_publisher_and_offset).with(anything, 100).and_return([])
       raw = JSON.parse(File.read('spec/fixtures/google_fact_check_raw.json'))
       described_class.any_instance.stub(:get_all_for_query).with(anything).and_return([raw])
-      expect(described_class.new.get_claims).to(eq([nil]))
+      expect(described_class.new.get_claim_reviews).to(eq([nil]))
     end
   end
 end

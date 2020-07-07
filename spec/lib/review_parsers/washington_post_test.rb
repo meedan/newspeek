@@ -18,10 +18,10 @@ describe WashingtonPost do
       expect(described_class.new.url_extractor({ 'rendering' => "<div class='story-headline'><h2><a href='/blah'>wow</a></h2></div>" })).to(eq(['https://www.washingtonpost.com/blah']))
     end
 
-    it 'parses a raw_claim' do
+    it 'parses a raw_claim_review' do
       raw = JSON.parse(File.read('spec/fixtures/washington_post_raw.json'))
       raw['page'] = Nokogiri.parse(raw['page'])
-      parsed_claim = described_class.new.parse_raw_claim(raw)
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
       expect(parsed_claim.class).to(eq(Hash))
       ClaimReview.mandatory_fields.each do |field|
         expect(Hashie::Mash[parsed_claim][field].nil?).to(eq(false))
@@ -44,10 +44,6 @@ describe WashingtonPost do
       expect(described_class.new.claim_result_and_claim_result_score_from_page(Nokogiri.parse(''))).to(eq(['Inconclusive', 0.5]))
     end
 
-    it 'expects a rescue from time_from_page' do
-      expect(described_class.new.time_from_page(Nokogiri.parse(''))).to(eq(nil))
-    end
-
     it 'expects a rescue from author_from_page' do
       expect(described_class.new.author_from_page(Nokogiri.parse(''))).to(eq(nil))
     end
@@ -58,6 +54,18 @@ describe WashingtonPost do
 
     it 'expects a rescue from claim_headline_from_page' do
       expect(described_class.new.claim_headline_from_page(Nokogiri.parse(''))).to(eq(nil))
+    end
+
+    it 'rescues obviously wrong parse_partial_truthfulness' do
+      expect(described_class.new.parse_partial_truthfulness(1, 2)).to(eq(["Inconclusive", 0.5]))
+    end
+    
+    it 'parses array of images for claim_review_image_url_from_news_article' do
+      expect(described_class.new.claim_review_image_url_from_news_article({"image" => [{"url" => "blah"}]})).to(eq("blah"))
+    end
+
+    it 'parses array of authors for author_from_news_article' do
+      expect(described_class.new.author_from_news_article({"author" => [{"name" => "blah"}]})).to(eq("blah"))
     end
   end
 end

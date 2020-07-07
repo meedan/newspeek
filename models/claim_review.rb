@@ -3,9 +3,10 @@
 class ClaimReview
   include Elasticsearch::DSL
   attr_reader :attributes
-  def self.persistable_raw_claims
-    %w[data_commons]
+  def self.persistable_raw_claim_reviews
+    %w[afp_checamos afp africa_check alt_news_in data_commons factly india_today factly reuters washington_post]
   end
+
   def initialize(attributes = {})
     @attributes = attributes
   end
@@ -15,25 +16,25 @@ class ClaimReview
   end
 
   def self.mandatory_fields
-    %w[claim_headline claim_url created_at id]
+    %w[claim_review_headline claim_review_url created_at id]
   end
 
-  def self.parse_created_at(parsed_claim)
-    Time.parse(parsed_claim['created_at'].to_s).strftime('%Y-%m-%dT%H:%M:%SZ')
+  def self.parse_created_at(parsed_claim_review)
+    Time.parse(parsed_claim_review['created_at'].to_s).strftime('%Y-%m-%dT%H:%M:%SZ')
   end
 
-  def self.validate_claim(parsed_claim)
+  def self.validate_claim_review(parsed_claim_review)
     mandatory_fields.each do |field|
-      return nil if parsed_claim[field].nil?
+      return nil if parsed_claim_review[field].nil?
     end
-    parsed_claim.delete('raw_claim') if !self.persistable_raw_claims.include?(parsed_claim['service'])
-    parsed_claim['created_at'] = self.parse_created_at(parsed_claim)
-    parsed_claim
+    parsed_claim_review.delete('raw_claim_review') if !self.persistable_raw_claim_reviews.include?(parsed_claim_review['service'])
+    parsed_claim_review['created_at'] = self.parse_created_at(parsed_claim_review)
+    parsed_claim_review
   end
 
-  def self.save_claim(parsed_claim, service)
-    validated_claim = validate_claim(Hashie::Mash[parsed_claim.merge(service: service)])
-    repository.save(ClaimReview.new(validated_claim)) if validated_claim
+  def self.save_claim_review(parsed_claim_review, service)
+    validated_claim_review = validate_claim_review(Hashie::Mash[parsed_claim_review.merge(service: service)])
+    repository.save(ClaimReview.new(validated_claim_review)) if validated_claim_review
   end
 
   def self.repository
@@ -46,6 +47,12 @@ class ClaimReview
 
   def self.client
     Elasticsearch::Client.new(url: es_hostname)
+  end
+
+  def self.delete_by_service(service)
+    ClaimReview.client.delete_by_query(
+      { index: SETTINGS['es_index_name'] }.merge(body: ElasticSearchQuery.service_query(service))
+    )["deleted"]
   end
 
   def self.get_hits(search_params)
@@ -72,8 +79,8 @@ class ClaimReview
     extract_matches(urls, 'claim_url', service)
   end
 
-  def self.store_claim(parsed_claim, service)
-    save_claim(parsed_claim, service) if existing_ids([parsed_claim[:id]], service).empty?
+  def self.store_claim_review(parsed_claim_review, service)
+    self.save_claim_review(parsed_claim_review, service) if existing_ids([parsed_claim_review[:id]], service).empty?
   end
 
   def self.search(opts)
@@ -87,18 +94,19 @@ class ClaimReview
       "@context": 'http://schema.org',
       "@type": 'ClaimReview',
       "datePublished": Time.parse(claim_review['created_at']).strftime('%Y-%m-%d'),
-      "url": claim_review['claim_url'],
+      "url": claim_review['claim_review_url'],
       "author": {
         "name": claim_review['author'],
         "url": claim_review['author_link']
       },
-      "claimReviewed": claim_review['claim_headline'],
-      "text": claim_review['claim_body'],
+      "claimReviewed": claim_review['claim_review_headline'],
+      "text": claim_review['claim_review_body'],
+      "image": claim_review['claim_review_image_url'],
       "reviewRating": {
         "@type": 'Rating',
-        "ratingValue": claim_review['claim_result_score'],
+        "ratingValue": claim_review['claim_review_result_score'],
         "bestRating": 1,
-        "alternateName": claim_review['claim_result']
+        "alternateName": claim_review['claim_review_result']
       }
     }
   end

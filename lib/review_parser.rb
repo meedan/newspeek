@@ -24,46 +24,63 @@ class ReviewParser
     ]
   end
 
-  def self.store_to_db(claims, service)
-    claims.each do |parsed_claim|
-      ClaimReview.store_claim(Hashie::Mash[parsed_claim], service)
+  def self.store_to_db(claim_reviews, service)
+    claim_reviews.each do |parsed_claim_review|
+      ClaimReview.store_claim_review(Hashie::Mash[parsed_claim_review], service)
     end
   end
 
   def self.run(service, cursor_back_to_date = nil)
-    parsers[service].new(cursor_back_to_date).get_claims
+    parsers[service].new(cursor_back_to_date).get_claim_reviews
+  end
+
+  def get_url(url)
+    retry_count = 0
+    begin
+      response = RestClient.get(
+        url
+      )
+    rescue RestClient::BadGateway, RestClient::NotFound, SocketError, Errno::ETIMEDOUT => e
+      if retry_count < 3
+        retry_count += 1
+        sleep(1)
+        retry
+      else
+        Error.log(e)
+        return nil
+      end
+    end
   end
 
   def get_existing_urls(urls)
-    existing_urls = if @cursor_back_to_date
-                      # force checking every URL directly instead of bypassing quietly...
-                      []
-                    else
-                      ClaimReview.existing_urls(urls, self.class.service)
-                    end
-    existing_urls
+    if @cursor_back_to_date
+      # force checking every URL directly instead of bypassing quietly...
+      []
+    else
+      ClaimReview.existing_urls(urls, self.class.service)
+    end
   end
 
-  def process_claims(claims)
+  def process_claim_reviews(claim_reviews)
     self.class.store_to_db(
-      claims, self.class.service
+      claim_reviews, self.class.service
     )
-    claims
+    claim_reviews
   end
 
-  def finished_iterating?(claims)
-    times = claims.map { |x| Hashie::Mash[x][:created_at] }.compact
+  def finished_iterating?(claim_reviews)
+    times = claim_reviews.map { |x| Hashie::Mash[x][:created_at] }.compact
     oldest_time = if times.empty?
                     @cursor_back_to_date
                   else
                     times.min
                   end
-    claims.empty? || (!@cursor_back_to_date.nil? && oldest_time < @cursor_back_to_date)
+    claim_reviews.empty? || (!@cursor_back_to_date.nil? && oldest_time < @cursor_back_to_date)
   end
 
-  def parse_raw_claims(raw_claims)
-    Parallel.map(raw_claims, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |raw_claim|
-      parse_raw_claim(raw_claim)
+  def parse_raw_claim_reviews(raw_claim_reviews)
+    Parallel.map(raw_claim_reviews, in_processes: 3, progress: "Downloading #{self.class} Corpus") do |raw_claim_review|
+      parse_raw_claim_review(raw_claim_review)
     end.compact
   end
 end

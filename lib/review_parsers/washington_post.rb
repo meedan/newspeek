@@ -41,9 +41,11 @@ class WashingtonPost < ReviewParser
     claim_result_score = nil
     score = nil
     begin
-      score = pinocchios.split(' ').map { |x| pinocchio_map[x] }.compact.first
-    rescue StandardError
-      nil
+      if pinocchios
+        score = pinocchios.split(' ').map { |x| pinocchio_map[x] }.compact.first
+      end
+    rescue StandardError => e
+      Error.log(e)
     end
     if score == 4
       claim_result = 'False'
@@ -76,58 +78,58 @@ class WashingtonPost < ReviewParser
     [claim_result, claim_result_score]
   end
 
-  def time_from_page(page)
-    time = nil
-    begin
-      time = Time.parse(page.search('div.display-date').text)
-    rescue StandardError
-      nil
-    end
-    if time.nil?
-      begin
-        time = Time.parse(page.search('div.date').first.attributes['content'].value)
-      rescue StandardError
-        nil
-      end
-    end
-    time
-  end
-
   def author_from_page(page)
     page.search('div.author-names span.author-name').first.text
-  rescue StandardError
-    nil
+  rescue StandardError => e
+    Error.log(e)
   end
 
   def author_link_from_page(page)
-    page.search('div.author-names a.author-name-link').first.attributes['href'].value
-  rescue StandardError
-    nil
+    link = page.search('div.author-names a.author-name-link').first
+    link.attributes['href'].value if link
   end
 
   def claim_headline_from_page(page)
     page.search('header div').last.text
-  rescue StandardError
-    nil
+  rescue StandardError => e
+    Error.log(e)
   end
 
   def claim_body_from_page(page)
     page.search('div.article-body p').text
   end
 
-  def parse_raw_claim(raw_claim)
-    claim_result, claim_result_score = claim_result_and_claim_result_score_from_page(raw_claim['page'])
+  def author_from_news_article(news_article)
+    if news_article["author"].class == Hash
+      news_article["author"]["name"]
+    elsif news_article["author"].class == Array
+      news_article["author"].collect{|x| x["name"]}.join(", ")
+    end
+  end
+
+  def claim_review_image_url_from_news_article(news_article)
+    if news_article["image"].class == Hash
+      news_article["image"]["url"]
+    else
+      news_article["image"].first && news_article["image"].first["url"]
+    end
+  end
+
+  def parse_raw_claim_review(raw_claim_review)
+    claim_result, claim_result_score = claim_result_and_claim_result_score_from_page(raw_claim_review['page'])
+    news_article = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first.text)
     {
-      id: Digest::MD5.hexdigest(raw_claim['url']),
-      created_at: time_from_page(raw_claim['page']),
-      author: author_from_page(raw_claim['page']),
-      author_link: author_link_from_page(raw_claim['page']),
-      claim_headline: claim_headline_from_page(raw_claim['page']),
-      claim_body: claim_body_from_page(raw_claim['page']),
-      claim_result: claim_result,
-      claim_result_score: claim_result_score,
-      claim_url: raw_claim['url'],
-      raw_claim: { page: raw_claim['page'].to_s, url: raw_claim['url'] }
+      id: Digest::MD5.hexdigest(raw_claim_review['url']||""),
+      created_at: Time.parse(news_article["datePublished"]),
+      author: author_from_news_article(news_article),
+      author_link: author_link_from_page(raw_claim_review['page']),
+      claim_review_headline: news_article["headline"],
+      claim_review_body: claim_body_from_page(raw_claim_review['page']),
+      claim_review_image_url: claim_review_image_url_from_news_article(news_article),
+      claim_review_result: claim_result,
+      claim_review_result_score: claim_result_score,
+      claim_review_url: raw_claim_review['url'],
+      raw_claim_review: { page: news_article, url: raw_claim_review['url'] }
     }
   end
 end

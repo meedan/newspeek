@@ -30,7 +30,7 @@ describe ElasticSearchQuery do
                                                                                                from: 0,
                                                                                                query: { bool: {
                                                                                                  must: [{ match_all: {} }],
-                                                                                                 filter: [{ match_phrase: { 'service' => 'google' } }, { match_phrase: { 'claim_headline' => 'blah' } }, { range: { 'created_at' => { format: 'strict_date_optional_time', gte: '2020-01-01T00:00:00.000Z', lte: '2020-01-01T00:00:00.000Z' } } }],
+                                                                                                 filter: [{ match_phrase: { 'service' => 'google' } }, { match_phrase: { 'claim_review_headline' => 'blah' } }, { range: { 'created_at' => { format: 'strict_date_optional_time', gte: '2020-01-01T00:00:00.000Z', lte: '2020-01-01T00:00:00.000Z' } } }],
                                                                                                  should: [],
                                                                                                  must_not: []
                                                                                                } }

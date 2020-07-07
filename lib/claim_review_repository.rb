@@ -10,7 +10,7 @@ class ClaimReviewRepository
 
   settings number_of_shards: 1 do
     mapping do
-      indexes :claim_headline, analyzer: 'snowball'
+      indexes :claim_review_headline, analyzer: 'snowball'
       indexes :service, type: 'keyword'
       indexes :created_at, type: 'date'
     end
