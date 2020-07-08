@@ -11,7 +11,7 @@ describe GESISClaims do
 
     it 'parses get_fact_ids' do
       RestClient.stub(:post).with(anything, anything, anything).and_return({ 'results' => { 'bindings' => [{ 'id' => { 'value' => '/123' } }] } }.to_json)
-      expect(described_class.new.get_fact_ids(1)).to(eq([%w[123 202cb962ac59075b964b07152d234b70]]))
+      expect(described_class.new.get_fact_ids(1)).to(eq([%w[123 123]]))
     end
 
     it 'walks through the get_request' do
@@ -21,8 +21,8 @@ describe GESISClaims do
 
     it 'runs through get_claim_reviews' do
       raw = JSON.parse(File.read('spec/fixtures/gesis_claims_raw.json'))['content']
-      described_class.any_instance.stub(:get_all_fact_ids).and_return([[raw['id']['value'].split('/').last, Digest::MD5.hexdigest(raw['id']['value'].split('/').last)]])
-      ClaimReview.stub(:existing_ids).with([Digest::MD5.hexdigest(raw['id']['value'].split('/').last)], described_class.service).and_return([])
+      described_class.any_instance.stub(:get_all_fact_ids).and_return([[raw['id']['value'].split('/').last, raw['id']['value'].split('/').last]])
+      ClaimReview.stub(:existing_ids).with([raw['id']['value'].split('/').last], described_class.service).and_return([])
       RestClient.stub(:post).with(anything, anything, anything).and_return({ 'results' => { 'bindings' => [raw] } })
       described_class.any_instance.stub(:get_fact).with(raw['id']['value'].split('/').last).and_return(raw)
       ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
@@ -45,7 +45,7 @@ describe GESISClaims do
     end
 
     it 'rescues from id_from_raw_claim_review' do
-      expect(described_class.new.id_from_raw_claim_review({})).to(eq('d41d8cd98f00b204e9800998ecf8427e'))
+      expect(described_class.new.id_from_raw_claim_review({})).to(eq(''))
     end
 
     it 'rescues from author_from_raw_claim_review' do

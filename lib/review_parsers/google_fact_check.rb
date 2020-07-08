@@ -128,7 +128,7 @@ class GoogleFactCheck < ReviewParser
 
   def parse_raw_claim_review(raw_claim_review)
     {
-      id: Digest::MD5.hexdigest(raw_claim_review['claimReview'][0]['url']),
+      id: raw_claim_review['claimReview'][0]['url'],
       created_at: created_at_from_raw_claim_review(raw_claim_review),
       author: raw_claim_review['claimReview'][0]['publisher']['name'],
       author_link: raw_claim_review['claimReview'][0]['publisher']['site'],

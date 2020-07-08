@@ -119,7 +119,7 @@ class WashingtonPost < ReviewParser
     claim_result, claim_result_score = claim_result_and_claim_result_score_from_page(raw_claim_review['page'])
     news_article = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first.text)
     {
-      id: Digest::MD5.hexdigest(raw_claim_review['url']||""),
+      id: raw_claim_review['url']||"",
       created_at: Time.parse(news_article["datePublished"]),
       author: author_from_news_article(news_article),
       author_link: author_link_from_page(raw_claim_review['page']),
@@ -129,7 +129,7 @@ class WashingtonPost < ReviewParser
       claim_review_result: claim_result,
       claim_review_result_score: claim_result_score,
       claim_review_url: raw_claim_review['url'],
-      raw_claim_review: { page: news_article, url: raw_claim_review['url'] }
+      raw_claim_review: news_article
     }
   end
 end

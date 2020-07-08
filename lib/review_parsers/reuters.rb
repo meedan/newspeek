@@ -53,7 +53,7 @@ class Reuters < ReviewParser
     claim_result = claim_result_from_page(raw_claim_review['page'])
     news_article = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first.text)
     {
-      id: Digest::MD5.hexdigest(raw_claim_review['url']),
+      id: raw_claim_review['url'],
       created_at: Time.parse(raw_claim_review['page'].search('div.ArticleHeader_date').text.split('/')[0..1].join('')),
       author: news_article["author"]["name"],
       author_link: nil,
@@ -63,7 +63,7 @@ class Reuters < ReviewParser
       claim_review_result: claim_result,
       claim_review_result_score: claim_result.to_s.downcase.include?('true') ? 0 : 1,
       claim_review_url: raw_claim_review['url'],
-      raw_claim_review: { page: news_article, url: raw_claim_review['url'] }
+      raw_claim_review: news_article
     }
   end
 end

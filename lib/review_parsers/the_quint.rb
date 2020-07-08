@@ -57,6 +57,10 @@ class TheQuint < ReviewParser
   end
 
   def claim_result_score_from_raw_claim_review(raw_claim_review)
+    raw_claim_review['story'] &&
+    raw_claim_review['story']['metadata'] &&
+    raw_claim_review['story']['metadata']['story-attributes'] &&
+    raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'] &&
     Integer(raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'].first, 10)
   rescue StandardError => e
     Error.log(e)
@@ -91,7 +95,7 @@ class TheQuint < ReviewParser
     # delete unnecessary key that flags Hashie key-name warnings later
     raw_claim_review["story"].delete("cards")
     {
-      id: Digest::MD5.hexdigest(raw_claim_review['id']),
+      id: raw_claim_review['id'],
       created_at: created_at_from_raw_claim_review(raw_claim_review),
       author: author_from_raw_claim_review(raw_claim_review),
       author_link: author_link_from_raw_claim_review(raw_claim_review),

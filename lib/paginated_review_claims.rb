@@ -88,7 +88,7 @@ module PaginatedReviewClaims
 
   def get_parsed_fact_pages_from_urls(urls)
     if @run_in_parallel
-      Hash[Parallel.map(urls, in_processes: 1, progress: "Downloading #{self.class} Corpus") do |fact_page_url|
+      Hash[Parallel.map(urls, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |fact_page_url|
         safe_parsed_fact_page(fact_page_url)
       end.compact].values
     else
