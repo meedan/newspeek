@@ -107,9 +107,9 @@ class GESISClaims < ReviewParser
   end
 
   def id_from_raw_claim_review(raw_claim_review)
-    Digest::MD5.hexdigest(raw_claim_review['content']['id']['value'].split('/').last)
+    raw_claim_review['content']['id']['value'].split('/').last
   rescue StandardError => e
     Error.log(e)
-    Digest::MD5.hexdigest('')
+    ''
   end
 end

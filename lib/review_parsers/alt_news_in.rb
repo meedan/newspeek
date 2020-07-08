@@ -24,7 +24,7 @@ class AltNewsIn < ReviewParser
     claim_review_graph_article = claim_review["@graph"].select{|x| x["@type"] == "Article"}[0]
     claim_review_graph_author = claim_review["@graph"].select{|x| x["@type"] == ["Person"]}[0]
     {
-      id: Digest::MD5.hexdigest(raw_claim_review['url']),
+      id: raw_claim_review['url'],
       created_at: Time.parse(claim_review_graph_article["datePublished"]),
       author: claim_review_graph_author["name"],
       author_link: claim_review_graph_author["url"],
@@ -34,7 +34,7 @@ class AltNewsIn < ReviewParser
       claim_review_result: nil,
       claim_review_result_score: nil,
       claim_review_url: raw_claim_review['url'],
-      raw_claim_review: { page: claim_review, url: raw_claim_review['url'] }
+      raw_claim_review: claim_review
     }
   end
 end

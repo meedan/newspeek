@@ -79,7 +79,7 @@ class BoomLive < ReviewParser
   def parse_raw_claim_review(raw_claim_review)
     claim_result = get_claim_result_for_raw_claim_review(raw_claim_review)
     {
-      id: Digest::MD5.hexdigest(raw_claim_review['newsId'].to_s),
+      id: raw_claim_review['newsId'].to_s,
       created_at: Time.parse(raw_claim_review['date_created']),
       author: raw_claim_review['source'],
       author_link: nil,

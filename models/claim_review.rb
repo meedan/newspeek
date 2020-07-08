@@ -27,7 +27,12 @@ class ClaimReview
     mandatory_fields.each do |field|
       return nil if parsed_claim_review[field].nil?
     end
-    parsed_claim_review.delete('raw_claim_review') if !self.persistable_raw_claim_reviews.include?(parsed_claim_review['service'])
+    if self.persistable_raw_claim_reviews.include?(parsed_claim_review['service'].to_s)
+      parsed_claim_review['raw_claim_review'] = parsed_claim_review['raw_claim_review'].to_json
+    else
+      parsed_claim_review.delete('raw_claim_review')
+    end
+    parsed_claim_review['id'] = self.convert_id(parsed_claim_review['id'], parsed_claim_review['service'])
     parsed_claim_review['created_at'] = self.parse_created_at(parsed_claim_review)
     parsed_claim_review
   end
@@ -71,8 +76,11 @@ class ClaimReview
     matched_set.flatten.uniq
   end
 
+  def self.convert_id(id, service)
+    Digest::MD5.hexdigest("#{service}_#{id}")
+  end
   def self.existing_ids(ids, service)
-    extract_matches(ids, 'id', service)
+    extract_matches(ids.collect{|id| self.convert_id(id, service)}, 'id', service)
   end
 
   def self.existing_urls(urls, service)

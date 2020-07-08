@@ -76,7 +76,7 @@ describe TheQuint do
     end
 
     it 'rescues from claim_result_score_from_raw_claim_review' do
-      expect(described_class.new.claim_result_score_from_raw_claim_review({})).to(eq(nil))
+      expect(described_class.new.claim_result_score_from_raw_claim_review(nil)).to(eq(nil))
     end
   end
 end

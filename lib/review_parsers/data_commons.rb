@@ -32,8 +32,8 @@ class DataCommons < ReviewParser
     raw_claim_review['item'] &&
     raw_claim_review['item'][0] &&
     raw_claim_review['item'][0]['url'] &&
-    Digest::MD5.hexdigest(raw_claim_review['item'][0]['url']||"") || 
-    Digest::MD5.hexdigest('')
+    raw_claim_review['item'][0]['url']||"" || 
+    ''
   end
 
   def created_at_from_raw_claim_review(raw_claim_review)

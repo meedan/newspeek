@@ -35,7 +35,7 @@ class Factly < ReviewParser
   def parse_raw_claim_review(raw_claim_review)
     article = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.last.text)
     {
-      id: Digest::MD5.hexdigest(raw_claim_review['url']),
+      id: raw_claim_review['url'],
       created_at: Time.parse(article["datePublished"]),
       author: article["author"]["name"],
       author_link: raw_claim_review['page'].search('span.posted-by span.reviewer a').first.attributes['href'].value,
@@ -45,7 +45,7 @@ class Factly < ReviewParser
       claim_review_result: get_claim_result_from_page(raw_claim_review['page']),
       claim_review_result_score: nil,
       claim_review_url: raw_claim_review['url'],
-      raw_claim_review: { page: article, url: raw_claim_review['url'] }
+      raw_claim_review: article
     }
   end
 end

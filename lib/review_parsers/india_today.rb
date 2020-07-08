@@ -77,7 +77,7 @@ class IndiaToday < ReviewParser
     claim_review = claim_review_from_raw_claim_review(raw_claim_review)
     if !claim_review.empty?
       {
-        id: Digest::MD5.hexdigest(raw_claim_review['url']),
+        id: raw_claim_review['url'],
         created_at: Time.parse(claim_review["datePublished"]),
         author: claim_review["author"]["name"],
         author_link: nil,
@@ -88,11 +88,11 @@ class IndiaToday < ReviewParser
         claim_review_result: claim_review["reviewRating"]["alternateName"],
         claim_review_result_score: claim_result_score_from_raw_claim_review(claim_review),
         claim_review_url: raw_claim_review['url'],
-        raw_claim: { url: claim_review, page: raw_claim_review['page'].to_s }
+        raw_claim_review: claim_review
       }
     else
       {
-        id: Digest::MD5.hexdigest(raw_claim_review['url']),
+        id: raw_claim_review['url'],
       }
     end
   end

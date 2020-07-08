@@ -49,7 +49,7 @@ class AfricaCheck < ReviewParser
     claim_review = get_claim_review_from_raw_claim_review(raw_claim_review)
     if claim_review
       {
-        id: Digest::MD5.hexdigest(raw_claim_review['url']),
+        id: raw_claim_review['url'],
         created_at: Time.parse(claim_review["datePublished"]),
         author: claim_review["author"]["name"],
         author_link: claim_review["author"]["url"],
@@ -60,11 +60,11 @@ class AfricaCheck < ReviewParser
         claim_review_result: claim_review["reviewRating"]["alternateName"].strip,
         claim_review_result_score: claim_result_score_from_raw_claim_review(claim_review),
         claim_review_url: raw_claim_review['url'],
-        raw_claim_review: { page: claim_review, url: raw_claim_review['url'] }
+        raw_claim_review: claim_review
       }
     else
       {
-        id: Digest::MD5.hexdigest(raw_claim_review['url']),
+        id: raw_claim_review['url'],
       }
     end
   end
