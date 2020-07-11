@@ -27,7 +27,6 @@ describe AfricaCheck do
     end
 
     it 'stubs the resposne for a nil get_claim_review_from_raw_claim_review' do
-      described_class.any_instance.stub(:get_claim_review_from_raw_claim_review).and_return(nil)
       expect(described_class.new.parse_raw_claim_review({"url" => "blah"})).to(eq({id: "blah"}))
     end
 

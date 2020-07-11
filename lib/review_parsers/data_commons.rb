@@ -28,63 +28,49 @@ class DataCommons < ReviewParser
     end
   end
 
-  def id_from_raw_claim_review(raw_claim_review)
+  def item_value_from_raw_claim_review(raw_claim_review, key)
     raw_claim_review['item'] &&
     raw_claim_review['item'][0] &&
-    raw_claim_review['item'][0]['url'] &&
-    raw_claim_review['item'][0]['url']||"" || 
-    ''
+    raw_claim_review['item'][0][key]
+  rescue StandardError => e
+    Error.log(e)
+  end
+  
+  def author_value_from_raw_claim_review(raw_claim_review, key)
+    author_data = item_value_from_raw_claim_review(raw_claim_review, 'author')
+    author_data && author_data[key]
+  end
+
+  def id_from_raw_claim_review(raw_claim_review)
+    claim_url_from_raw_claim_review(raw_claim_review, '')
   end
 
   def created_at_from_raw_claim_review(raw_claim_review)
-    time_text = raw_claim_review['item'] && raw_claim_review['item'][0] && raw_claim_review['item'][0]['datePublished'] || raw_claim_review['dateCreated']
+    time_text = item_value_from_raw_claim_review(raw_claim_review, 'datePublished') ||
+    item_value_from_raw_claim_review(raw_claim_review, 'dateCreated')
     if time_text && !time_text.empty?
       Time.parse(time_text)
     end
   end
 
   def author_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['item'] &&
-    raw_claim_review['item'][0] &&
-    raw_claim_review['item'][0]['author'] &&
-    raw_claim_review['item'][0]['author']['name']
+    author_value_from_raw_claim_review(raw_claim_review, 'name')
   end
 
   def author_link_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['item'] &&
-    raw_claim_review['item'][0] &&
-    raw_claim_review['item'][0]['author'] &&
-    raw_claim_review['item'][0]['author']['url']
-  rescue StandardError => e
-    Error.log(e)
+    author_value_from_raw_claim_review(raw_claim_review, 'url')
   end
 
   def claim_headline_from_raw_claim_review(raw_claim_review)
-    raw_claim_review &&
-    raw_claim_review['item'] &&
-    raw_claim_review['item'][0] &&
-    raw_claim_review['item'][0]['claimReviewed']
-  rescue StandardError => e
-    Error.log(e)
+    item_value_from_raw_claim_review(raw_claim_review, 'claimReviewed')
   end
 
   def claim_result_from_raw_claim_review(raw_claim_review)
-    raw_claim_review &&
-    raw_claim_review['item'] &&
-    raw_claim_review['item'][0] &&
-    raw_claim_review['item'][0]['reviewRating'] &&
-    raw_claim_review['item'][0]['reviewRating']['alternateName']
-  rescue StandardError => e
-    Error.log(e)
+    review_rating = item_value_from_raw_claim_review(raw_claim_review, 'reviewRating')
+    review_rating && review_rating['alternateName']
   end
 
   def claim_url_from_raw_claim_review(raw_claim_review, default = nil)
-    raw_claim_review['item'] && 
-    raw_claim_review['item'][0] && 
-    raw_claim_review['item'][0]['url'] ||
-    default
-  rescue StandardError => e
-    Error.log(e)
-    default
+    item_value_from_raw_claim_review(raw_claim_review, 'url') || default
   end
 end

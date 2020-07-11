@@ -52,8 +52,11 @@ describe GESISClaims do
       expect(described_class.new.author_from_raw_claim_review({})).to(eq(nil))
     end
 
+    it 'rescues get_key_value_from_raw_claim_review' do
+      expect(described_class.new.get_key_value_from_raw_claim_review(nil, 'blah')).to(eq(nil))
+    end
     it 'rescues from created_at_from_raw_claim_review' do
-      expect(described_class.new.created_at_from_raw_claim_review(nil)).to(eq(nil))
+      expect(described_class.new.created_at_from_raw_claim_review({'content' => {'date' => {'value' => 'blah'}}})).to(eq(nil))
     end
 
     it 'rescues from author_link_from_raw_claim_review' do

@@ -121,7 +121,8 @@ class GoogleFactCheck < ReviewParser
   end
 
   def created_at_from_raw_claim_review(raw_claim_review)
-    Time.parse(raw_claim_review['claimReview'][0]['reviewDate'] || raw_claim_review['claimDate'])
+    time_text = raw_claim_review['claimReview'][0]['reviewDate'] || raw_claim_review['claimDate']
+    Time.parse(time_text) if time_text
   rescue StandardError => e
     Error.log(e)
   end

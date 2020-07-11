@@ -19,6 +19,9 @@ describe DataCommons do
       ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
       expect(described_class.new.get_claim_reviews).to(eq(nil))
     end
+    it 'ensures string from author_link_from_raw_claim_review' do
+      expect(described_class.new.author_link_from_raw_claim_review({'item' => [{'author' => {'url' => 'blah'}}]})).to(eq('blah'))
+    end
 
     it 'parses non-floatable claim_result_score_from_raw_claim_review' do
       expect(described_class.new.claim_result_score_from_raw_claim_review({ 'reviewRating' => { 'bestRating' => "blah", 'worstRating' => "goober", 'ratingValue' => "true" } })).to(eq(nil))

@@ -62,6 +62,7 @@ describe ReviewParser do
       AFP.any_instance.stub(:parse_raw_claim_review).with({}).and_return({})
       expect(rp.parse_raw_claim_reviews([{}, {}])).to(eq([{}, {}]))
     end
+
   end
 
   describe 'class' do
@@ -77,6 +78,28 @@ describe ReviewParser do
     it 'expects to be able to run' do
       AFP.any_instance.stub(:get_claim_reviews).and_return('stubbed')
       expect(described_class.run('afp')).to(eq('stubbed'))
+    end
+  end
+end
+
+RSpec.describe "ReviewParser subclasses" do
+  before do
+    stub_request(:get, "https://www.boomlive.in/video-claiming-hindu-kids-are-being-taught-namaz-in-karnataka-is-misleading/")
+      .with(
+         headers: {
+     	  'Accept'=>'*/*',
+     	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+     	  'Host'=>'www.boomlive.in',
+        "User-Agent": /.*/
+         }).
+       to_return(status: 200, body: "", headers: {})
+  end
+  (ReviewParser.subclasses-[StubReview, StubReviewJSON]).each do |subclass|
+    it "ensures #{subclass} returns ES-storable objects" do 
+      raw = JSON.parse(File.read("spec/fixtures/#{subclass.service}_raw.json"))
+      raw['page'] = Nokogiri.parse(raw['page']) if raw['page']
+      parsed_claim_review = subclass.new.parse_raw_claim_review(raw)
+      expect(parsed_claim_review.values_at(*(parsed_claim_review.keys-[:raw_claim_review])).collect(&:class).uniq-[NilClass, String, Float, Time, Integer]).to(eq([]))
     end
   end
 end

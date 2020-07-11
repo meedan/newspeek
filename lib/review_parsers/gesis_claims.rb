@@ -60,54 +60,49 @@ class GESISClaims < ReviewParser
   end
 
   def author_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['content']['source']['value']
+    get_key_value_from_raw_claim_review(raw_claim_review, 'source')
+  end
+
+  def created_at_from_raw_claim_review(raw_claim_review)
+    time_text = get_key_value_from_raw_claim_review(raw_claim_review, 'date')
+    if time_text && !time_text.empty?
+      Time.parse(time_text)
+    end
   rescue StandardError => e
     Error.log(e)
   end
 
-  def created_at_from_raw_claim_review(raw_claim_review)
+  def get_key_value_from_raw_claim_review(raw_claim_review, key)
     raw_claim_review['content'] &&
-    raw_claim_review['content']['date'] && 
-    raw_claim_review['content']['date']['value'] &&
-    !raw_claim_review['content']['date']['value'].empty? &&
-    Time.parse(raw_claim_review['content']['date']['value']) ||
-    nil
+    raw_claim_review['content'][key] &&
+    raw_claim_review['content'][key]['value']
   rescue StandardError => e
     Error.log(e)
   end
 
   def author_link_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['content']['sourceURL']['value']
-  rescue StandardError => e
-    Error.log(e)
+    get_key_value_from_raw_claim_review(raw_claim_review, 'sourceURL')
   end
 
   def claim_headline_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['content']['text']['value']
-  rescue StandardError => e
-    Error.log(e)
+    get_key_value_from_raw_claim_review(raw_claim_review, 'text')
   end
 
+
   def claim_result_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['content']['ratingName']['value']
-  rescue StandardError => e
-    Error.log(e)
+    get_key_value_from_raw_claim_review(raw_claim_review, 'ratingName')
   end
 
   def claim_result_score_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['content']['truthRating']['value']
-  rescue StandardError => e
-    Error.log(e)
+    get_key_value_from_raw_claim_review(raw_claim_review, 'truthRating')
   end
 
   def claim_url_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['content']['link']['value']
-  rescue StandardError => e
-    Error.log(e)
+    get_key_value_from_raw_claim_review(raw_claim_review, 'link')
   end
 
   def id_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['content']['id']['value'].split('/').last
+    get_key_value_from_raw_claim_review(raw_claim_review, 'id').split('/').last
   rescue StandardError => e
     Error.log(e)
     ''
