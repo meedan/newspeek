@@ -117,7 +117,7 @@ class WashingtonPost < ReviewParser
 
   def parse_raw_claim_review(raw_claim_review)
     claim_result, claim_result_score = claim_result_and_claim_result_score_from_page(raw_claim_review['page'])
-    news_article = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first.text)
+    news_article = extract_ld_json_script_block(raw_claim_review["page"], 0)
     {
       id: raw_claim_review['url']||"",
       created_at: Time.parse(news_article["datePublished"]),

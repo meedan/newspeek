@@ -33,7 +33,7 @@ class Factly < ReviewParser
   end
 
   def parse_raw_claim_review(raw_claim_review)
-    article = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.last.text)
+    article = extract_ld_json_script_block(raw_claim_review["page"], -1)
     {
       id: raw_claim_review['url'],
       created_at: Time.parse(article["datePublished"]),

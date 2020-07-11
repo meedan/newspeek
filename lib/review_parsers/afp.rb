@@ -26,7 +26,7 @@ class AFP < ReviewParser
   end
 
   def parse_raw_claim_review(raw_claim_review)
-    claim_review = JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first.text)
+    claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0)
     {
       id: raw_claim_review['url'],
       created_at: Time.parse(claim_review["@graph"][0]["datePublished"]),

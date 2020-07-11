@@ -38,15 +38,8 @@ class AfricaCheck < ReviewParser
     Error.log(e)
   end
 
-  def get_claim_review_from_raw_claim_review(raw_claim_review)
-    raw_text = raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.first
-    if raw_text
-      JSON.parse(raw_text.text)
-    end
-  end
-
   def parse_raw_claim_review(raw_claim_review)
-    claim_review = get_claim_review_from_raw_claim_review(raw_claim_review)
+    claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0)
     if claim_review
       {
         id: raw_claim_review['url'],

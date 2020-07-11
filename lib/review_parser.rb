@@ -83,4 +83,9 @@ class ReviewParser
       parse_raw_claim_review(raw_claim_review)
     end.compact
   end
+  
+  def extract_ld_json_script_block(page, index, search_path="script")
+    script_block = page && page.search(search_path).select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}[index]
+    script_block && JSON.parse(script_block.text)
+  end
 end

@@ -194,6 +194,7 @@ DEPENDENCIES
   i18n (= 1.8.2)
   json-ld
   matrix
+  multi_json (= 1.14.1)
   nokogiri (= 1.10.9)
   parallel (= 1.19.1)
   pry
@@ -205,7 +206,7 @@ DEPENDENCIES
   rspec
   rubocop
   rubocop-ast (= 0.0.3)
-  rubocop-performance
+  rubocop-performance (= 1.6.1)
   rubocop-rspec (= 1.40.0)
   ruby-progressbar
   sidekiq
