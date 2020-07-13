@@ -26,14 +26,27 @@ services:
     volumes:
       - "redis:/data"
   newspeek:
-    build: .
-    ports:
-      - "9292:9292"
     volumes:
       - ".:/app"
+    build: .
+    command: test
+  newspeek-worker:
     depends_on:
       - elasticsearch
       - kibana
       - redis
+    image: newspeek
     env_file:
       - .env_file
+    command: run_worker
+  newspeek-api:
+    depends_on:
+      - elasticsearch
+      - kibana
+      - redis
+    image: newspeek
+    ports:
+      - "9292:9292"
+    env_file:
+      - .env_file
+    command: start_server

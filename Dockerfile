@@ -11,5 +11,4 @@ COPY Gemfile ./
 RUN bundle install
 COPY . .
 
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["make"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "make"]
