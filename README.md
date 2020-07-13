@@ -16,7 +16,7 @@ A Fact / Claim Review aggregation service.
 
 ## Testing
 
-- `docker-compose run newspeek make test`
+- `docker-compose run newspeek test`
 
 ## To-do:
 
