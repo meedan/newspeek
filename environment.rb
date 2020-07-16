@@ -25,22 +25,22 @@ require('elasticsearch')
 require('elasticsearch/dsl')
 require('elasticsearch/persistence')
 
-SETTINGS = JSON.parse(File.read(ENV['settings_filename'] || 'settings.json'))
-SETTINGS['es_host'] = ENV['ELASTICSEARCH_URL'] || SETTINGS['es_host']
-SETTINGS['redis_host'] = ENV['REDIS_URL'] || SETTINGS['redis_host']
-redis_config = { host: SETTINGS['redis_host']}
-redis_config[:password] = SETTINGS['redis_password'] if SETTINGS['redis_password']
+require_relative('lib/settings')
+redis_config = { host: Settings.get('redis_host')}
+redis_config[:password] = Settings.get('redis_password') if Settings.get('redis_password')
 Sidekiq.configure_client do |config|
   config.redis = redis_config
 end
 Sidekiq.configure_server do |config|
   config.redis = redis_config
 end
-Airbrake.configure do |config|
-  config.host = SETTINGS['airbrake_api_host']
-  config.project_id = 1 # required, but any positive integer works
-  config.project_key = SETTINGS['airbrake_api_key']
-  config.logger.level = Logger::DEBUG
+if Settings.get('airbrake_api_host')
+  Airbrake.configure do |config|
+    config.host = Settings.get('airbrake_api_host')
+    config.project_id = 1 # required, but any positive integer works
+    config.project_key = Settings.get('airbrake_api_key')
+    config.logger.level = Logger::DEBUG
+  end
 end
 Dir[File.dirname(__FILE__) + '/extensions/*.rb'].sort.each { |file| require file }
 Dir[File.dirname(__FILE__) + '/models/*.rb'].sort.each { |file| require file }

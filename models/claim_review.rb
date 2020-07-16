@@ -49,22 +49,26 @@ class ClaimReview
   end
 
   def self.es_hostname
-    SETTINGS['es_host'] || 'http://localhost:9200'
+    Settings.get('es_host')
   end
 
   def self.client
     Elasticsearch::Client.new(url: es_hostname)
   end
 
+  def self.es_index_name
+    Settings.get('es_index_name')
+  end
+
   def self.delete_by_service(service)
     ClaimReview.client.delete_by_query(
-      { index: SETTINGS['es_index_name'] }.merge(body: ElasticSearchQuery.service_query(service))
+      { index: self.es_index_name }.merge(body: ElasticSearchQuery.service_query(service))
     )["deleted"]
   end
 
   def self.get_hits(search_params)
     ClaimReview.client.search(
-      { index: SETTINGS['es_index_name'] }.merge(search_params)
+      { index: self.es_index_name }.merge(search_params)
     )['hits']['hits'].map { |x| x['_source'] }
   end
 

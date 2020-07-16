@@ -7,7 +7,7 @@ class BoomLive < ReviewParser
   end
 
   def api_params
-    { "s-id": SETTINGS['boom_live_api_key'] }
+    { "s-id": Settings.get('boom_live_api_key') }
   end
 
   def get_path(path)
