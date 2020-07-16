@@ -21,9 +21,6 @@ require('simplecov')
 SimpleCov.start
 load('environment.rb')
 WebMock.disable_net_connect!(allow_localhost: true)
-
-SETTINGS = JSON.parse(File.read(File.dirname(__FILE__) + '/../settings.json'))
-SETTINGS["ENV"] = "test"
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest

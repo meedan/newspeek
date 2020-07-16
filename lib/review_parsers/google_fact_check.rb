@@ -10,7 +10,7 @@ class GoogleFactCheck < ReviewParser
   end
 
   def make_get_request(path, params)
-    url = host + path + '?' + URI.encode_www_form(params.merge(key: SETTINGS['google_api_key']))
+    url = host + path + '?' + URI.encode_www_form(params.merge(key: Settings.get('google_api_key')))
     JSON.parse(
       RestClient.get(
         url
