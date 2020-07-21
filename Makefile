@@ -1,5 +1,5 @@
 wait:
-	until curl --silent -XGET --fail $(ELASTICSEARCH_URL); do printf '.'; sleep 1; done
+	until curl --silent -XGET --fail $(es_host); do printf '.'; sleep 1; done
 start_server: wait
 	bundle exec rackup -o 0.0.0.0
 collect_all: wait

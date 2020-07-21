@@ -1,5 +1,3 @@
-*.json
-settings.json
 *.DS_Store
 *.log
 *.gem
@@ -13,6 +11,9 @@ settings.json
 /test/tmp/
 /test/version_tmp/
 /tmp/
+
+# Docker env file
+.env_file
 
 # Used by dotenv library to load environment variables.
 # .env
