@@ -25,26 +25,25 @@ services:
       - "6379:6379"
     volumes:
       - "redis:/data"
-  newspeek:
+  worker:
     volumes:
       - ".:/app"
-    build: .
-    command: test
-  newspeek-worker:
     depends_on:
       - elasticsearch
       - kibana
       - redis
-    image: newspeek
+    build: .
     env_file:
       - .env_file
     command: run_worker
-  newspeek-api:
+  newspeek:
+    volumes:
+      - ".:/app"
     depends_on:
       - elasticsearch
       - kibana
       - redis
-    image: newspeek
+    build: .
     ports:
       - "9292:9292"
     env_file:

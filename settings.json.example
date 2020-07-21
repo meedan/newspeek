@@ -1,9 +1,0 @@
-{
-  "redis_host": "redis",
-  "es_host": "http://elasticsearch:9200",
-  "es_index_name": "claim_reviews",
-  "google_api_key": "API_KEY",
-  "boom_live_api_key": "API_KEY",
-  "airbrake_api_host": "https://localhost:12345",
-  "airbrake_api_key": "API_KEY"
-}

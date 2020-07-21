@@ -26,7 +26,7 @@ require('elasticsearch/dsl')
 require('elasticsearch/persistence')
 
 require_relative('lib/settings')
-redis_config = { host: Settings.get('redis_host')}
+redis_config = { host: Settings.get('redis_host'), database: Settings.get('redis_database') }
 redis_config[:password] = Settings.get('redis_password') if Settings.get('redis_password')
 Sidekiq.configure_client do |config|
   config.redis = redis_config
@@ -34,7 +34,7 @@ end
 Sidekiq.configure_server do |config|
   config.redis = redis_config
 end
-if Settings.get('airbrake_api_host')
+unless Settings.blank?('airbrake_api_host')
   Airbrake.configure do |config|
     config.host = Settings.get('airbrake_api_host')
     config.project_id = 1 # required, but any positive integer works
