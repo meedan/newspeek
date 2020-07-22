@@ -34,12 +34,10 @@ class ReviewParser
     parsers[service].new(cursor_back_to_date).get_claim_reviews
   end
 
-  def get_url(url)
+  def make_request
     retry_count = 0
     begin
-      response = RestClient.get(
-        url
-      )
+      yield
     rescue RestClient::BadGateway, RestClient::NotFound, SocketError, Errno::ETIMEDOUT => e
       if retry_count < 3
         retry_count += 1
@@ -49,6 +47,22 @@ class ReviewParser
         Error.log(e)
         return nil
       end
+    end
+  end
+
+  def post_url(url, body)
+    make_request do
+      response = RestClient.post(
+        url, body
+      )
+    end
+  end
+
+  def get_url(url)
+    make_request do
+      response = RestClient.get(
+        url
+      )
     end
   end
 
