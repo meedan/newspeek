@@ -1,20 +1,13 @@
 # frozen_string_literal: true
 
+require_relative('../lib/claim_review_export')
+require_relative('../lib/elastic_search_accessors')
+require_relative('../lib/elastic_search_methods')
 class ClaimReview
   include Elasticsearch::DSL
-  attr_reader :attributes
-  def self.persistable_raw_claim_reviews
-    %w[afp_checamos afp africa_check alt_news_in data_commons factly india_today factly reuters washington_post]
-  end
-
-  def initialize(attributes = {})
-    @attributes = attributes
-  end
-
-  def to_hash
-    @attributes
-  end
-
+  extend ClaimReviewExport
+  include ElasticSearchAccessors
+  extend ElasticSearchMethods
   def self.mandatory_fields
     %w[claim_review_headline claim_review_url created_at id]
   end
@@ -27,7 +20,7 @@ class ClaimReview
     mandatory_fields.each do |field|
       return nil if parsed_claim_review[field].nil?
     end
-    if self.persistable_raw_claim_reviews.include?(parsed_claim_review['service'].to_s)
+    if ClaimReviewParser.persistable_raw_claim_reviews.include?(parsed_claim_review['service'].to_s)
       parsed_claim_review['raw_claim_review'] = parsed_claim_review['raw_claim_review'].to_json
     else
       parsed_claim_review.delete('raw_claim_review')
@@ -43,39 +36,32 @@ class ClaimReview
   rescue StandardError => e
     Error.log(e, {validated_claim_review: validated_claim_review})
   end
-
-  def self.repository
-    ClaimReviewRepository.new(client: client)
+  
+  def self.es_index_key
+    'es_index_name'
   end
 
-  def self.es_hostname
-    Settings.get('es_host')
-  end
-
-  def self.client
-    Elasticsearch::Client.new(url: es_hostname)
-  end
-
-  def self.es_index_name
-    Settings.get('es_index_name')
+  def self.service_query(service)
+    { index: self.es_index_name }.merge(body: ElasticSearchQuery.service_query(service))
   end
 
   def self.delete_by_service(service)
-    ClaimReview.client.delete_by_query(
-      { index: self.es_index_name }.merge(body: ElasticSearchQuery.service_query(service))
-    )["deleted"]
+    ClaimReview.client.delete_by_query(self.service_query(service))["deleted"]
   end
 
   def self.get_count_for_service(service)
-    ClaimReview.client.search(
-      { index: self.es_index_name }.merge(body: ElasticSearchQuery.service_query(service))
-    )['hits']['total']
+    self.get_hits(self.service_query(service), "total")
   end
 
-  def self.get_hits(search_params)
-    ClaimReview.client.search(
+  def self.get_hits(search_params, return_type="hits")
+    response = ClaimReview.client.search(
       { index: self.es_index_name }.merge(search_params)
-    )['hits']['hits'].map { |x| x['_source'] }
+    )['hits']
+    if return_type == "hits"
+      response['hits'].map { |x| x['_source'] }
+    elsif return_type == "total"
+      response['total']
+    end
   end
 
   def self.extract_matches(matches, match_type, service, sort=ElasticSearchQuery.created_at_desc)
@@ -122,25 +108,4 @@ class ClaimReview
     self.get_first_date_for_service_by_sort(service, ElasticSearchQuery.created_at_desc)
   end
 
-  def self.convert_to_claim_review(claim_review)
-    {
-      "@context": 'http://schema.org',
-      "@type": 'ClaimReview',
-      "datePublished": Time.parse(claim_review['created_at']).strftime('%Y-%m-%d'),
-      "url": claim_review['claim_review_url'],
-      "author": {
-        "name": claim_review['author'],
-        "url": claim_review['author_link']
-      },
-      "claimReviewed": claim_review['claim_review_headline'],
-      "text": claim_review['claim_review_body'],
-      "image": claim_review['claim_review_image_url'],
-      "reviewRating": {
-        "@type": 'Rating',
-        "ratingValue": claim_review['claim_review_result_score'],
-        "bestRating": 1,
-        "alternateName": claim_review['claim_review_result']
-      }
-    }
-  end
 end

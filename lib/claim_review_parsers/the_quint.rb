@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class TheQuint < ReviewParser
+class TheQuint < ClaimReviewParser
   def hostname
     'https://www.thequint.com'
   end

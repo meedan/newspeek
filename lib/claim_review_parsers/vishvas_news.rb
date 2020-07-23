@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Parser for https://www.vishvasnews.com
-class VishvasNews < ReviewParser
+class VishvasNews < ClaimReviewParser
   include PaginatedReviewClaims
   def initialize
     @get_url_request_method = "post"

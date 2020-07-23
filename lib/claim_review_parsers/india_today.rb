@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class IndiaToday < ReviewParser
+class IndiaToday < ClaimReviewParser
   include PaginatedReviewClaims
   def hostname
     'https://www.indiatoday.in'
@@ -13,6 +13,14 @@ class IndiaToday < ReviewParser
 
   def url_extraction_search
     'div.detail h2 a'
+  end
+
+  def headline_search
+    'div.story-section h1'
+  end
+  
+  def body_search
+    'div.story-right p'
   end
 
   def url_extractor(atag)
@@ -34,8 +42,8 @@ class IndiaToday < ReviewParser
         created_at: Time.parse(claim_review["datePublished"]),
         author: claim_review["author"]["name"],
         author_link: nil,
-        claim_review_headline: raw_claim_review['page'].search('div.story-section h1').text.strip,
-        claim_review_body: raw_claim_review['page'].search('div.story-right p').text.strip,
+        claim_review_headline: raw_claim_review['page'].search(headline_search).text.strip,
+        claim_review_body: raw_claim_review['page'].search(body_search).text.strip,
         claim_review_image_url: claim_review_image_url_from_raw_claim_review(raw_claim_review),
         claim_review_reviewed: claim_review["claimReviewed"],
         claim_review_result: claim_review["reviewRating"]["alternateName"],

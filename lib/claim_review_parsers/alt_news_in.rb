@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Parser for https://www.altnews.in
-class AltNewsIn < ReviewParser
+class AltNewsIn < ClaimReviewParser
   include PaginatedReviewClaims
   def hostname
     'https://www.altnews.in/'

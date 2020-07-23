@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-class StubReviewJSON < ReviewParser
+class StubReviewJSON < ClaimReviewParser
   include PaginatedReviewClaims
   def initialize
     @fact_list_page_parser = 'json'
@@ -22,7 +22,7 @@ class StubReviewJSON < ReviewParser
   end
 end
 
-describe ReviewParser do
+describe ClaimReviewParser do
   before do
     stub_request(:get, 'http://examplejson.com/')
       .with(
@@ -81,7 +81,7 @@ describe ReviewParser do
 
   describe 'class' do
     it 'expects service symbol' do
-      expect(described_class.service).to(eq(:review_parser))
+      expect(described_class.service).to(eq(:claim_review_parser))
     end
 
     it 'expects parsers map' do
@@ -96,7 +96,7 @@ describe ReviewParser do
   end
 end
 
-RSpec.describe "ReviewParser subclasses" do
+RSpec.describe "ClaimReviewParser subclasses" do
   before do
     stub_request(:get, "https://www.boomlive.in/video-claiming-hindu-kids-are-being-taught-namaz-in-karnataka-is-misleading/")
       .with(
@@ -108,7 +108,8 @@ RSpec.describe "ReviewParser subclasses" do
          }).
        to_return(status: 200, body: "", headers: {})
   end
-  (ReviewParser.subclasses-[StubReview, PostStubReview, StubReviewJSON]).each do |subclass|
+
+  (ClaimReviewParser.subclasses-[StubReviewJSON]).each do |subclass|
     it "ensures #{subclass} returns ES-storable objects" do 
       raw = JSON.parse(File.read("spec/fixtures/#{subclass.service}_raw.json"))
       raw['page'] = Nokogiri.parse(raw['page']) if raw['page']

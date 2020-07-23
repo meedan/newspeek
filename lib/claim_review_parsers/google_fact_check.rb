@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class GoogleFactCheck < ReviewParser
+class GoogleFactCheck < ClaimReviewParser
   def host
     'https://factchecktools.googleapis.com'
   end

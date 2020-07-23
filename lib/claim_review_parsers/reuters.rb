@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Reuters < ReviewParser
+class Reuters < ClaimReviewParser
   include PaginatedReviewClaims
   def hostname
     'https://www.reuters.com'
