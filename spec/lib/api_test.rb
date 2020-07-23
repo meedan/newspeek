@@ -17,7 +17,7 @@ describe API do
     end
 
     it 'lists available services' do
-      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything()).and_return({"took"=>21, "timed_out"=>false, "_shards"=>{"total"=>1, "successful"=>1, "skipped"=>0, "failed"=>0}, "hits"=>{"total"=>14055, "max_score"=>2.1063054, "hits"=>[{"_index"=>"claim_reviews", "_type"=>"claim_review", "_id"=>"0f6a429f5a4e6d017b152665f9cdcadc"}]}})
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything()).and_return({"took"=>21, "timed_out"=>false, "_shards"=>{"total"=>1, "successful"=>1, "skipped"=>0, "failed"=>0}, "hits"=>{"total"=>14055, "max_score"=>2.1063054, "hits"=>[{"_source" => {"created_at" => "2020-01-01", "_index"=>"claim_reviews", "_type"=>"claim_review", "_id"=>"0f6a429f5a4e6d017b152665f9cdcadc"}}]}})
       expect(described_class.services.class).to(eq(Hash))
     end
   end

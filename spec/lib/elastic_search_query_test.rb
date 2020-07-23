@@ -20,7 +20,7 @@ describe ElasticSearchQuery do
     end
 
     it 'expects multi_match_against_service hash' do
-      expect(described_class.multi_match_against_service(%w[one two], 'ball', 'google')).to(eq({ size: 2, from: 0, sort: [{created_at:{order: 'desc'}}], query: { bool: { must: [{ match_all: {} }], filter: [{ match_phrase: { 'service' => 'google' } }, { bool: { should: [{ match_phrase: { 'ball' => 'one' } }, { match_phrase: { 'ball' => 'two' } }], minimum_should_match: 1 } }], should: [], must_not: [] } } }))
+      expect(described_class.multi_match_against_service(%w[one two], 'ball', 'google', ElasticSearchQuery.created_at_desc)).to(eq({ size: 2, from: 0, sort: [{created_at:{order: 'desc'}}], query: { bool: { must: [{ match_all: {} }], filter: [{ match_phrase: { 'service' => 'google' } }, { bool: { should: [{ match_phrase: { 'ball' => 'one' } }, { match_phrase: { 'ball' => 'two' } }], minimum_should_match: 1 } }], should: [], must_not: [] } } }))
     end
 
     it 'expects claim_review_search_query hash, full params' do
