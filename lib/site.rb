@@ -13,4 +13,8 @@ class Site < Sinatra::Base
   get '/about' do
     return API.about.to_json
   end
+
+  get '/services' do
+    return API.services.to_json
+  end
 end

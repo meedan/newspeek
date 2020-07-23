@@ -66,17 +66,23 @@ class ClaimReview
     )["deleted"]
   end
 
+  def self.get_count_for_service(service)
+    ClaimReview.client.search(
+      { index: self.es_index_name }.merge(body: ElasticSearchQuery.service_query(service))
+    )['hits']['total']
+  end
+
   def self.get_hits(search_params)
     ClaimReview.client.search(
       { index: self.es_index_name }.merge(search_params)
     )['hits']['hits'].map { |x| x['_source'] }
   end
 
-  def self.extract_matches(matches, match_type, service)
+  def self.extract_matches(matches, match_type, service, sort=ElasticSearchQuery.created_at_desc)
     matched_set = []
     matches.each_slice(100) do |match_set|
       matched_set << ClaimReview.get_hits(
-        body: ElasticSearchQuery.multi_match_against_service(match_set, match_type, service)
+        body: ElasticSearchQuery.multi_match_against_service(match_set, match_type, service, sort)
       ).map { |x| x[match_type] }
     end
     matched_set.flatten.uniq
@@ -85,6 +91,7 @@ class ClaimReview
   def self.convert_id(id, service)
     Digest::MD5.hexdigest("#{service}_#{id}")
   end
+
   def self.existing_ids(ids, service)
     extract_matches(ids.collect{|id| self.convert_id(id, service)}, 'id', service)
   end
@@ -97,10 +104,22 @@ class ClaimReview
     self.save_claim_review(parsed_claim_review, service) if existing_ids([parsed_claim_review[:id]], service).empty?
   end
 
-  def self.search(opts)
+  def self.search(opts, sort=ElasticSearchQuery.created_at_desc)
     ClaimReview.get_hits(
-      body: ElasticSearchQuery.claim_review_search_query(opts)
+      body: ElasticSearchQuery.claim_review_search_query(opts, sort)
     ).map { |r| ClaimReview.convert_to_claim_review(r) }
+  end
+
+  def self.get_first_date_for_service_by_sort(service, sort)
+    self.search({per_page: 1, offset: 0, service: service}, sort)[0][:datePublished]
+  end
+
+  def self.get_earliest_date_for_service(service)
+    self.get_first_date_for_service_by_sort(service, ElasticSearchQuery.created_at_asc)
+  end
+
+  def self.get_latest_date_for_service(service)
+    self.get_first_date_for_service_by_sort(service, ElasticSearchQuery.created_at_desc)
   end
 
   def self.convert_to_claim_review(claim_review)

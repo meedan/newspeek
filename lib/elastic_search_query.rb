@@ -11,11 +11,23 @@ class ElasticSearchQuery
     }
   end
 
-  def self.base_query(limit, offset)
+  def self.created_at_with_sort_order(sort_order)
+    [{"created_at": {"order": sort_order}}]
+  end
+
+  def self.created_at_desc
+    self.created_at_with_sort_order("desc")
+  end
+
+  def self.created_at_asc
+    self.created_at_with_sort_order("asc")
+  end
+
+  def self.base_query(limit, offset, sort=self.created_at_desc)
     {
       "size": limit||20,
       "from": offset||0,
-      "sort": [{"created_at": {"order": "desc"}}],
+      "sort": sort,
       "query": {
         "bool": {
           "must": [
@@ -77,20 +89,20 @@ class ElasticSearchQuery
     end
   end
 
-  def self.service_scoped_limit_offset_query(service, limit, offset)
-    query = ElasticSearchQuery.base_query(limit, offset)
+  def self.service_scoped_limit_offset_query(service, limit, offset, sort)
+    query = ElasticSearchQuery.base_query(limit, offset, sort)
     query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('service', service) if service
     query
   end
 
-  def self.multi_match_against_service(matches, match_type, service)
-    query = ElasticSearchQuery.service_scoped_limit_offset_query(service, matches.length, 0)
+  def self.multi_match_against_service(matches, match_type, service, sort)
+    query = ElasticSearchQuery.service_scoped_limit_offset_query(service, matches.length, 0, sort)
     query[:query][:bool][:filter] << ElasticSearchQuery.multi_match_query(match_type, matches)
     query
   end
 
-  def self.claim_review_search_query(opts)
-    query = ElasticSearchQuery.service_scoped_limit_offset_query(opts[:service], opts[:per_page], opts[:offset])
+  def self.claim_review_search_query(opts, sort=ElasticSearchQuery.created_at_desc)
+    query = ElasticSearchQuery.service_scoped_limit_offset_query(opts[:service], opts[:per_page], opts[:offset], sort)
     if opts[:search_query]
       query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('claim_review_headline', opts[:search_query])
     end
