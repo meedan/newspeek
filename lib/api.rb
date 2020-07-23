@@ -28,4 +28,12 @@ class API
       }
     }
   end
+
+  def self.services
+    {
+      services: ReviewParser.parsers.collect{|k,v| 
+        {service: k, count: ClaimReview.get_count_for_service(k)}
+      }
+    }
+  end
 end
