@@ -18,10 +18,17 @@ class API
             params: {
               query: 'string (default none)',
               service: 'string (default none)',
-              created_at_start: "time-parseable string (e.g. '2020-01-01' or 'Sept 20 2019', default none)",
-              created_at_end: "time-parseable string (e.g. '2020-01-01' or 'Sept 20 2019', default none)",
+              start_time: "time-parseable string (e.g. '2020-01-01' or 'Sept 20 2019', default none)",
+              end_time: "time-parseable string (e.g. '2020-01-01' or 'Sept 20 2019', default none)",
               per_page: 'integer (default 20)',
               offset: 'integer (default 0)'
+            }
+          }
+        ],
+        "/services.json": [
+          {
+            method: 'GET',
+            params: {
             }
           }
         ]
