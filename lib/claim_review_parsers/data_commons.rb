@@ -3,7 +3,7 @@
 # Parser for DataCommons dataset. This is not a live dataset, is sourced
 # from https://www.datacommons.org/factcheck/download#fcmt-data, and
 # appears to end around June 2019. Almost solely included for research purposes.
-class DataCommons < ReviewParser
+class DataCommons < ClaimReviewParser
   include GenericRawClaimParser
   include ReviewRatingParser
   def self.dataset_path

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Parser for https://africacheck.org
-class AfricaCheck < ReviewParser
+class AfricaCheck < ClaimReviewParser
   include PaginatedReviewClaims
   def hostname
     'https://africacheck.org'

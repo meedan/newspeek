@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Parser for http://boomlive.in/ - does not follow standard Pagination scheme from PaginatedReviewClaims!
-class BoomLive < ReviewParser
+class BoomLive < ClaimReviewParser
   def hostname
     'http://boomlive.in/'
   end

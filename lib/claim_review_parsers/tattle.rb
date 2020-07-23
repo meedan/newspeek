@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Tattle < ReviewParser
+class Tattle < ClaimReviewParser
   def self.dataset_path
     'datasets/tattle_claims.json'
   end

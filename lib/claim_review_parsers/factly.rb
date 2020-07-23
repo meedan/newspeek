@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Parser for https://factly.in
-class Factly < ReviewParser
+class Factly < ClaimReviewParser
   include PaginatedReviewClaims
   def hostname
     'https://factly.in'

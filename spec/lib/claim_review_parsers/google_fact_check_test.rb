@@ -90,7 +90,7 @@ describe GoogleFactCheck do
     it 'runs store_claim_reviews_for_publisher_and_offset' do
       raw = JSON.parse(File.read('spec/fixtures/google_fact_check_raw.json'))
       described_class.any_instance.stub(:get_new_from_publisher).with('foo', 0).and_return([raw])
-      ReviewParser.stub(:store_to_db).with(anything, anything).and_return([])
+      ClaimReviewParser.stub(:store_to_db).with(anything, anything).and_return([])
       result = described_class.new.store_claim_reviews_for_publisher_and_offset('foo', 0)
       expect(result.class).to(eq(Array))
       expect(result.length).to(eq(1))

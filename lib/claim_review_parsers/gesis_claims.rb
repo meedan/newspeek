@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Parser for
-class GESISClaims < ReviewParser
+class GESISClaims < ClaimReviewParser
   include GenericRawClaimParser
   def get_fact_ids(page, limit = 100)
     JSON.parse(

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-class StubReview < ReviewParser
+class StubReview < ClaimReviewParser
   include PaginatedReviewClaims
+  @persistable = false
   def hostname
     'http://examplejson.com'
   end
@@ -15,8 +16,9 @@ class StubReview < ReviewParser
   end
 end
 
-class PostStubReview < ReviewParser
+class PostStubReview < ClaimReviewParser
   include PaginatedReviewClaims
+  @persistable = false
   def initialize
     @get_url_request_method = "post"
     super
@@ -38,8 +40,9 @@ class PostStubReview < ReviewParser
     'a'
   end
 end
-class StubReviewJSON < ReviewParser
+class StubReviewJSON < ClaimReviewParser
   include PaginatedReviewClaims
+  @persistable = false
 end
 
 describe PaginatedReviewClaims do
