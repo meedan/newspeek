@@ -1,4 +1,12 @@
 class Settings
+  def self.airbrake_specified?
+    Settings.blank?('airbrake_api_host')
+  end
+
+  def self.airbrake_unspecified?
+    Settings.blank?('airbrake_api_host') && Settings.get('RACK_ENV') != 'test'
+  end
+
   def self.get(var_name)
     ENV[var_name] || self.defaults[var_name]
   end
