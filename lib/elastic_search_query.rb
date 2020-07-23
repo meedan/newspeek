@@ -15,6 +15,7 @@ class ElasticSearchQuery
     {
       "size": limit||20,
       "from": offset||0,
+      "sort": [{"created_at": {"order": "desc"}}],
       "query": {
         "bool": {
           "must": [
