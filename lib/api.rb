@@ -32,7 +32,7 @@ class API
   def self.services
     {
       services: ReviewParser.parsers.collect{|k,v| 
-        {service: k, count: ClaimReview.get_count_for_service(k)}
+        {service: k, count: ClaimReview.get_count_for_service(k), earliest: ClaimReview.get_earliest_date_for_service(k), latest: ClaimReview.get_latest_date_for_service(k)}
       }
     }
   end
