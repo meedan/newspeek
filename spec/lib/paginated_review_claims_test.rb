@@ -14,12 +14,47 @@ class StubReview < ReviewParser
     'a'
   end
 end
+
+class PostStubReview < ReviewParser
+  include PaginatedReviewClaims
+  def initialize
+    @get_url_request_method = "post"
+    super
+  end
+
+  def hostname
+    'http://examplejson.com'
+  end
+
+  def fact_list_path(page = 1)
+    "/get"
+  end
+
+  def fact_list_body(page = 1)
+    "page=#{page}"
+  end
+
+  def url_extraction_search
+    'a'
+  end
+end
 class StubReviewJSON < ReviewParser
   include PaginatedReviewClaims
 end
 
 describe PaginatedReviewClaims do
   before do
+    stub_request(:post, "http://examplejson.com/get").
+      with(
+        body: "page=1",
+        headers: {
+    	  'Accept'=>'*/*',
+    	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+    	  'Content-Length'=>/.*/,
+    	  'Host'=>'examplejson.com',
+        "User-Agent": /.*/
+        }).
+      to_return(status: 200, body: "", headers: {})
     stub_request(:get, 'http://examplejson.com:9200/claim_reviews/_search')
       .with(
         body: /.*/,
@@ -73,6 +108,10 @@ describe PaginatedReviewClaims do
 
     it 'expects html parsed_fact_list_page' do
       expect(StubReview.new.get_fact_page_urls(1).class).to(eq(Array))
+    end
+
+    it 'expects html parsed_fact_list_page with postable StubReview' do
+      expect(PostStubReview.new.get_fact_page_urls(1).class).to(eq(Array))
     end
 
     it 'expects parsed_fact_page' do

@@ -20,7 +20,11 @@ module PaginatedReviewClaims
   end
 
   def parsed_fact_list_page(page = 1)
-    response = get_url(hostname + fact_list_path(page))
+    if @get_url_request_method == "post"
+      response = post_url(hostname + fact_list_path(page), fact_list_body(page))
+    else
+      response = get_url(hostname + fact_list_path(page))
+    end
     return if response.nil?
     if @fact_list_page_parser == 'html'
       Nokogiri.parse(response)

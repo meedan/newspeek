@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-class IndiaToday < ReviewParser
+class AajtakIndiaToday < ReviewParser
   include PaginatedReviewClaims
   def hostname
-    'https://www.indiatoday.in'
+    'https://aajtak.intoday.in'
   end
 
   def fact_list_path(page = 1)
     # they start with 0-indexes, so push back internally
-    "/fact-check?page=#{page - 1}"
+    "/fact-check.html/#{page*30}"
   end
 
   def url_extraction_search
-    'div.detail h2 a'
+    'div.content-article'
   end
 
-  def url_extractor(atag)
-    hostname + atag.attributes['href'].value
+  def url_extractor(article)
+    hostname + article.search("a").first.attributes['href'].value
   end
 
   def claim_review_from_raw_claim_review(raw_claim_review)
@@ -34,8 +34,8 @@ class IndiaToday < ReviewParser
         created_at: Time.parse(claim_review["datePublished"]),
         author: claim_review["author"]["name"],
         author_link: nil,
-        claim_review_headline: raw_claim_review['page'].search('div.story-section h1').text.strip,
-        claim_review_body: raw_claim_review['page'].search('div.story-right p').text.strip,
+        claim_review_headline: raw_claim_review['page'].search('h1.secArticleTitle').text.strip,
+        claim_review_body: raw_claim_review['page'].search('div.storyBody p').text.strip,
         claim_review_image_url: claim_review_image_url_from_raw_claim_review(raw_claim_review),
         claim_review_reviewed: claim_review["claimReviewed"],
         claim_review_result: claim_review["reviewRating"]["alternateName"],
