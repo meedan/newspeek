@@ -46,4 +46,4 @@ Dir[File.dirname(__FILE__) + '/extensions/*.rb'].sort.each { |file| require file
 Dir[File.dirname(__FILE__) + '/models/*.rb'].sort.each { |file| require file }
 Dir[File.dirname(__FILE__) + '/lib/*.rb'].sort.each { |file| require file }
 Dir[File.dirname(__FILE__) + '/tasks/*.rb'].sort.each { |file| require file }
-Dir[File.dirname(__FILE__) + '/lib/review_parsers/*.rb'].sort.each { |file| require file }
+Dir[File.dirname(__FILE__) + '/lib/claim_review_parsers/*.rb'].sort.each { |file| require file }

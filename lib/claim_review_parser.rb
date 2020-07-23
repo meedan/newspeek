@@ -1,8 +1,15 @@
 # frozen_string_literal: true
 
 # Eventually all subclasses here will need standardization about
-class ReviewParser
+class ClaimReviewParser
   attr_accessor :fact_list_page_parser, :run_in_parallel
+  def self.persistable_raw_claim_reviews
+    ClaimReviewParser.parsers.select{|k,v| v.persistable?}.keys.uniq
+  end
+
+  def self.persistable?
+    @persistable != false
+  end
 
   def initialize(cursor_back_to_date = nil)
     @fact_list_page_parser = 'html'
@@ -18,7 +25,7 @@ class ReviewParser
 
   def self.parsers
     Hashie::Mash[
-      Hash[ReviewParser.subclasses.map do |sc|
+      Hash[ClaimReviewParser.subclasses.map do |sc|
         [sc.service, sc]
       end]
     ]

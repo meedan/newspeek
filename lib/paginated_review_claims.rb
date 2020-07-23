@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Base-level ReviewParser code where claim providers have a paginated
+# Base-level ClaimReviewParser code where claim providers have a paginated
 # index page of claims and then require visting each URL-specified claim directly
 require_relative('review_rating_parser')
 module PaginatedReviewClaims

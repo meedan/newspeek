@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class WashingtonPost < ReviewParser
+class WashingtonPost < ClaimReviewParser
   include PaginatedReviewClaims
   def initialize(cursor_back_to_date = nil)
     super(cursor_back_to_date)

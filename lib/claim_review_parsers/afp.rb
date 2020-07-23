@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Parser for https://factcheck.afp.com
-class AFP < ReviewParser
+class AFP < ClaimReviewParser
   include PaginatedReviewClaims
   def hostname
     'https://factcheck.afp.com'
