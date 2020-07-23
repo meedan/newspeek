@@ -111,7 +111,7 @@ class ClaimReview
   end
 
   def self.get_first_date_for_service_by_sort(service, sort)
-    self.search({per_page: 1, offset: 0, service: service}, sort)[0][:datePublished]
+    (self.search({per_page: 1, offset: 0, service: service}, sort)[0]||{})[:datePublished]
   end
 
   def self.get_earliest_date_for_service(service)
