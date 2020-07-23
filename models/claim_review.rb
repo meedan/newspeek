@@ -66,6 +66,12 @@ class ClaimReview
     )["deleted"]
   end
 
+  def self.get_count_for_service(service)
+    ClaimReview.client.search(
+      { index: self.es_index_name }.merge(body: ElasticSearchQuery.service_query(service))
+    )['hits']['total']
+  end
+
   def self.get_hits(search_params)
     ClaimReview.client.search(
       { index: self.es_index_name }.merge(search_params)
@@ -85,6 +91,7 @@ class ClaimReview
   def self.convert_id(id, service)
     Digest::MD5.hexdigest("#{service}_#{id}")
   end
+
   def self.existing_ids(ids, service)
     extract_matches(ids.collect{|id| self.convert_id(id, service)}, 'id', service)
   end
