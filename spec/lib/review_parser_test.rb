@@ -34,12 +34,26 @@ describe ReviewParser do
         }
       )
       .to_return(status: 200, body: '{"blah": 1}', headers: {})
+      stub_request(:post, 'http://examplejson.com/')
+        .with(
+          headers: {
+            Accept: '*/*',
+            "Accept-Encoding": 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            Host: 'examplejson.com',
+            "User-Agent": /.*/
+          }
+        )
+        .to_return(status: 200, body: '', headers: {})
   end
 
   describe 'instance' do
     it 'rescues failed get_url' do
       RestClient.stub(:get).with(StubReviewJSON.new.hostname).and_raise(RestClient::NotFound)
       expect(StubReviewJSON.new.get_url(StubReviewJSON.new.hostname)).to(eq(nil))
+    end
+
+    it 'expects get_url' do
+      expect(StubReviewJSON.new.post_url(StubReviewJSON.new.hostname, "").class).to(eq(RestClient::Response))
     end
 
     it 'expects get_url' do
@@ -94,7 +108,7 @@ RSpec.describe "ReviewParser subclasses" do
          }).
        to_return(status: 200, body: "", headers: {})
   end
-  (ReviewParser.subclasses-[StubReview, StubReviewJSON]).each do |subclass|
+  (ReviewParser.subclasses-[StubReview, PostStubReview, StubReviewJSON]).each do |subclass|
     it "ensures #{subclass} returns ES-storable objects" do 
       raw = JSON.parse(File.read("spec/fixtures/#{subclass.service}_raw.json"))
       raw['page'] = Nokogiri.parse(raw['page']) if raw['page']
