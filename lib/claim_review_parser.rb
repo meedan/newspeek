@@ -12,7 +12,8 @@ class ClaimReviewParser
   end
 
   def initialize(cursor_back_to_date = nil)
-    @fact_list_page_parser = 'html'
+    @fact_list_page_parser ||= 'html'
+    @simple_page_urls ||= true
     @run_in_parallel = true
     @logger = Logger.new(STDOUT)
     @current_claims = []

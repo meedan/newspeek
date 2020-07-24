@@ -9,7 +9,7 @@ RSpec::Core::RakeTask.new(:test) do |t|
 end
 
 task :list_datasources do
-  puts ReviewParser.subclasses.map(&:service)
+  puts ClaimReviewParser.subclasses.map(&:service)
 end
 
 task :collect_datasource do
@@ -19,8 +19,7 @@ task :collect_datasource do
   end
   datasource = ARGV[1]
   cursor_back_to_date = ARGV[2]
-  ClaimReviewRepository.init_index
-  RunReviewParser.new.perform(datasource, cursor_back_to_date)
+  RunClaimReviewParser.perform_async(datasource, cursor_back_to_date)
 end
 
 task :collect_all do
@@ -29,10 +28,9 @@ task :collect_all do
     end
   end
   cursor_back_to_date = ARGV[1]
-  ClaimReviewRepository.init_index
-  ReviewParser.subclasses.map(&:service).each do |datasource|
+  ClaimReviewParser.subclasses.map(&:service).each do |datasource|
     puts "Updating #{datasource}..."
-    RunReviewParser.perform_async(datasource, cursor_back_to_date)
+    RunClaimReviewParser.perform_async(datasource, cursor_back_to_date)
   end
 end
 
