@@ -20,8 +20,22 @@ require('webmock/rspec')
 require('simplecov')
 SimpleCov.start
 load('environment.rb')
+require('fakeredis')
 ENV['RACK_ENV'] = 'test'
 WebMock.disable_net_connect!(allow_localhost: true)
+REDIS_CLIENT = Redis.new
+redis_conn = proc {
+  Redis.new
+}
+
+Sidekiq.configure_client do |config|
+  config.redis = ConnectionPool.new(size: 5, &redis_conn)
+end
+
+Sidekiq.configure_server do |config|
+  config.redis = ConnectionPool.new(size: 25, &redis_conn)
+end
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
