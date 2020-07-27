@@ -17,4 +17,16 @@ class Site < Sinatra::Base
   get '/services' do
     return API.services.to_json
   end
+
+  get '/subscribe' do
+    return API.get_subscriptions(params).to_json
+  end
+
+  post '/subscribe' do
+    return API.add_subscription(Hashie::Mash[JSON.parse(request.body.read)]).to_json
+  end
+
+  delete '/subscribe' do
+    return API.remove_subscription(Hashie::Mash[JSON.parse(request.body.read)]).to_json
+  end
 end

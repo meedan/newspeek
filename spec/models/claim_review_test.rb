@@ -31,7 +31,9 @@ describe ClaimReview do
     it 'saves MVP claim' do
       claim = Hashie::Mash[{ claim_review_headline: 'wow', claim_review_url: 'http://example.com', created_at: Time.parse('2020-01-01').strftime('%Y-%m-%dT%H:%M:%SZ'), id: 123 }]
       ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
-      expect(described_class.save_claim_review(claim, 'google')).to(eq({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 }))
+      response = described_class.save_claim_review(claim, 'google')
+      expect(response.length).to(eq(24))
+      expect(response.class).to(eq(String))
     end
 
     it 'expects repository instance' do
@@ -100,7 +102,9 @@ describe ClaimReview do
     claim_review = Hashie::Mash[{ raw_claim_review: {}, claim_review_headline: 'wow', claim_review_url: 'http://example.com', created_at: Time.parse('2020-01-01'), id: 123 }]
     Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [] } })
     ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
-    expect(described_class.store_claim_review(claim_review, 'google')).to(eq({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 }))
+    response = described_class.store_claim_review(claim_review, 'google')
+    expect(response.length).to(eq(24))
+    expect(response.class).to(eq(String))
   end
 
   it 'runs a search' do

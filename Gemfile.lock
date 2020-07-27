@@ -49,6 +49,8 @@ GEM
     elasticsearch-transport (7.7.0)
       faraday (~> 1)
       multi_json
+    fakeredis (0.8.0)
+      redis (~> 4.1)
     faraday (1.0.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.12.2)
@@ -188,6 +190,7 @@ DEPENDENCIES
   elasticsearch-api (= 7.7.0)
   elasticsearch-dsl
   elasticsearch-persistence
+  fakeredis
   ffi (= 1.12.2)
   fuzzy-string-match
   hashie
