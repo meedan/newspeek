@@ -20,11 +20,11 @@ describe Subscription do
     end
 
     it 'responds to add_subscription' do
-      expect(described_class.add_subscription('blah', 'http://blah.com/respond')).to(eq(true))
+      expect(described_class.add_subscription('blah', 'http://blah.com/respond')).to(eq([true]))
     end
 
     it 'responds to remove_subscription' do
-      expect(described_class.remove_subscription('blah', 'http://blah.com/respond')).to(eq(true))
+      expect(described_class.remove_subscription('blah', 'http://blah.com/respond')).to(eq([true]))
     end
 
     it 'responds to get_subscriptions' do
