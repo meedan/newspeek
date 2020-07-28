@@ -43,4 +43,18 @@ class API
       }
     }
   end
+
+  def self.get_subscriptions(params)
+    Subscription.get_subscriptions(params[:service])
+  end
+
+  def self.add_subscription(params)
+    Subscription.add_subscription(params[:service], params[:url])
+    Subscription.get_subscriptions(params[:service])
+  end
+
+  def self.remove_subscription(params)
+    Subscription.remove_subscription(params[:service], params[:url])
+    Subscription.get_subscriptions(params[:service])
+  end
 end

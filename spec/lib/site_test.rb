@@ -44,5 +44,36 @@ describe Site do
       expect(code).to(eq(200))
       expect(JSON.parse(body[0]).class).to(eq(Hash))
     end
+
+    it 'gets subscriptions' do
+      code, headers, body = described_class.call(
+        'REQUEST_METHOD' => 'GET',
+        'PATH_INFO' => '/subscribe',
+        'rack.input' => StringIO.new({service: 'blah'}.to_json)
+      )
+      expect(code).to(eq(200))
+      expect(JSON.parse(body[0]).class).to(eq(Array))
+    end
+
+    it 'adds subscriptions' do
+      code, headers, body = described_class.call(
+        'REQUEST_METHOD' => 'POST',
+        'PATH_INFO' => '/subscribe',
+        'rack.input' => StringIO.new({service: 'blah', url: 'http://blah.com/respond'}.to_json)
+      )
+      # binding.pry
+      expect(code).to(eq(200))
+      expect(JSON.parse(body[0])).to(eq(["http://blah.com/respond"]))
+    end
+
+    it 'removes subscriptions' do
+      code, headers, body = described_class.call(
+        'REQUEST_METHOD' => 'DELETE',
+        'PATH_INFO' => '/subscribe',
+        'rack.input' => StringIO.new({service: 'blah', url: 'http://blah.com/respond'}.to_json)
+      )
+      expect(code).to(eq(200))
+      expect(JSON.parse(body[0])).to(eq([]))
+    end
   end
 end

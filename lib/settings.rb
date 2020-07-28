@@ -21,7 +21,12 @@ class Settings
       'es_host' => 'http://elasticsearch:9200',
       'es_index_name' => 'claim_reviews',
       'redis_host' => 'redis',
+      'redis_port' => 6379,
       'redis_database' => 1,
     }
+  end
+
+  def self.redis_url
+    "redis://#{Settings.get('redis_host')}:#{Settings.get('redis_port')}/#{Settings.get('redis_database')}"
   end
 end

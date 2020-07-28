@@ -26,13 +26,21 @@ require('elasticsearch/dsl')
 require('elasticsearch/persistence')
 
 require_relative('lib/settings')
-redis_config = { host: Settings.get('redis_host'), database: Settings.get('redis_database') }
-redis_config[:password] = Settings.get('redis_password') if Settings.get('redis_password')
+REDIS_URL = {url: Settings.redis_url}
+REDIS_CLIENT = Redis.new(REDIS_URL)
+REDIS_CLIENT.auth(Settings.get('redis_password')) if Settings.get('redis_password')
+redis_config = proc { |config|
+  if Settings.get('redis_password')
+    config.redis = REDIS_URL.merge(password: Settings.get('redis_password'))
+  else
+    config.redis = REDIS_URL
+  end
+}
 Sidekiq.configure_client do |config|
-  config.redis = redis_config
+  redis_config.call(config)
 end
 Sidekiq.configure_server do |config|
-  config.redis = redis_config
+  redis_config.call(config)
 end
 unless Settings.blank?('airbrake_api_host')
   Airbrake.configure do |config|
