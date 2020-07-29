@@ -1,7 +1,7 @@
 ## Claim Review API
 [![Code Climate](https://api.codeclimate.com/v1/badges/42a4437feae3058176ff/maintainability)](https://codeclimate.com/repos/5ef4a2779226cb00dd00473b/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/42a4437feae3058176ff/test_coverage)](https://codeclimate.com/repos/5ef4a2779226cb00dd00473b/test_coverage)
-[![Travis](https://travis-ci.org/meedan/newspeek.svg?branch=develop)](https://travis-ci.org/meedan/newspeek)
+[![Travis](https://travis-ci.org/meedan/fetch.svg?branch=develop)](https://travis-ci.org/meedan/fetch)
 
 A Fact / Claim Review aggregation service.
 
@@ -12,11 +12,11 @@ A Fact / Claim Review aggregation service.
 - Open http://localhost:9292/about for the Claim Review API
 - Open http://localhost:5601 for the Kibana UI
 - Open http://localhost:9200 for the Elasticsearch API
-- `docker-compose exec newspeek bash` to get inside the claim review API bash and directly debug issues.
+- `docker-compose exec fetch bash` to get inside the claim review API bash and directly debug issues.
 
 ## Testing
 
-- `docker-compose run newspeek test`
+- `docker-compose run fetch test`
 
 ## To-do:
 
