@@ -36,7 +36,7 @@ services:
     env_file:
       - .env_file
     command: run_worker
-  newspeek:
+  fetch:
     volumes:
       - ".:/app"
     depends_on:
