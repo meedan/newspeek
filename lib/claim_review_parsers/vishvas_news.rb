@@ -40,6 +40,7 @@ class VishvasNews < ClaimReviewParser
     claim_review["reviewRating"]["alternateName"] &&
     claim_review["reviewRating"]["alternateName"].strip
   end
+
   def parse_raw_claim_review(raw_claim_review)
     api_response = raw_claim_review["raw_response"]
     claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0)

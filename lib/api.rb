@@ -31,6 +31,28 @@ class API
             params: {
             }
           }
+        ],
+        "/subscribe.json": [
+          {
+            method: 'GET',
+            params: {
+              service: 'string or list of strings (list all service strings via /services.json)'
+            }
+          },
+          {
+            method: 'POST',
+            params: {
+              service: 'string or list of strings (list all service strings via /services.json)',
+              url: '(url-safe) string or list of (url-safe) strings'
+            }
+          },
+          {
+            method: 'DELETE',
+            params: {
+              service: 'string or list of strings (list all service strings via /services.json)',
+              url: '(url-safe) string or list of (url-safe) strings'
+            }
+          },
         ]
       }
     }
