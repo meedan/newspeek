@@ -1,6 +1,7 @@
 module ClaimReviewExport
   def convert_to_claim_review(claim_review)
     {
+      "identifier": claim_review["id"],
       "@context": 'http://schema.org',
       "@type": 'ClaimReview',
       "datePublished": Time.parse(claim_review['created_at']).strftime('%Y-%m-%d'),
