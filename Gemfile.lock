@@ -190,7 +190,7 @@ DEPENDENCIES
   elasticsearch-api (= 7.7.0)
   elasticsearch-dsl
   elasticsearch-persistence
-  fakeredis
+  fakeredis (= 0.8.0)
   ffi (= 1.12.2)
   fuzzy-string-match
   hashie

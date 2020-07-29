@@ -35,7 +35,7 @@ describe Site do
     end
 
     it 'returns a services page' do
-      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything()).and_return({"took"=>21, "timed_out"=>false, "_shards"=>{"total"=>1, "successful"=>1, "skipped"=>0, "failed"=>0}, "hits"=>{"total"=>14055, "max_score"=>2.1063054, "hits"=>[{"_source" => {"created_at" => "2020-01-01", "_index"=>"claim_reviews", "_type"=>"claim_review", "_id"=>"0f6a429f5a4e6d017b152665f9cdcadc"}}]}})
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything()).and_return({"took"=>21, "timed_out"=>false, "_shards"=>{"total"=>1, "successful"=>1, "skipped"=>0, "failed"=>0}, "hits"=>{"total"=>14055, "max_score"=>2.1063054, "hits"=>[{"_source" => {"created_at" => "2020-01-01", "_index"=>"claim_reviews", "_type"=>"claim_review", "id"=>"0f6a429f5a4e6d017b152665f9cdcadc"}}]}})
       code, headers, body = described_class.call(
         'REQUEST_METHOD' => 'GET',
         'PATH_INFO' => '/services',
@@ -48,7 +48,7 @@ describe Site do
     it 'gets subscriptions' do
       code, headers, body = described_class.call(
         'REQUEST_METHOD' => 'GET',
-        'PATH_INFO' => '/subscribe',
+        'PATH_INFO' => '/subscribe.json',
         'rack.input' => StringIO.new({service: 'blah'}.to_json)
       )
       expect(code).to(eq(200))
@@ -58,10 +58,9 @@ describe Site do
     it 'adds subscriptions' do
       code, headers, body = described_class.call(
         'REQUEST_METHOD' => 'POST',
-        'PATH_INFO' => '/subscribe',
+        'PATH_INFO' => '/subscribe.json',
         'rack.input' => StringIO.new({service: 'blah', url: 'http://blah.com/respond'}.to_json)
       )
-      # binding.pry
       expect(code).to(eq(200))
       expect(JSON.parse(body[0])).to(eq(["http://blah.com/respond"]))
     end
@@ -69,7 +68,7 @@ describe Site do
     it 'removes subscriptions' do
       code, headers, body = described_class.call(
         'REQUEST_METHOD' => 'DELETE',
-        'PATH_INFO' => '/subscribe',
+        'PATH_INFO' => '/subscribe.json',
         'rack.input' => StringIO.new({service: 'blah', url: 'http://blah.com/respond'}.to_json)
       )
       expect(code).to(eq(200))
