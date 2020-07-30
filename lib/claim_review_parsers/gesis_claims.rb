@@ -102,9 +102,6 @@ class GESISClaims < ClaimReviewParser
   end
 
   def id_from_raw_claim_review(raw_claim_review)
-    get_key_value_from_raw_claim_review(raw_claim_review, 'id').split('/').last
-  rescue StandardError => e
-    Error.log(e)
-    ''
+    get_key_value_from_raw_claim_review(raw_claim_review, 'id').to_s.split('/').last
   end
 end

@@ -1,4 +1,4 @@
-## Claim Review API
+## Fetch
 [![Code Climate](https://api.codeclimate.com/v1/badges/42a4437feae3058176ff/maintainability)](https://codeclimate.com/repos/5ef4a2779226cb00dd00473b/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/42a4437feae3058176ff/test_coverage)](https://codeclimate.com/repos/5ef4a2779226cb00dd00473b/test_coverage)
 [![Travis](https://travis-ci.org/meedan/fetch.svg?branch=develop)](https://travis-ci.org/meedan/fetch)
