@@ -19,7 +19,8 @@ task :collect_datasource do
   end
   datasource = ARGV[1]
   cursor_back_to_date = ARGV[2]
-  RunClaimReviewParser.perform_async(datasource, cursor_back_to_date)
+  overwrite_existing_claims = ARGV[3] == "true"
+  RunClaimReviewParser.perform_async(datasource, cursor_back_to_date, overwrite_existing_claims)
 end
 
 task :collect_all do
@@ -28,9 +29,10 @@ task :collect_all do
     end
   end
   cursor_back_to_date = ARGV[1]
+  overwrite_existing_claims = ARGV[2] == "true"
   ClaimReviewParser.subclasses.map(&:service).each do |datasource|
     puts "Updating #{datasource}..."
-    RunClaimReviewParser.perform_async(datasource, cursor_back_to_date)
+    RunClaimReviewParser.perform_async(datasource, cursor_back_to_date, overwrite_existing_claims)
   end
 end
 

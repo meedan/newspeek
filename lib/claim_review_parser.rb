@@ -11,13 +11,13 @@ class ClaimReviewParser
     @persistable != false
   end
 
-  def initialize(cursor_back_to_date = nil)
+  def initialize(cursor_back_to_date = nil, overwrite_existing_claims = false)
     @fact_list_page_parser ||= 'html'
     @simple_page_urls ||= true
-    @overwrite_existing_claims ||= false
     @run_in_parallel = true
     @logger = Logger.new(STDOUT)
     @current_claims = []
+    @overwrite_existing_claims = overwrite_existing_claims
     @cursor_back_to_date = cursor_back_to_date
   end
 
@@ -33,8 +33,8 @@ class ClaimReviewParser
     ]
   end
 
-  def self.run(service, cursor_back_to_date = nil)
-    parsers[service].new(cursor_back_to_date).get_claim_reviews
+  def self.run(service, cursor_back_to_date = nil, overwrite_existing_claims = false)
+    parsers[service].new(cursor_back_to_date, overwrite_existing_claims).get_claim_reviews
   end
 
   def store_to_db(claim_reviews, service)
