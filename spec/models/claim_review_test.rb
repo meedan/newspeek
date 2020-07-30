@@ -80,6 +80,26 @@ describe ClaimReview do
       expect(described_class.existing_ids([1], 'google')).to(eq([]))
     end
 
+    it 'expects false response for params to should_save_claim_review' do
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [] } })
+      expect(described_class.should_save_claim_review([1], 'google', false)).to(eq(true))
+    end
+
+    it 'expects true response for params to should_save_claim_review' do
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [] } })
+      expect(described_class.should_save_claim_review([1], 'google', true)).to(eq(true))
+    end
+
+    it 'expects false response for params to should_save_claim_review' do
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{"_source" => {"id" => 1}}] } })
+      expect(described_class.should_save_claim_review([1], 'google', false)).to(eq(false))
+    end
+
+    it 'expects true response for params to should_save_claim_review' do
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{"_source" => {"id" => 1}}] } })
+      expect(described_class.should_save_claim_review([1], 'google', true)).to(eq(true))
+    end
+
     it 'expects non-empty existing_urls' do
       Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'claim_url' => 1 } }] } })
       expect(described_class.existing_urls([1], 'google')).to(eq([1]))
@@ -95,14 +115,14 @@ describe ClaimReview do
     claim_review = Hashie::Mash[{ raw_claim_review: {}, claim_review_headline: 'wow', claim_review_url: 'http://example.com', created_at: Time.parse('2020-01-01'), id: 123 }]
     Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'id' => 123 } }] } })
     ClaimReviewRepository.any_instance.stub(:save).with(claim_review.merge(service: 'google')).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
-    expect(described_class.store_claim_review(claim_review, 'google')).to(eq(nil))
+    expect(described_class.store_claim_review(claim_review, 'google', false)).to(eq(nil))
   end
 
   it 'stores MVP claim' do
     claim_review = Hashie::Mash[{ raw_claim_review: {}, claim_review_headline: 'wow', claim_review_url: 'http://example.com', created_at: Time.parse('2020-01-01'), id: 123 }]
     Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [] } })
     ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
-    response = described_class.store_claim_review(claim_review, 'google')
+    response = described_class.store_claim_review(claim_review, 'google', false)
     expect(response.length).to(eq(24))
     expect(response.class).to(eq(String))
   end

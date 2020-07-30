@@ -2,7 +2,7 @@
 
 # Eventually all subclasses here will need standardization about
 class ClaimReviewParser
-  attr_accessor :fact_list_page_parser, :run_in_parallel
+  attr_accessor :fact_list_page_parser, :run_in_parallel, :overwrite_existing_claims
   def self.persistable_raw_claim_reviews
     ClaimReviewParser.parsers.select{|k,v| v.persistable?}.keys.uniq
   end
@@ -14,6 +14,7 @@ class ClaimReviewParser
   def initialize(cursor_back_to_date = nil)
     @fact_list_page_parser ||= 'html'
     @simple_page_urls ||= true
+    @overwrite_existing_claims ||= false
     @run_in_parallel = true
     @logger = Logger.new(STDOUT)
     @current_claims = []
@@ -32,14 +33,14 @@ class ClaimReviewParser
     ]
   end
 
-  def self.store_to_db(claim_reviews, service)
-    claim_reviews.each do |parsed_claim_review|
-      ClaimReview.store_claim_review(Hashie::Mash[parsed_claim_review], service)
-    end
-  end
-
   def self.run(service, cursor_back_to_date = nil)
     parsers[service].new(cursor_back_to_date).get_claim_reviews
+  end
+
+  def store_to_db(claim_reviews, service)
+    claim_reviews.each do |parsed_claim_review|
+      ClaimReview.store_claim_review(Hashie::Mash[parsed_claim_review], service, @overwrite_existing_claims)
+    end
   end
 
   def make_request
@@ -84,7 +85,7 @@ class ClaimReviewParser
   end
 
   def process_claim_reviews(claim_reviews)
-    self.class.store_to_db(
+    store_to_db(
       claim_reviews, self.class.service
     )
     claim_reviews

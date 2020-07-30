@@ -84,7 +84,7 @@ class BoomLive < ClaimReviewParser
       author: raw_claim_review['source'],
       author_link: nil,
       claim_review_headline: raw_claim_review['heading'],
-      claim_review_body: Nokogiri.parse('<html>' + raw_claim_review['story'] + '</html>').text,
+      claim_review_body: Nokogiri.parse('<html>' + raw_claim_review['story'] + '</html>').css('p > text()').collect(&:text).join("\n"),
       claim_review_image_url: raw_claim_review["mediaId"],
       claim_review_result: claim_result,
       claim_review_result_score: claim_result.to_s.downcase.include?('false') ? 0 : 1,
