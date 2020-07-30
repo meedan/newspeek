@@ -82,15 +82,19 @@ class ClaimReview
   end
 
   def self.existing_ids(ids, service)
-    extract_matches(ids.collect{|id| self.convert_id(id, service)}, 'id', service)
+    self.extract_matches(ids.collect{|id| self.convert_id(id, service)}, 'id', service)
   end
 
   def self.existing_urls(urls, service)
-    extract_matches(urls, 'claim_url', service)
+    self.extract_matches(urls, 'claim_url', service)
   end
 
-  def self.store_claim_review(parsed_claim_review, service)
-    self.save_claim_review(parsed_claim_review, service) if existing_ids([parsed_claim_review[:id]], service).empty?
+  def self.should_save_claim_review(id, service, overwrite_existing_claims)
+    overwrite_existing_claims || self.existing_ids([id], service).empty?
+  end
+
+  def self.store_claim_review(parsed_claim_review, service, overwrite_existing_claims)
+    self.save_claim_review(parsed_claim_review, service) if self.should_save_claim_review(parsed_claim_review[:id], service, overwrite_existing_claims)
   end
 
   def self.search(opts, sort=ElasticSearchQuery.created_at_desc)
