@@ -45,7 +45,7 @@ describe GESISClaims do
     end
 
     it 'rescues from id_from_raw_claim_review' do
-      expect(described_class.new.id_from_raw_claim_review({})).to(eq(''))
+      expect(described_class.new.id_from_raw_claim_review({})).to(eq(nil))
     end
 
     it 'rescues from author_from_raw_claim_review' do
