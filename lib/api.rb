@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class API
+  def self.pong
+    {pong: true}
+  end
+
   def self.claim_reviews(opts = {})
     opts[:per_page] ||= 20
     opts[:offset] ||= 0
