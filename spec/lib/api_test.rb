@@ -2,6 +2,10 @@
 
 describe API do
   describe 'class' do
+    it 'has a load balancer endpoint' do
+      expect(described_class.pong).to(eq({pong: true}))
+    end
+
     it 'has a claim review endpoint' do
       ClaimReview.stub(:search).with({:offset=>0, :per_page=>20}).and_return([])
       expect(described_class.claim_reviews({})).to(eq([]))
