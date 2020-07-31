@@ -2,8 +2,12 @@
 
 class Site < Sinatra::Base
   use Airbrake::Rack::Middleware unless Settings.blank?('airbrake_api_host')
-  configure :production, :development do
+  configure :production, :development, :test do
     enable :logging
+  end
+
+  get "/ping.json" do
+    return API.pong.to_json
   end
 
   get '/claim_reviews.json' do

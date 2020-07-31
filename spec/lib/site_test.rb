@@ -3,6 +3,16 @@
 describe Site do
   describe 'endpoints' do
     it 'returns an empty GET claim_reviews.json response' do
+      code, headers, body = described_class.call(
+        'REQUEST_METHOD' => 'GET',
+        'PATH_INFO' => '/ping.json',
+        'rack.input' => StringIO.new
+      )
+      expect(code).to(eq(200))
+      expect(JSON.parse(body[0])).to(eq({"pong" => true}))
+    end
+
+    it 'returns an empty GET claim_reviews.json response' do
       ClaimReview.stub(:search).with({:offset=>0, :per_page=>20}).and_return([])
       code, headers, body = described_class.call(
         'REQUEST_METHOD' => 'GET',
