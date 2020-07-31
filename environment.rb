@@ -26,6 +26,7 @@ require('elasticsearch/dsl')
 require('elasticsearch/persistence')
 
 require_relative('lib/settings')
+Settings.check_into_elasticsearch
 REDIS_URL = {url: Settings.redis_url}
 REDIS_CLIENT = Redis.new(REDIS_URL)
 REDIS_CLIENT.auth(Settings.get('redis_password')) if Settings.get('redis_password')
