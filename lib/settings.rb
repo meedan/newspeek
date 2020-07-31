@@ -35,7 +35,8 @@ class Settings
     Settings.get('env') != 'test'
   end
 
-  def self.attempt_elasticsearch_connect(url)
+  def self.attempt_elasticsearch_connect
+    url = URI.parse(Settings.get('es_host'))
     Net::HTTP.start(
       url.host,
       url.port,
@@ -46,17 +47,20 @@ class Settings
     ) { |http| http.request(Net::HTTP::Get.new(url)) }
   end
 
+  def self.safe_attempt_elasticsearch_connect(timeout)
+    start = Time.now
+    begin
+      res = Settings.attempt_elasticsearch_connect
+    rescue Errno::ECONNREFUSED, SocketError
+      sleep(1)
+      retry if start+timeout > Time.now
+    end
+    return res
+  end
+
   def self.check_into_elasticsearch(timeout=60, bypass=!Settings.in_test_mode?)
     unless bypass
-      start = Time.now
-      url = URI.parse(Settings.get('es_host'))
-      res = nil
-      begin
-        res = Settings.attempt_elasticsearch_connect(url)
-      rescue Errno::ECONNREFUSED, SocketError
-        sleep(1)
-        retry if start+timeout > Time.now
-      end
+      res = Settings.safe_attempt_elasticsearch_connect(timeout)
       raise Settings.elastic_search_error if res.nil?
     end
   end
