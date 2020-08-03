@@ -10,11 +10,11 @@ endif
 start_server: configurator
 	set -o allexport && source .env_file && set +o allexport && bundle exec rackup -o 0.0.0.0
 
-collect_all: 
+collect_all: configurator
 	set -o allexport && source .env_file && set +o allexport && bundle exec rake collect_all
 
-run_worker: 
+run_worker: configurator
 	set -o allexport && source .env_file && set +o allexport && bundle exec sidekiq -r ./environment.rb -c 5
 
-test:
+test: configurator
 	set -o allexport && source .env_file && set +o allexport && bundle exec rake test
