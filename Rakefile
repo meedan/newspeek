@@ -36,4 +36,8 @@ task :collect_all do
   end
 end
 
+task :init_index do
+  ClaimReviewRepository.init_index
+end
+
 task(default: [:test])
