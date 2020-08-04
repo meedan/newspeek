@@ -117,4 +117,11 @@ RSpec.describe "ClaimReviewParser subclasses" do
       expect(parsed_claim_review.values_at(*(parsed_claim_review.keys-[:raw_claim_review])).collect(&:class).uniq-[NilClass, String, Float, Time, Integer]).to(eq([]))
     end
   end
+  (ClaimReviewParser.subclasses-[StubReviewJSON]).each do |subclass|
+    it "ensures #{subclass} can run as a task" do
+      subclass.any_instance.stub(:get_claim_reviews).and_return(nil)
+      RunClaimReviewParser.stub(:perform_in).and_return(nil)
+      expect(RunClaimReviewParser.new.perform(subclass.service)).to(eq(nil))
+    end
+  end
 end

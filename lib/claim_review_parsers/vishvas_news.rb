@@ -4,10 +4,10 @@
 class VishvasNews < ClaimReviewParser
   attr_accessor :raw_response
   include PaginatedReviewClaims
-  def initialize(cursor_back_to_date = nil)
+  def initialize(cursor_back_to_date = nil, overwrite_existing_claims=false)
+    super(cursor_back_to_date, overwrite_existing_claims)
     @fact_list_page_parser = 'json'
     @raw_response = {}
-    super(cursor_back_to_date)
   end
 
   def get_new_fact_page_urls(page)
