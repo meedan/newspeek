@@ -17,8 +17,13 @@ class ClaimReviewParser
     @run_in_parallel = true
     @logger = Logger.new(STDOUT)
     @current_claims = []
+    @cookies = get_cookies
     @overwrite_existing_claims = overwrite_existing_claims
     @cursor_back_to_date = cursor_back_to_date
+  end
+
+  def get_cookies
+    JSON.parse(File.read("config/cookies.json"))[self.class.service.to_s]||{}
   end
 
   def self.service
@@ -59,20 +64,23 @@ class ClaimReviewParser
     end
   end
 
-  def post_url(url, body)
+  def request(method, url, payload=nil)
     make_request do
-      response = RestClient.post(
-        url, body
+      RestClient::Request.execute(
+        method: method,
+        url: url,
+        payload: payload,
+        cookies: @cookies
       )
     end
   end
 
+  def post_url(url, body)
+    request(:post, url, body)
+  end
+
   def get_url(url)
-    make_request do
-      response = RestClient.get(
-        url
-      )
-    end
+    request(:get, url)
   end
 
   def get_existing_urls(urls)
