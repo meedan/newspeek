@@ -48,7 +48,7 @@ describe ClaimReviewParser do
 
   describe 'instance' do
     it 'rescues failed get_url' do
-      RestClient.stub(:get).with(StubReviewJSON.new.hostname).and_raise(RestClient::NotFound)
+      RestClient::Request.stub(:execute).with(anything()).and_raise(RestClient::NotFound)
       expect(StubReviewJSON.new.get_url(StubReviewJSON.new.hostname)).to(eq(nil))
     end
 
