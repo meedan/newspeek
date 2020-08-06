@@ -78,9 +78,13 @@ jobs:
 
     - name: Run Tests
       id: run-test
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: fetch
+        IMAGE_TAG: ${{ github.sha }}
       run: |
         mkdir coverage
-        docker run --rm -v coverage:/app/coverage ${{ needs.Build.outputs.image }} test
+        docker run --rm -v coverage:/app/coverage $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG test
     
     - name: Send data to Code Climate
       run:
