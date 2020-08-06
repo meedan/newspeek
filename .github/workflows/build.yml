@@ -5,7 +5,7 @@ on:
     branches: ['develop']
 
 jobs:
-  Build:
+  Build Test Deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +17,7 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-1
-        
+
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
@@ -35,10 +35,54 @@ jobs:
           ${{ runner.os }}-buildx-
 
     - name: Docker Buildx (build)
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: fetch
+        IMAGE_TAG: ${{ github.sha }}
       run: |
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --output "type=image,push=true" \
-          --tag 848416313321.dkr.ecr.eu-west-1.amazonaws.com/fetch:${{ github.sha }} \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Run Tests
+      id: run-test
+      run: |
+        mkdir coverage
+        docker run --rm -v coverage:/app/coverage ${{ steps.build-image.outputs.image }} test
+    
+    - name: Fill in the new image ID in the Amazon ECS task definition (fetch)
+      id: task-def-fetch
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: production/task-qa-fetch.json
+        container-name: qa-fetch
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Fill in the new image ID in the Amazon ECS task definition (fetch-worker)
+      id: task-def-worker
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: production/task-qa-fetch-worker.json
+        container-name: qa-fetch-worker
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition (fetch)
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def-fetch.outputs.task-definition }}
+        service: qa-fetch
+        cluster: ecs-qa
+        wait-for-service-stability: true
+
+    - name: Deploy Amazon ECS task definition (fetch-worker)
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def-worker.outputs.task-definition }}
+        service: qa-fetch-worker
+        cluster: ecs-qa
+        wait-for-service-stability: true
