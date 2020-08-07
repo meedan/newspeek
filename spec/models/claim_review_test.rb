@@ -17,7 +17,7 @@ describe ClaimReview do
 
     it 'validates MVP claim' do
       validated = described_class.validate_claim_review(Hashie::Mash[{ raw_claim_review: {}, claim_review_headline: 'wow', claim_review_url: 'http://example.com', created_at: Time.parse('2020-01-01'), id: 123 }])
-      expect(validated).to(eq({"claim_review_headline"=>"wow", "claim_review_url"=>"http://example.com", "created_at"=>"2020-01-01T00:00:00Z", "id"=>"a4d3900c63395cbfef47eb3650427af8"}))
+      expect(validated).to(eq({"claim_review_headline"=>"wow", "claim_review_url"=>"http://example.com", "created_at"=>"2020-01-01T00:00:00Z", "id"=>"a4d3900c63395cbfef47eb3650427af8", "language" => nil}))
     end
 
     it 'logs errors on storage failure' do
