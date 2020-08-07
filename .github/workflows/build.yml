@@ -86,7 +86,7 @@ jobs:
     
     - name: Send data to Code Climate
       run:
-        ./cc-test-reporter after-build --exit-code ${{ steps.run-test.outcome }}
+        ./cc-test-reporter after-build
   
   Deploy:
     runs-on: ubuntu-latest
