@@ -27,6 +27,7 @@ class ClaimReview
     end
     parsed_claim_review['id'] = self.convert_id(parsed_claim_review['id'], parsed_claim_review['service'])
     parsed_claim_review['created_at'] = self.parse_created_at(parsed_claim_review)
+    parsed_claim_review['language'] = Language.get_reliable_language(parsed_claim_review['claim_review_headline'])
     parsed_claim_review
   end
 
