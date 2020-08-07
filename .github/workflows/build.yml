@@ -86,7 +86,7 @@ jobs:
     
     - name: Send data to Code Climate
       run:
-        ./cc-test-reporter after-build
+        ./cc-test-reporter after-build -p ./coverage -t simplecov
   
   Deploy:
     runs-on: ubuntu-latest
