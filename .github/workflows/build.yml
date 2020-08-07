@@ -83,12 +83,12 @@ jobs:
         ECR_REPOSITORY: fetch
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        mkdir coverage
-        docker run --rm -v $(pwd)/coverage:/app/coverage $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG test
+        mkdir $GITHUB_WORKSPACE/coverage
+        docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG test
     
     - name: Send data to Code Climate
       run:
-        ./cc-test-reporter after-build -p ${pwd)/coverage -t simplecov
+        ./cc-test-reporter after-build -p $GITHUB_WORKSPACE/coverage -t simplecov
   
   Deploy:
     runs-on: ubuntu-latest
