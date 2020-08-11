@@ -92,12 +92,7 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Download task definitions
-      run: |
-        aws ecs describe-task-definition --task-definition qa-fetch --query taskDefinition > fetch-task-definition.json
-        aws ecs describe-task-definition --task-definition qa-fetch-worker --query taskDefinition > worker-task-definition.json
-
+      
     - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch)
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -106,7 +101,7 @@ jobs:
       id: task-def-fetch
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: fetch-task-definition.json
+        task-definition: qa-fetch-definition.json
         container-name: qa-fetch
         image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG    
 
@@ -114,7 +109,7 @@ jobs:
       id: task-def-worker
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: worker-task-definition.json
+        task-definition: qa-fetch-worker-definition.json
         container-name: qa-fetch-worker
         image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
