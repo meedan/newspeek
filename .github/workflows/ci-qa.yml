@@ -2,10 +2,10 @@ name: Build container
 
 on:
   push:
-    branches: ['build-test']
+    branches: ['develop']
 
 jobs:
-  CI:
+  CI-qa:
     runs-on: ubuntu-latest
 
     outputs: 
