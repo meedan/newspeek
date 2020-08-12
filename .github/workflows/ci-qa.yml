@@ -2,7 +2,7 @@ name: QA Build Test and Deploy
 
 on:
   push:
-    branches: ['build-test']
+    branches: ['develop']
 
 jobs:
   CI:
