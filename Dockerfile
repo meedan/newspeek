@@ -5,7 +5,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends curl build-
 
 WORKDIR /app
 
-COPY Gemfile ./
+COPY Gemfile* ./
 RUN bundle install
 COPY . .
 
