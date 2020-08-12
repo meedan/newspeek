@@ -171,3 +171,32 @@ jobs:
         task-definition: qa-fetch-worker-definition.json
         container-name: qa-fetch-worker
         image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition (fetch)
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def-fetch.outputs.task-definition }}
+        service: qa-fetch
+        cluster: ecs-qa
+        wait-for-service-stability: true
+
+    - name: Deploy Amazon ECS task definition (fetch-worker)
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def-worker.outputs.task-definition }}
+        service: qa-fetch-worker
+        cluster: ecs-qa
+        wait-for-service-stability: true
+
+    - name: Send Slack Notification
+      id: slack-notify
+      if: ${{ always() }}
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        author_name: 'Github Actions'
+        icon_emoji: ':octocat:'
+        fields: repo,message,author # selectable (default: repo,message)
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # optional
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
