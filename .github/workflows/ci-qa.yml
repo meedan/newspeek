@@ -1,11 +1,11 @@
-name: Build container
+name: QA Build Test and Deploy
 
 on:
   push:
     branches: ['build-test']
 
 jobs:
-  CI-qa:
+  CI:
     runs-on: ubuntu-latest
 
     outputs: 
@@ -53,11 +53,15 @@ jobs:
 
     - name: Run Tests
       id: run-test
+      env:
+        CC_TEST_REPORTER_ID: {{ secrets.CC_TEST_REPORTER_ID }}
       run: |
         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
         ./cc-test-reporter before-build
         mkdir $GITHUB_WORKSPACE/coverage
         docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} test
+        ls -l $GITHUB_WORKSPACE/coverage
+        ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.json
         cat $GITHUB_WORKSPACE/coverage/codeclimate.json | ./cc-test-reporter upload-coverage --input -
         ./cc-test-reporter show-coverage $GITHUB_WORKSPACE/coverage/codeclimate.json
 
