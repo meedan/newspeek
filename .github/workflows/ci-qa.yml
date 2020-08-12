@@ -63,7 +63,7 @@ jobs:
         ./cc-test-reporter before-build
         mkdir $GITHUB_WORKSPACE/coverage
         docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} test
-        ./cc-test-reporter -d after-build --exit-code 0 -t simplecov -p /app
+        ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
 
     - name: Download task definitions
       run: |
@@ -105,3 +105,15 @@ jobs:
         service: qa-fetch-worker
         cluster: ecs-qa
         wait-for-service-stability: true
+
+    - name: Send Slack Notification
+      id: slack-notify
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        author_name: 'Github Actions'
+        icon_emoji: ':octocat:'
+        fields: repo,message,author # selectable (default: repo,message)
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # optional
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
