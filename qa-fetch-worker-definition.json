@@ -1,0 +1,46 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "qa-fetch-worker",
+            "image": "848416313321.dkr.ecr.eu-west-1.amazonaws.com/fetch:14c9f55bf6dad5b8f381ab1a11c2881860c4cdb6",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": true,
+            "command": [
+                "run_worker"
+            ],
+            "environment": [
+                {
+                    "name": "APP",
+                    "value": "fetch"
+                },
+                {
+                    "name": "DEPLOY_ENV",
+                    "value": "qa"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "secrets": [
+                {
+                    "name": "GITHUB_TOKEN",
+                    "valueFrom": "arn:aws:secretsmanager:eu-west-1:848416313321:secret:GithubToken-Plain-BUhwIw"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/qa-fetch-worker",
+                    "awslogs-region": "eu-west-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ],
+    "family": "qa-fetch-worker",
+    "executionRoleArn": "arn:aws:iam::848416313321:role/ECSSecretsAccessRole",
+    "networkMode": "bridge",
+    "volumes": [],
+    "cpu": "1024",
+    "memory": "2048"
+}
