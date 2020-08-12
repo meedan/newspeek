@@ -5,7 +5,7 @@ on:
     branches: ['build-test']
 
 jobs:
-  Build:
+  CI:
     runs-on: ubuntu-latest
 
     outputs: 
@@ -49,22 +49,7 @@ jobs:
           --output "type=image,push=true" \
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-  Test:
-    runs-on: ubuntu-latest
-    needs: Build
-    steps:
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-1
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     - name: Run Tests
       id: run-test
@@ -75,27 +60,11 @@ jobs:
       run: |
         mkdir $GITHUB_WORKSPACE/coverage
         docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG test
-  
-  Deploy:
-    runs-on: ubuntu-latest
-    needs: [Build, Test]
-    steps:
-    - uses: actions/checkout@v2
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-1
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Download task definition (qa-fetch)
+    - name: Download task definitions
       run: |
-        aws ecs describe-task-definition --task-definition qa-fetch --query taskDefinition > task-definition.json
+        aws ecs describe-task-definition --task-definition qa-fetch --query taskDefinition > fetch-task-definition.json
+        aws ecs describe-task-definition --task-definition qa-fetch-worker --query taskDefinition > worker-task-definition.json
 
     - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch)
       env:
@@ -105,17 +74,9 @@ jobs:
       id: task-def-fetch
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: task-definition.json
+        task-definition: fetch-task-definition.json
         container-name: qa-fetch
-        image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-    - name: Print Task definition
-      run: |
-        cat task-definition.json
-        
-    - name: Download task definition (qa-fetch-worker)
-      run: |
-        aws ecs describe-task-definition --task-definition qa-fetch-worker --query taskDefinition > worker-task-definition.json
+        image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG    
 
     - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch-worker)
       id: task-def-worker
@@ -128,7 +89,7 @@ jobs:
     - name: Deploy Amazon ECS task definition (fetch)
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
-        task-definition: ${{ steps.task-def-fetch.outputs.task-definition }}
+        task-definition: ${{ steps.task-def-fetch.outputs.task-def-fetch }}
         service: qa-fetch
         cluster: ecs-qa
         wait-for-service-stability: true
@@ -136,7 +97,7 @@ jobs:
     - name: Deploy Amazon ECS task definition (fetch-worker)
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
-        task-definition: ${{ steps.task-def-worker.outputs.task-definition }}
+        task-definition: ${{ steps.task-def-worker.outputs.task-def-worker }}
         service: qa-fetch-worker
         cluster: ecs-qa
         wait-for-service-stability: true
