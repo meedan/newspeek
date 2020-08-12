@@ -2,7 +2,7 @@ name: Build container
 
 on:
   push:
-    branches: ['develop']
+    branches: ['build-test']
 
 jobs:
   CI-qa:
