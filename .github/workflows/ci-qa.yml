@@ -61,9 +61,7 @@ jobs:
         mkdir $GITHUB_WORKSPACE/coverage
         docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} test
         ls -l $GITHUB_WORKSPACE/coverage
-        ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.json
-        cat $GITHUB_WORKSPACE/coverage/codeclimate.json | ./cc-test-reporter upload-coverage --input -
-        ./cc-test-reporter show-coverage $GITHUB_WORKSPACE/coverage/codeclimate.json
+        ./cc-test-reporter after-build  --exit-code 0
 
     - name: Download task definitions
       run: |
