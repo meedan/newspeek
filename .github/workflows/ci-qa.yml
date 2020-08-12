@@ -66,7 +66,7 @@ jobs:
         export GIT_COMMITTED_AT=$(date +'%s')
         docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} test
         ls -l $GITHUB_WORKSPACE/coverage
-        ./cc-test-reporter -d after-build --exit-code 0 -t simplecov
+        ./cc-test-reporter -d after-build --exit-code 0 -t simplecov -p /app
 
     - name: Download task definitions
       run: |
