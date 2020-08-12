@@ -49,16 +49,13 @@ jobs:
           --output "type=image,push=true" \
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
     - name: Run Tests
       id: run-test
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: fetch
-        IMAGE_TAG: ${{ github.sha }}
       run: |
         mkdir $GITHUB_WORKSPACE/coverage
-        docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG test
+        docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} test
 
     - name: Download task definitions
       run: |
@@ -75,7 +72,7 @@ jobs:
       with:
         task-definition: fetch-task-definition.json
         container-name: qa-fetch
-        image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG    
+        image: ${{ steps.build-image.outputs.image }}   
 
     - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch-worker)
       id: task-def-worker
@@ -83,7 +80,7 @@ jobs:
       with:
         task-definition: qa-fetch-worker-definition.json
         container-name: qa-fetch-worker
-        image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        image: ${{ steps.build-image.outputs.image }}
 
     - name: Deploy Amazon ECS task definition (fetch)
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
