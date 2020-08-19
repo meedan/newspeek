@@ -7,19 +7,15 @@ describe Estadao do
     end
 
     it 'has a fact_list_path' do
-      expect(described_class.new.fact_list_path(1)).to(eq('/blogs/estadao-verifica/1/'))
+      expect(described_class.new.fact_list_path(1)).to(eq('/blogs/estadao-verifica/page/1/'))
     end
 
     it 'has a url_extraction_search' do
-      expect(described_class.new.url_extraction_search).to(eq('section.custom-news div.box a'))
+      expect(described_class.new.url_extraction_search).to(eq('div.paged-content section.custom-news div.box h3.third'))
     end
 
     it 'extracts a url' do
-      expect(described_class.new.url_extractor(Nokogiri.parse("<a href='/blah'>wow</a>").search('a')[0])).to(eq('https://politica.estadao.com.br/blah'))
-    end
-
-    it 'rescues against a claim_review_image_url_from_raw_claim_review' do
-      expect(described_class.new.claim_review_image_url_from_raw_claim_review({"page" => Nokogiri.parse("<a href='/blah'>wow</a>")})).to(eq(nil))
+      expect(described_class.new.url_extractor(Nokogiri.parse("<a href='/blah'><h3>wow</h3></a>").search('h3')[0])).to(eq('/blah'))
     end
 
     it 'parses a raw_claim_review' do
