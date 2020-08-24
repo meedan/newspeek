@@ -17,7 +17,7 @@ jobs:
           aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
           role-to-assume: ${{ secrets.TEST_AWS_ROLE_TO_ASSUME }}
-          role-session-name: ${{ github.ref }}/${{ github.sha }}
+          role-session-name: ${GITHUB_REF#refs/*/}/${{ github.sha }}
           aws-region: eu-west-1
 
       - name: Login to Amazon ECR
@@ -28,7 +28,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ github.event.repository.name }}
-          DEPLOYMENT_NAME: $(echo ${{ github.ref }} | sed 's/.*deploy\///')
+          DEPLOYMENT_NAME: $(echo ${GITHUB_REF#refs/*/} | sed 's/.*deploy\///')
         run: |
           docker build -t $DEPLOYMENT_NAME -f ./Dockerfile
           # push to remote repository with branch deployment as tag
