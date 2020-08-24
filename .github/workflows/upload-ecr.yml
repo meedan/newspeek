@@ -13,7 +13,9 @@ jobs:
 
       - name: Output branch name
         id: vars
-        run: echo ::set-output name=branch::${GITHUB_REF#refs/*/}
+        run: |
+          echo ::set-output name=branch::${GITHUB_REF#refs/*/}
+          echo ::set-output name=short_sha::$(git rev-parse --short HEAD)
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -21,7 +23,7 @@ jobs:
           aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
           role-to-assume: ${{ secrets.TEST_AWS_ROLE_TO_ASSUME }}
-          role-session-name: ${{ steps.vars.outputs.branch }}/${{ github.sha }}
+          role-session-name: $(echo ${{ steps.vars.outputs.branch }}-${{ steps.vars.outputs.branch }} | sed 's/.*\///')
           aws-region: eu-west-1
 
       - name: Login to Amazon ECR
