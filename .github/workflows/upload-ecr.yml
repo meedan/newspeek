@@ -1,0 +1,38 @@
+name: Upload Image To ECR
+
+on:
+  push:
+    branches:
+      - '*deploy/*'
+
+jobs:
+
+  upload-to-ecr:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: ${{ github.ref }}/${{ github.sha }}
+          aws-region: eu-west-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ github.event.repository.name }}
+          DEPLOYMENT_NAME: $(echo ${{ }} | sed 's/.*deploy\///')
+        run: |
+          docker build -t $DEPLOYMENT_NAME -f ./Dockerfile
+          # push to remote repository with branch deployment as tag
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DEPLOYMENT_NAME
+          # push to remote repository with git sha as tag
+          docker tag $DEPLOYMENT_NAME ${{ github.sha }}
+          docker push ${{ github.sha }}
