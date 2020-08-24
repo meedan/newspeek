@@ -20,23 +20,7 @@ A Fact / Claim Review aggregation service.
 
 ## Rake Tasks
 
-`bundle exec rake test` - run test suite
-`bundle exec rake list_datasources` - list all services currently implemented in `fetch`
-`bundle exec rake collect_datasource [service] [cursor_back_to_date] [overwrite_existing_claims]` - initiate crawl on `service` that optionally forces collection back to a `Time`-parseable `cursor_back_to_date`. Optionally allow `overwrite_existing_claims` - can be `true` or `false` - if true, will overwrite documents - useful for addressing issues with malformed existing documents.
-`bundle exec rake collect_all [cursor_back_to_date] [overwrite_existing_claims]` - Kickoff crawl for all currently-implemented services. Optionally allow `overwrite_existing_claims` - can be `true` or `false` - if true, will overwrite documents - useful for addressing issues with malformed existing documents.
-
-## To-do:
-
-0. Get added to ~Code Climate~, ~Travis~, ~Errbit~
-1. ~Write per page result rather than waiting to write all documents at the end.~
-2. ~Convert tasks to run via Sidekiq~
-3. ~Add cursor_back_to_time option to bypass stopping when all URLs are found on a page~
-4. ~Upload schema file to index and create index with JSON file, do this via Docker~
-5. ~Persist Raw Claims where Raw Claims were ClaimReview compliant cases~
-6. Finish integrations with ~Code Climate~ / ~Rubocop~ / ~Travis~
-7. ~Slight modification to Docker setup to allow running tests or server or worker according to commands passed in~
-8. ~Errbit integration?~
-9. Deployment automation with GitHub Actions
-10. ~Add webhooks for subscribing to data updates~
-11. ~Generate "pristine" dataset of all facts and provide to staging / prod to prevent re-mining exact same data~
-12. ~Get back to 100% code coverage~
+- `bundle exec rake test` - run test suite
+- `bundle exec rake list_datasources` - list all services currently implemented in `fetch`
+- `bundle exec rake collect_datasource [service] [cursor_back_to_date] [overwrite_existing_claims]` - initiate crawl on `service` that optionally forces collection back to a `Time`-parseable `cursor_back_to_date`. Optionally allow `overwrite_existing_claims` - can be `true` or `false` - if true, will overwrite documents - useful for addressing issues with malformed existing documents.
+- `bundle exec rake collect_all [cursor_back_to_date] [overwrite_existing_claims]` - Kickoff crawl for all currently-implemented services. Optionally allow `overwrite_existing_claims` - can be `true` or `false` - if true, will overwrite documents - useful for addressing issues with malformed existing documents.
