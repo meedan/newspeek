@@ -28,7 +28,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ github.event.repository.name }}
-          DEPLOYMENT_NAME: $(echo ${{ }} | sed 's/.*deploy\///')
+          DEPLOYMENT_NAME: $(echo ${{ github.ref }} | sed 's/.*deploy\///')
         run: |
           docker build -t $DEPLOYMENT_NAME -f ./Dockerfile
           # push to remote repository with branch deployment as tag
