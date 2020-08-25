@@ -16,5 +16,5 @@ collect_all: configurator
 run_worker: configurator
 	set -o allexport && source .env_file && set +o allexport && bundle exec sidekiq -r ./environment.rb -c 5
 
-test:
+test: configurator
 	bundle exec rake test

@@ -8,11 +8,11 @@ jobs:
   CI:
     runs-on: ubuntu-latest
 
-    outputs: 
+    outputs:
       image: ${{ steps.build-image.outputs.image }}
     steps:
     - uses: actions/checkout@v2
-      
+
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -58,6 +58,9 @@ jobs:
         GIT_SHA: ${{ github.sha }}
         GIT_BRANCH: ${{ github.ref }}
         BUILD_NUMBER: ${{ github.run_number }}
+        APP: check
+        DEPLOY_ENV: travis
+        CONFIGURATOR_TOKEN: ${{ secrets.CONFIGURATOR_TOKEN }}
       run: |
         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
         ./cc-test-reporter before-build
@@ -80,7 +83,7 @@ jobs:
       with:
         task-definition: fetch-task-definition.json
         container-name: qa-fetch
-        image: ${{ steps.build-image.outputs.image }}   
+        image: ${{ steps.build-image.outputs.image }}
 
     - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch-worker)
       id: task-def-worker
@@ -116,5 +119,5 @@ jobs:
         icon_emoji: ':octocat:'
         fields: repo,message,author # selectable (default: repo,message)
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # optional
+        CONFIGURATOR_TOKEN: ${{ secrets.CONFIGURATOR_TOKEN }} # optional
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
