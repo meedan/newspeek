@@ -84,9 +84,6 @@ jobs:
         GIT_SHA: ${{ github.sha }}
         GIT_BRANCH: ${{ github.ref }}
         BUILD_NUMBER: ${{ github.run_number }}
-        APP: check
-        DEPLOY_ENV: travis
-        CONFIGURATOR_TOKEN: ${{ secrets.CONFIGURATOR_TOKEN }}
       run: |
         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
         ./cc-test-reporter before-build
@@ -201,5 +198,5 @@ jobs:
         icon_emoji: ':octocat:'
         fields: repo,message,author # selectable (default: repo,message)
       env:
-        CONFIGURATOR_TOKEN: ${{ secrets.CONFIGURATOR_TOKEN }} # optional
+        GITHUB_TOKEN: ${{ secrets.CONFIGURATOR_TOKEN }} # optional
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
