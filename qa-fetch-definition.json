@@ -29,7 +29,7 @@
             "volumesFrom": [],
             "secrets": [
                 {
-                    "name": "GITHUB_TOKEN",
+                    "name": "CONFIGURATOR_TOKEN",
                     "valueFrom": "arn:aws:secretsmanager:eu-west-1:848416313321:secret:GithubToken-Plain-BUhwIw"
                 }
             ],
