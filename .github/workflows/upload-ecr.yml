@@ -5,6 +5,10 @@ on:
     branches:
       - '*deploy/*'
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
 
   upload-to-ecr:
@@ -14,8 +18,11 @@ jobs:
       - name: Output branch name
         id: vars
         run: |
-          echo ::set-output name=branch::${GITHUB_REF#refs/*/} | sed 's/.*\///'
-          echo ::set-output name=short_sha::${GITHUB_SHA: -7:1}
+          export BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
+          echo ::set-output name=branch::$BRANCH
+          echo ::set-output name=short_sha::${GITHUB_SHA: -8}
+          export DEPLOYMENT=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*deploy\///')
+          echo ::set-output name=deployment::$DEPLOYMENT
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -36,11 +43,11 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ github.event.repository.name }}
-          DEPLOYMENT_NAME: $(echo ${{ steps.vars.outputs.branch }} | sed 's/.*deploy\///')
+          DEPLOYMENT_NAME: ${{ steps.vars.outputs.deployment }}
         run: |
-          docker build -t $DEPLOYMENT_NAME -f ./Dockerfile
+          docker build -t ${{ env.DEPLOYMENT_NAME }} -f ./Dockerfile
           # push to remote repository with branch deployment as tag
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DEPLOYMENT_NAME
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DEPLOYMENT_NAME }}
           # push to remote repository with git sha as tag
-          docker tag $DEPLOYMENT_NAME ${{ github.sha }}
+          docker tag ${{ env.DEPLOYMENT_NAME }} ${{ github.sha }}
           docker push ${{ github.sha }}
