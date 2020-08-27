@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Output branch name
+      - name: Output variable names
         id: vars
         run: |
           export BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
