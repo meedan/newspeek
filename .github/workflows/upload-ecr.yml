@@ -14,6 +14,7 @@ jobs:
   upload-to-ecr:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
 
       - name: Output branch name
         id: vars
@@ -39,15 +40,47 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push to ECR
+      - name: Set up Docker Buildx
+        uses: crazy-max/ghaction-docker-buildx@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Docker Buildx build
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ github.event.repository.name }}
+        run: |
+          docker buildx build \
+            --cache-from "type=local,src=/tmp/.buildx-cache" \
+            --cache-to "type=local,dest=/tmp/.buildx-cache" \
+            --output "type=image,push=false" \
+            --tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+            --file ./Dockerfile ./
+
+      - name: Docker Buildx push
+        id: tag-images-and-push
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ github.event.repository.name }}
           DEPLOYMENT_NAME: ${{ steps.vars.outputs.deployment }}
         run: |
-          docker build -f ./Dockerfile -t ${{ env.DEPLOYMENT_NAME }} .
-          # push to remote repository with branch deployment as tag
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DEPLOYMENT_NAME }}
           # push to remote repository with git sha as tag
-          docker tag ${{ env.DEPLOYMENT_NAME }} ${{ github.sha }}
-          docker push ${{ github.sha }}
+          docker buildx build \
+            --cache-from "type=local,src=/tmp/.buildx-cache" \
+            --output "type=image,push=true" \
+            --tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+            --file ./Dockerfile ./
+          # push to remote repository with branch deployment as tag
+          docker buildx build \
+            --cache-from "type=local,src=/tmp/.buildx-cache" \
+            --output "type=image,push=true" \
+            --tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DEPLOYMENT_NAME }} \
+            --file ./Dockerfile ./
