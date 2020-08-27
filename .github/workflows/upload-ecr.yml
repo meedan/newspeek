@@ -45,7 +45,7 @@ jobs:
           ECR_REPOSITORY: ${{ github.event.repository.name }}
           DEPLOYMENT_NAME: ${{ steps.vars.outputs.deployment }}
         run: |
-          docker build -t ${{ env.DEPLOYMENT_NAME }} -f ./Dockerfile
+          docker build -f ./Dockerfile -t ${{ env.DEPLOYMENT_NAME }} .
           # push to remote repository with branch deployment as tag
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DEPLOYMENT_NAME }}
           # push to remote repository with git sha as tag
