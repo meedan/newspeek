@@ -115,12 +115,17 @@ class WashingtonPost < ClaimReviewParser
     end
   end
 
+  def created_at_from_news_article(news_article)
+    news_article &&
+    news_article["datePublished"] &&
+    Time.parse(news_article["datePublished"])
+  end
   def parse_raw_claim_review(raw_claim_review)
     claim_result, claim_result_score = claim_result_and_claim_result_score_from_page(raw_claim_review['page'])
     news_article = extract_ld_json_script_block(raw_claim_review["page"], 0)
     {
       id: raw_claim_review['url']||"",
-      created_at: Time.parse(news_article["datePublished"]),
+      created_at: created_at_from_news_article(news_article),
       author: author_from_news_article(news_article),
       author_link: author_link_from_page(raw_claim_review['page']),
       claim_review_headline: news_article["headline"],
