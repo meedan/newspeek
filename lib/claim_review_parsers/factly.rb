@@ -28,7 +28,7 @@ class Factly < ClaimReviewParser
   def get_claim_result_from_page(page)
     fact_result = nil
     fact_index, bold_blockquotes = get_fact_index_from_page(page)
-    fact_result = bold_blockquotes[fact_index + 1].text if fact_index
+    fact_result = bold_blockquotes[fact_index + 1].text if fact_index and bold_blockquotes and bold_blockquotes[fact_index + 1]
     return fact_result
   end
 
