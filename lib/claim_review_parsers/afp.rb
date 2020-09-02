@@ -19,6 +19,7 @@ class AFP < ClaimReviewParser
   def url_extractor(atag)
     hostname + atag.attributes['href'].value
   end
+
   def claim_review_headline_from_raw_claim_review_and_claim_review(raw_claim_review, claim_review)
     title = raw_claim_review['page'].search('h1.content-title').text.strip
     title = claim_review["@graph"][0]["name"] if title.empty?
