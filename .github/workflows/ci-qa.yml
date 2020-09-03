@@ -2,7 +2,7 @@ name: QA Build Test and Deploy
 
 on:
   push:
-    branches: ['develop']
+    branches: ['develop', 'feature/8229-deploy-fetch-with-terraform']
 
 jobs:
   CI:
@@ -46,7 +46,6 @@ jobs:
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
-          --output "type=image,push=true" \
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
@@ -65,6 +64,26 @@ jobs:
         docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test
         ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
 
+    - name: Docker Buildx (push)
+      id: push-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: fetch
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # push with git sha
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --output "type=image,push=true" \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          --file ./Dockerfile ./
+        # push with docker tag `develop` to indicate branch
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --output "type=image,push=true" \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:develop \
+          --file ./Dockerfile ./
+
     - name: Kick off Terraform deploy in sysops/
       id: deploy
       run: |
@@ -72,7 +91,7 @@ jobs:
         -X POST \
         -H "Accept: application/vnd.github.v3+json" \
         https://api.github.com/repos/meedan/sysops/dispatches \
-        -u ${{ secrets.GITHUB_TOKEN }}
+        -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }}
         -d '{"event_type": "deploy", "client_payload": {"repo": "fetch", "image_tag": ${{ github.sha }}}}'
 
     - name: Send Slack Notification
