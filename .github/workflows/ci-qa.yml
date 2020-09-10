@@ -16,8 +16,9 @@ jobs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: ${{ secrets.TEST_AWS_ROLE_TO_ASSUME }}
         aws-region: eu-west-1
 
     - name: Login to Amazon ECR
@@ -46,7 +47,7 @@ jobs:
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
-          --output "type=image,push=true" \
+          --load \
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
@@ -65,46 +66,35 @@ jobs:
         docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test
         ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
 
-    - name: Download task definitions
-      run: |
-        aws ecs describe-task-definition --task-definition qa-fetch --query taskDefinition > fetch-task-definition.json
-        aws ecs describe-task-definition --task-definition qa-fetch-worker --query taskDefinition > worker-task-definition.json
-
-    - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch)
+    - name: Docker Buildx (push)
+      id: push-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: fetch
         IMAGE_TAG: ${{ github.sha }}
-      id: task-def-fetch
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: fetch-task-definition.json
-        container-name: qa-fetch
-        image: ${{ steps.build-image.outputs.image }}
+      run: |
+        # push with git sha
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --output "type=image,push=true" \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          --file ./Dockerfile ./
+        # push with docker tag `develop` to indicate branch
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --output "type=image,push=true" \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:develop \
+          --file ./Dockerfile ./
 
-    - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch-worker)
-      id: task-def-worker
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: qa-fetch-worker-definition.json
-        container-name: qa-fetch-worker
-        image: ${{ steps.build-image.outputs.image }}
-
-    - name: Deploy Amazon ECS task definition (fetch)
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def-fetch.outputs.task-definition }}
-        service: qa-fetch
-        cluster: ecs-qa
-        wait-for-service-stability: true
-
-    - name: Deploy Amazon ECS task definition (fetch-worker)
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def-worker.outputs.task-definition }}
-        service: qa-fetch-worker
-        cluster: ecs-qa
-        wait-for-service-stability: true
+    - name: Kick off Terraform deploy in sysops/
+      id: deploy
+      run: |
+        curl \
+        -X POST \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/meedan/sysops/dispatches \
+        -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }} \
+        -d '{"event_type": "deploy", "client_payload": {"repo": "fetch", "image_tag": "${{ github.sha }}", "github_ref": "${{ github.ref }}"}}'
 
     - name: Send Slack Notification
       id: slack-notify
