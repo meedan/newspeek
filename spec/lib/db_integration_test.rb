@@ -1,3 +1,4 @@
+SimpleCov.command_name "test:integration"
 describe 'integration test with ElasticSearch' do#, integration: true do
   before do
     WebMock.allow_net_connect!
@@ -7,7 +8,7 @@ describe 'integration test with ElasticSearch' do#, integration: true do
     WebMock.disable_net_connect!
   end
 
-  (ClaimReviewParser.subclasses-[StubReviewJSON]).each do |subclass|
+  ClaimReviewParser.subclasses.each do |subclass|
     it "ensures #{subclass} saves ES-storable objects, and yields those objects" do 
       raw = JSON.parse(File.read("spec/fixtures/#{subclass.service}_raw.json"))
       raw['page'] = Nokogiri.parse(raw['page']) if raw['page']

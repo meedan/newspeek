@@ -4,10 +4,20 @@ require('rake')
 require('rspec/core/rake_task')
 load('environment.rb')
 
-RSpec::Core::RakeTask.new(:test) do |t|
-  test_files = Dir.glob('spec/**/*_test.rb')
-  test_files = test_files.reject{|t| t.include?("_integration_test.rb")} if !Settings.in_integration_test_mode?
-  t.pattern = test_files
+desc "Run all tasks"
+task :test do
+  Rake::Task['test:unit'].execute 
+  Rake::Task['test:integration'].execute    
+end
+
+namespace :test do
+  RSpec::Core::RakeTask.new(:unit) do |t|
+    t.pattern = Dir.glob('spec/**/*_test.rb').reject{|t| t.include?("_integration_test.rb")}
+  end
+  RSpec::Core::RakeTask.new(:integration) do |t|
+    ENV["RUN_INTEGRATION_TESTS"] ||= 'true'
+    t.pattern = Dir.glob('spec/**/*_test.rb').select{|t| t.include?("_integration_test.rb")}
+  end
 end
 
 task :list_datasources do
