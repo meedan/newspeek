@@ -101,7 +101,7 @@ describe ClaimReview do
     end
 
     it 'expects non-empty existing_urls' do
-      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'claim_url' => 1 } }] } })
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'claim_review_url' => 1 } }] } })
       expect(described_class.existing_urls([1], 'google')).to(eq([1]))
     end
 

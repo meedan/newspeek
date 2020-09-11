@@ -5,7 +5,9 @@ require('rspec/core/rake_task')
 load('environment.rb')
 
 RSpec::Core::RakeTask.new(:test) do |t|
-  t.pattern = Dir.glob('spec/**/*_test.rb')
+  test_files = Dir.glob('spec/**/*_test.rb')
+  test_files = test_files.reject{|t| t.include?("_integration_test.rb")} if !Settings.in_integration_test_mode?
+  t.pattern = test_files
 end
 
 task :list_datasources do

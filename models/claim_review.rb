@@ -87,7 +87,7 @@ class ClaimReview
   end
 
   def self.existing_urls(urls, service)
-    self.extract_matches(urls, 'claim_url', service)
+    self.extract_matches(urls, 'claim_review_url', service)
   end
 
   def self.should_save_claim_review(id, service, overwrite_existing_claims)

@@ -1,4 +1,13 @@
 class Settings
+  
+  def self.get_es_index_name
+    'claim_reviews'+(self.in_integration_test_mode? ? "_test" : "")
+  end
+  
+  def self.in_integration_test_mode?
+    !Settings.get("RUN_INTEGRATION_TESTS").nil? && Settings.get("RUN_INTEGRATION_TESTS") != 'false'
+  end
+
   def self.airbrake_specified?
     Settings.blank?('airbrake_api_host')
   end
@@ -18,8 +27,8 @@ class Settings
 
   def self.defaults
     {
-      'es_host' => 'http://elasticsearch:9200',
-      'es_index_name' => 'claim_reviews',
+      'es_host' => 'http://0.0.0.0:9200',
+      'es_index_name' => Settings.get_es_index_name,
       'redis_host' => 'redis',
       'redis_port' => 6379,
       'redis_database' => 1,
