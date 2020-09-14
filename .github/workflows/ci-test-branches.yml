@@ -1,10 +1,7 @@
 name: Build and Test Branches
 
 on:
-  push:
-    branches-ignore:
-      - develop
-      - master
+  push
 
 jobs:
   build-test:
