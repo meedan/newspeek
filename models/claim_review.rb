@@ -50,7 +50,14 @@ class ClaimReview
   end
 
   def self.delete_by_service(service)
-    ClaimReview.client.delete_by_query(self.service_query(service))["deleted"]
+    retry_count = 0
+    begin
+      ClaimReview.client.delete_by_query(self.service_query(service))["deleted"]
+    rescue Elasticsearch::Transport::Transport::Errors::Conflict => e
+      sleep(1)
+      retry_count += 1
+      retry if retry_count <= 3
+    end
   end
 
   def self.get_count_for_service(service)

@@ -15,6 +15,7 @@
 # it.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+require('rack/test')
 require('rspec/autorun')
 require('webmock/rspec')
 require('simplecov')
