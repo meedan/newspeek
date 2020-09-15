@@ -6,7 +6,7 @@ class Subscription
   def self.add_subscription(services, urls)
     [services].flatten.collect do |service|
       [urls].flatten.collect do |url|
-        REDIS_CLIENT.sadd(self.keyname(service), url)
+        $REDIS_CLIENT.sadd(self.keyname(service), url)
       end
     end.flatten
   end
@@ -14,14 +14,14 @@ class Subscription
   def self.remove_subscription(services, urls)
     [services].flatten.collect do |service|
       [urls].flatten.collect do |url|
-        REDIS_CLIENT.srem(self.keyname(service), url)
+        $REDIS_CLIENT.srem(self.keyname(service), url)
       end
     end.flatten
   end
 
   def self.get_subscriptions(services)
     [services].flatten.collect do |service|
-      REDIS_CLIENT.smembers(self.keyname(service)) || []
+      $REDIS_CLIENT.smembers(self.keyname(service)) || []
     end.flatten
   end
 

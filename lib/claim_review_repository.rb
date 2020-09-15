@@ -5,8 +5,7 @@ class ClaimReviewRepository
   include Elasticsearch::Persistence::Repository::DSL
 
   client Elasticsearch::Client.new(url: Settings.get('es_host'))
-  index_name Settings.get('es_index_name')
-  document_type 'claim_review'
+  index_name Settings.get_es_index_name
   klass ClaimReview
 
   settings number_of_shards: 1 do

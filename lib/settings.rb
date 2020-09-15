@@ -1,4 +1,9 @@
 class Settings
+  
+  def self.get_es_index_name
+    Settings.get('es_index_name')
+  end
+  
   def self.airbrake_specified?
     Settings.blank?('airbrake_api_host')
   end
@@ -18,7 +23,7 @@ class Settings
 
   def self.defaults
     {
-      'es_host' => 'http://elasticsearch:9200',
+      'es_host' => 'http://0.0.0.0:9200',
       'es_index_name' => 'claim_reviews',
       'redis_host' => 'redis',
       'redis_port' => 6379,

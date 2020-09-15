@@ -7,11 +7,7 @@ describe ClaimReviewRepository do
     end
 
     it 'expects index_name' do
-      expect(described_class.index_name).to(eq('claim_reviews'))
-    end
-
-    it 'expects document_type' do
-      expect(described_class.document_type).to(eq('claim_review'))
+      expect(described_class.index_name).to(eq(Settings.get_es_index_name))
     end
 
     it 'expects klass' do

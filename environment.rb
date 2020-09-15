@@ -24,12 +24,14 @@ require('tf-idf-similarity')
 require('elasticsearch')
 require('elasticsearch/dsl')
 require('elasticsearch/persistence')
+require('retriable')
 
 require_relative('lib/settings')
+puts Settings.get_es_index_name
 Settings.check_into_elasticsearch
 REDIS_URL = {url: Settings.redis_url}
-REDIS_CLIENT = Redis.new(REDIS_URL)
-REDIS_CLIENT.auth(Settings.get('redis_password')) if Settings.get('redis_password')
+$REDIS_CLIENT = Redis.new(REDIS_URL)
+$REDIS_CLIENT.auth(Settings.get('redis_password')) if Settings.get('redis_password')
 redis_config = proc { |config|
   if Settings.get('redis_password')
     config.redis = REDIS_URL.merge(password: Settings.get('redis_password'))
