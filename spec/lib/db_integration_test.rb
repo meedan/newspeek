@@ -44,7 +44,7 @@ describe 'integration test with ElasticSearch' do#, integration: true do
 
 
     it "ensures count of #{subclass} via ClaimReview#get_count_for_service" do
-      expect(ClaimReview.get_count_for_service(subclass.service)['value'] > 0).to(eq(true))
+      expect(ClaimReview.get_count_for_service(subclass.service) > 0).to(eq(true))
     end
 
     it "ensures access of #{subclass} via Site-layer" do
@@ -61,10 +61,10 @@ describe 'integration test with ElasticSearch' do#, integration: true do
     end
 
     it "ensures deletion of #{subclass} object" do
-      prev_count = ClaimReview.get_count_for_service(subclass.service)['value']
+      prev_count = ClaimReview.get_count_for_service(subclass.service)
       ClaimReview.delete_by_service(subclass.service.to_s)
       sleep(2)
-      new_count = ClaimReview.get_count_for_service(subclass.service)['value']
+      new_count = ClaimReview.get_count_for_service(subclass.service)
       expect(new_count).to(eq(0))
       expect(prev_count-1).to(eq(new_count))
     end

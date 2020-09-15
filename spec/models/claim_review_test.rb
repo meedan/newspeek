@@ -7,6 +7,15 @@ describe ClaimReview do
     end
   end
   describe 'class' do
+    it 'returns get_count_for_service with Hash version in ES 7' do
+      described_class.stub(:get_hits).with(ClaimReview.service_query("blah"), "total").and_return({"value" => 10})
+      expect(ClaimReview.get_count_for_service("blah")).to(eq(10))
+    end
+
+    it 'returns get_count_for_service with Hash version in ES 6' do
+      described_class.stub(:get_hits).with(ClaimReview.service_query("blah"), "total").and_return(10)
+      expect(ClaimReview.get_count_for_service("blah")).to(eq(10))
+    end
     it 'has mandatory fields' do
       expect(described_class.mandatory_fields).to(eq(%w[claim_review_headline claim_review_url created_at id]))
     end

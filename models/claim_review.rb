@@ -56,7 +56,12 @@ class ClaimReview
   end
 
   def self.get_count_for_service(service)
-    self.get_hits(self.service_query(service), "total")
+    count = self.get_hits(self.service_query(service), "total")
+    if count.class == Hash
+      return count["value"]
+    else
+      return count
+    end
   end
 
   def self.get_hits(search_params, return_type="hits")
