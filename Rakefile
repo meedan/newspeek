@@ -15,7 +15,6 @@ namespace :test do
     t.pattern = Dir.glob('spec/**/*_test.rb').reject{|t| t.include?("_integration_test.rb")}
   end
   RSpec::Core::RakeTask.new(:integration) do |t|
-    ENV["RUN_INTEGRATION_TESTS"] ||= 'true'
     t.pattern = Dir.glob('spec/**/*_test.rb').select{|t| t.include?("_integration_test.rb")}
   end
 end
