@@ -24,9 +24,9 @@ require('tf-idf-similarity')
 require('elasticsearch')
 require('elasticsearch/dsl')
 require('elasticsearch/persistence')
+require('retriable')
 
 require_relative('lib/settings')
-ENV["RUN_INTEGRATION_TESTS"] ||= 'false'
 Settings.check_into_elasticsearch
 REDIS_URL = {url: Settings.redis_url}
 REDIS_CLIENT = Redis.new(REDIS_URL)

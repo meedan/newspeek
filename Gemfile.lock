@@ -114,6 +114,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    retriable (3.1.2)
     rexml (3.2.4)
     rspec (3.9.0)
       rspec-core (~> 3.9.0)
@@ -209,6 +210,7 @@ DEPENDENCIES
   rake
   redis (= 4.1.4)
   rest-client
+  retriable
   rspec
   rubocop
   rubocop-ast (= 0.0.3)
