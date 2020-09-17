@@ -27,8 +27,8 @@ require('elasticsearch/persistence')
 require('retriable')
 
 require_relative('lib/settings')
-puts Settings.get_es_index_name
 Settings.check_into_elasticsearch
+ENV['env'] ||= 'development'
 REDIS_URL = {url: Settings.redis_url}
 $REDIS_CLIENT = Redis.new(REDIS_URL)
 $REDIS_CLIENT.auth(Settings.get('redis_password')) if Settings.get('redis_password')

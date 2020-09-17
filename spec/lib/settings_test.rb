@@ -2,7 +2,7 @@
 
 describe Settings do
   before do
-    stub_request(:any, 'http://elasticsearch:9200/').to_raise(SocketError)
+    stub_request(:any, Settings.get('es_host')).to_raise(SocketError)
   end
   describe 'class methods' do
     it 'has allows get access' do
@@ -22,6 +22,19 @@ describe Settings do
       result = Settings.check_into_elasticsearch(1, false) rescue false
       expect([nil, false].include?(result)).to(eq(true))
       WebMock.disable_net_connect!
+    end
+    
+    it 'raises Elastic Search Error when not able to connect' do
+      stub_request(:any, Settings.get('es_host')).to_raise(SocketError)
+      expect { Settings.check_into_elasticsearch(1, false) }.to raise_error(StandardError)
+    end
+
+    it 'expects default parallel task count of 1' do
+      expect(Settings.default_task_count("bogus")).to(eq(1))
+    end
+
+    it 'expects specified parallel task count for get_claim_reviews of 10' do
+      expect(Settings.default_task_count(:get_claim_reviews)).to(eq(10))
     end
   end
 end
