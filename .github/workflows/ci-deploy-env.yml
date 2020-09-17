@@ -112,5 +112,3 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.CONFIGURATOR_TOKEN }} # optional
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-        mkdir coverage
-        docker run --rm -v coverage:/app/coverage $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG test
