@@ -18,3 +18,9 @@ run_worker: configurator
 
 test: configurator
 	bundle exec rake test
+
+test_unit: configurator
+	bundle exec rake test:unit
+
+test_integration: configurator
+	bundle exec rake test:integration
