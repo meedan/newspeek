@@ -9,7 +9,7 @@ class Settings
   end
 
   def self.airbrake_unspecified?
-    Settings.blank?('airbrake_api_host') && Settings.get('RACK_ENV') != 'test'
+    Settings.blank?('airbrake_api_host') && !Settings.in_test_mode?
   end
 
   def self.get(var_name)
@@ -37,7 +37,7 @@ class Settings
   end
 
   def self.in_test_mode?
-    Settings.get('env') != 'test'
+    Settings.get('env') == 'test'
   end
 
   def self.attempt_elasticsearch_connect
@@ -54,6 +54,7 @@ class Settings
 
   def self.safe_attempt_elasticsearch_connect(timeout)
     start = Time.now
+    res = nil
     begin
       res = Settings.attempt_elasticsearch_connect
     rescue Errno::ECONNREFUSED, SocketError
@@ -63,7 +64,7 @@ class Settings
     return res
   end
 
-  def self.check_into_elasticsearch(timeout=60, bypass=!Settings.in_test_mode?)
+  def self.check_into_elasticsearch(timeout=60, bypass=Settings.in_test_mode?)
     unless bypass
       res = Settings.safe_attempt_elasticsearch_connect(timeout)
       raise Settings.elastic_search_error if res.nil?
@@ -72,5 +73,18 @@ class Settings
 
   def self.elastic_search_error
     StandardError.new("Could not connect to elasticsearch host located at #{Settings.get('es_host')}!")
+  end
+  
+  def self.default_task_count(task)
+    {
+      snowball_claim_reviews_from_publishers: 1,
+      get_claim_reviews: 10,
+      get_parsed_fact_pages_from_urls: 5,
+      parse_raw_claim_reviews: 5
+    }[task] || 1
+  end
+
+  def self.parallelism_for_task(task)
+    Settings.in_test_mode? ? 0 : Settings.default_task_count(task)
   end
 end

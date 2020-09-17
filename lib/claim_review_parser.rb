@@ -110,7 +110,7 @@ class ClaimReviewParser
   end
 
   def parse_raw_claim_reviews(raw_claim_reviews)
-    Parallel.map(raw_claim_reviews, in_processes: 5, progress: "Downloading #{self.class} Corpus") do |raw_claim_review|
+    Parallel.map(raw_claim_reviews, in_processes: Settings.parallelism_for_task(:parse_raw_claim_reviews), progress: "Downloading #{self.class} Corpus") do |raw_claim_review|
       parse_raw_claim_review(raw_claim_review)
     end.compact
   end

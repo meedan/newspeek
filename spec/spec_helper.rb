@@ -21,7 +21,7 @@ require('webmock/rspec')
 require('simplecov')
 SimpleCov.start
 load('environment.rb')
-ENV['RACK_ENV'] = 'test'
+ENV['env'] = 'test'
 require('fakeredis')
 WebMock.disable_net_connect!(allow_localhost: true)
 $REDIS_CLIENT = Redis.new
