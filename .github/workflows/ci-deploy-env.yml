@@ -1,11 +1,14 @@
-name: QA Build Test and Deploy
+name: Build Test and Deploy
 
 on:
   push:
-    branches: ['develop']
+    branches:
+      - 'develop'
+      - 'master'
+      - '*deploy/*'
 
 jobs:
-  CI:
+  build-test-deploy:
     runs-on: ubuntu-latest
 
     outputs:
@@ -41,7 +44,7 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: fetch
+        ECR_REPOSITORY: ${{ github.event.repository.name }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker buildx build \
@@ -52,49 +55,50 @@ jobs:
           --file ./Dockerfile ./
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-    - name: Run Tests
-      id: run-test
+    - name: Run Unit Tests
+      id: run-unit-tests
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         GIT_SHA: ${{ github.sha }}
-        GIT_BRANCH: ${{ github.ref }}
         BUILD_NUMBER: ${{ github.run_number }}
       run: |
         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
         ./cc-test-reporter before-build
         mkdir $GITHUB_WORKSPACE/coverage
-        docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test
+        docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test_unit
         ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
 
     - name: Docker Buildx (push)
-      id: push-image
+      id: push-image-to-ecr
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: fetch
+        ECR_REPOSITORY: ${{ github.event.repository.name }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
+        DEPLOYMENT=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
         # push with git sha
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --output "type=image,push=true" \
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
-        # push with docker tag `develop` to indicate branch
+        # push docker tag to indicate branch
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --output "type=image,push=true" \
-          --tag $ECR_REGISTRY/$ECR_REPOSITORY:develop \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$DEPLOYMENT \
           --file ./Dockerfile ./
 
     - name: Kick off Terraform deploy in sysops/
-      id: deploy
+      id: sysops-deploy
       run: |
+        DEPLOYMENT=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
         curl \
         -X POST \
         -H "Accept: application/vnd.github.v3+json" \
         https://api.github.com/repos/meedan/sysops/dispatches \
         -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }} \
-        -d '{"event_type": "deploy", "client_payload": {"repo": "fetch", "image_tag": "${{ github.sha }}", "github_ref": "${{ github.ref }}"}}'
+        -d '{"event_type": "deploy", "client_payload": {"repo": "fetch", "image_tag": "${{ github.sha }}", "deployment": "$DEPLOYMENT"}}'
 
     - name: Send Slack Notification
       id: slack-notify
