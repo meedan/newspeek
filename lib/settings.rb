@@ -23,7 +23,7 @@ class Settings
 
   def self.defaults
     {
-      'es_host' => 'http://0.0.0.0:9200',
+      'es_host' => 'http://elasticsearch:9200',
       'es_index_name' => 'claim_reviews',
       'redis_host' => 'redis',
       'redis_port' => 6379,
@@ -65,7 +65,7 @@ class Settings
   end
 
   def self.check_into_elasticsearch(timeout=60, bypass=Settings.in_test_mode?)
-    unless bypass
+    if !bypass
       res = Settings.safe_attempt_elasticsearch_connect(timeout)
       raise Settings.elastic_search_error if res.nil?
     end

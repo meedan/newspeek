@@ -27,7 +27,6 @@ require('elasticsearch/persistence')
 require('retriable')
 
 require_relative('lib/settings')
-puts Settings.get_es_index_name
 Settings.check_into_elasticsearch
 ENV['env'] ||= 'development'
 REDIS_URL = {url: Settings.redis_url}
