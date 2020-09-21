@@ -1,0 +1,114 @@
+name: Build Test and Deploy
+
+on:
+  push:
+    branches:
+      - 'develop'
+      - 'master'
+      - '*deploy/*'
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: ${{ secrets.TEST_AWS_ROLE_TO_ASSUME }}
+        aws-region: eu-west-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Set up Docker Buildx
+      uses: crazy-max/ghaction-docker-buildx@v3
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      id: cache
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Docker Buildx (build)
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ github.event.repository.name }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+          --load \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          --file ./Dockerfile ./
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Run Unit Tests
+      id: run-unit-tests
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        GIT_SHA: ${{ github.sha }}
+        BUILD_NUMBER: ${{ github.run_number }}
+      run: |
+        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
+        ./cc-test-reporter before-build
+        mkdir $GITHUB_WORKSPACE/coverage
+        docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test_unit
+        ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
+
+    - name: Docker Buildx (push)
+      id: push-image-to-ecr
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ github.event.repository.name }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        DEPLOYMENT=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
+        # push with git sha
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --output "type=image,push=true" \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          --file ./Dockerfile ./
+        # push docker tag to indicate branch
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --output "type=image,push=true" \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$DEPLOYMENT \
+          --file ./Dockerfile ./
+
+    - name: Kick off Terraform deploy in sysops/
+      id: sysops-deploy
+      run: |
+        DEPLOYMENT=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
+        curl \
+        -X POST \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/meedan/sysops/dispatches \
+        -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }} \
+        -d '{"event_type": "deploy", "client_payload": {"repo": "fetch", "image_tag": "${{ github.sha }}", "deployment": "'$DEPLOYMENT'"}}'
+
+    - name: Send Slack Notification
+      id: slack-notify
+      if: ${{ always() }}
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        author_name: 'Github Actions'
+        icon_emoji: ':octocat:'
+        fields: repo,message,author # selectable (default: repo,message)
+      env:
+        GITHUB_TOKEN: ${{ secrets.CONFIGURATOR_TOKEN }} # optional
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
