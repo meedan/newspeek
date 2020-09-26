@@ -1,9 +1,7 @@
 name: Build and Run Integration Test
 
 on:
-  pull_request:
-    branches:
-      - 'master'
+  pull_request
 
 jobs:
   build-test-deploy:
