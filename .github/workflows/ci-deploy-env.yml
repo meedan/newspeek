@@ -75,7 +75,7 @@ jobs:
         ECR_REPOSITORY: ${{ github.event.repository.name }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        DEPLOYMENT=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
+        BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
         # push with git sha
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
@@ -86,19 +86,21 @@ jobs:
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --output "type=image,push=true" \
-          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$DEPLOYMENT \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$BRANCH \
           --file ./Dockerfile ./
 
-    - name: Kick off Terraform deploy in sysops/
+    - name: Kick off Terraform deploy in sysops/ if not live
       id: sysops-deploy
       run: |
-        DEPLOYMENT=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
-        curl \
-        -X POST \
-        -H "Accept: application/vnd.github.v3+json" \
-        https://api.github.com/repos/meedan/sysops/dispatches \
-        -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }} \
-        -d '{"event_type": "deploy", "client_payload": {"repo": "fetch", "image_tag": "${{ github.sha }}", "deployment": "'$DEPLOYMENT'"}}'
+        BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
+        if [[ "${BRANCH}" != master ]]; then
+          curl \
+          -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/meedan/sysops/actions/workflows/deploy_${{ github.event.repository_name }}.yml/dispatches \
+          -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }} \
+          -d '{"ref": "${{ github.sha }}", {"inputs": {"branch": "'$BRANCH'"}}}'
+        fi
 
     - name: Send Slack Notification
       id: slack-notify
