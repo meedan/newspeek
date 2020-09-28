@@ -71,7 +71,7 @@ jobs:
         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
         ./cc-test-reporter before-build
         mkdir $GITHUB_WORKSPACE/coverage
-        docker run --network ${{ job.services.network }} --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test_integration
+        docker run --network ${{ job.container.network }} --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test_integration
         ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
 
     - name: Docker Buildx (push)
