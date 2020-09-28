@@ -97,7 +97,7 @@ jobs:
           curl \
           -X POST \
           -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/meedan/sysops/actions/workflows/deploy_${{ github.event.repository_name }}.yml/dispatches \
+          https://api.github.com/repos/meedan/sysops/actions/workflows/deploy_${{ github.event.repository.name }}.yml/dispatches \
           -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }} \
           -d '{"ref": "${{ github.sha }}", {"inputs": {"branch": "'$BRANCH'"}}}'
         fi
