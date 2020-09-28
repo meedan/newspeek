@@ -93,7 +93,7 @@ jobs:
       id: sysops-deploy
       run: |
         BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
-        if [[ "${BRANCH}" != master ]]; then
+        if [[ "$BRANCH" != master ]]; then
           curl \
           -X POST \
           -H "Accept: application/vnd.github.v3+json" \
