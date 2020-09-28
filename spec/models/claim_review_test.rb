@@ -7,6 +7,15 @@ describe ClaimReview do
     end
   end
   describe 'class' do
+    it 'returns get_count_for_service with Hash version in ES 7' do
+      described_class.stub(:get_hits).with(ClaimReview.service_query("blah"), "total").and_return({"value" => 10})
+      expect(ClaimReview.get_count_for_service("blah")).to(eq(10))
+    end
+
+    it 'returns get_count_for_service with Hash version in ES 6' do
+      described_class.stub(:get_hits).with(ClaimReview.service_query("blah"), "total").and_return(10)
+      expect(ClaimReview.get_count_for_service("blah")).to(eq(10))
+    end
     it 'has mandatory fields' do
       expect(described_class.mandatory_fields).to(eq(%w[claim_review_headline claim_review_url created_at id]))
     end
@@ -101,7 +110,7 @@ describe ClaimReview do
     end
 
     it 'expects non-empty existing_urls' do
-      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'claim_url' => 1 } }] } })
+      Elasticsearch::Transport::Client.any_instance.stub(:search).with(anything).and_return({ 'hits' => { 'hits' => [{ '_source' => { 'service' => 'google', 'claim_review_url' => 1 } }] } })
       expect(described_class.existing_urls([1], 'google')).to(eq([1]))
     end
 

@@ -15,15 +15,16 @@
 # it.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+ENV['env'] = 'test'
+require('rack/test')
 require('rspec/autorun')
 require('webmock/rspec')
 require('simplecov')
 SimpleCov.start
 load('environment.rb')
-ENV['RACK_ENV'] = 'test'
 require('fakeredis')
 WebMock.disable_net_connect!(allow_localhost: true)
-REDIS_CLIENT = Redis.new
+$REDIS_CLIENT = Redis.new
 redis_conn = proc {
   Redis.new
 }

@@ -50,11 +50,18 @@ class ClaimReview
   end
 
   def self.delete_by_service(service)
-    ClaimReview.client.delete_by_query(self.service_query(service))["deleted"]
+    Retriable.retriable do
+      ClaimReview.client.delete_by_query(self.service_query(service))["deleted"]
+    end
   end
 
   def self.get_count_for_service(service)
-    self.get_hits(self.service_query(service), "total")
+    count = self.get_hits(self.service_query(service), "total")
+    if count.class == Hash
+      return count["value"]
+    else
+      return count
+    end
   end
 
   def self.get_hits(search_params, return_type="hits")
@@ -87,7 +94,7 @@ class ClaimReview
   end
 
   def self.existing_urls(urls, service)
-    self.extract_matches(urls, 'claim_url', service)
+    self.extract_matches(urls, 'claim_review_url', service)
   end
 
   def self.should_save_claim_review(id, service, overwrite_existing_claims)

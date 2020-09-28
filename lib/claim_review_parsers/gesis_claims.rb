@@ -52,7 +52,7 @@ class GESISClaims < ClaimReviewParser
       existing_ids = ClaimReview.existing_ids(id_set.collect(&:last), self.class.service)
       new_ids = id_set.reject { |x| existing_ids.include?(x.last) }.collect(&:first)
       results =
-        Parallel.map(new_ids, in_processes: 10, progress: 'Downloading GESIS Corpus') do |id|
+        Parallel.map(new_ids, in_processes: Settings.parallelism_for_task(:get_claim_reviews), progress: 'Downloading GESIS Corpus') do |id|
           [id, get_fact(id)]
         end
       process_claim_reviews(results.compact.map { |x| parse_raw_claim_review(Hashie::Mash[{ id: x[0], content: x[1] }]) })

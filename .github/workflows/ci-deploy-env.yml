@@ -1,11 +1,14 @@
-name: QA Build Test and Deploy
+name: Build Test and Deploy
 
 on:
   push:
-    branches: ['develop']
+    branches:
+      - 'develop'
+      - 'master'
+      - '*deploy/*'
 
 jobs:
-  CI:
+  build-test-deploy:
     runs-on: ubuntu-latest
 
     outputs:
@@ -16,8 +19,9 @@ jobs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: ${{ secrets.TEST_AWS_ROLE_TO_ASSUME }}
         aws-region: eu-west-1
 
     - name: Login to Amazon ECR
@@ -40,71 +44,63 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: fetch
+        ECR_REPOSITORY: ${{ github.event.repository.name }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
-          --output "type=image,push=true" \
+          --load \
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-    - name: Run Tests
-      id: run-test
+    - name: Run Unit Tests
+      id: run-unit-tests
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         GIT_SHA: ${{ github.sha }}
-        GIT_BRANCH: ${{ github.ref }}
         BUILD_NUMBER: ${{ github.run_number }}
       run: |
         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
         ./cc-test-reporter before-build
         mkdir $GITHUB_WORKSPACE/coverage
-        docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test
+        docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test_unit
         ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
 
-    - name: Download task definitions
-      run: |
-        aws ecs describe-task-definition --task-definition qa-fetch --query taskDefinition > fetch-task-definition.json
-        aws ecs describe-task-definition --task-definition qa-fetch-worker --query taskDefinition > worker-task-definition.json
-
-    - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch)
+    - name: Docker Buildx (push)
+      id: push-image-to-ecr
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: fetch
+        ECR_REPOSITORY: ${{ github.event.repository.name }}
         IMAGE_TAG: ${{ github.sha }}
-      id: task-def-fetch
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: fetch-task-definition.json
-        container-name: qa-fetch
-        image: ${{ steps.build-image.outputs.image }}
+      run: |
+        BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
+        # push with git sha
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --output "type=image,push=true" \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          --file ./Dockerfile ./
+        # push docker tag to indicate branch
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --output "type=image,push=true" \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$BRANCH \
+          --file ./Dockerfile ./
 
-    - name: Fill in the new image ID in the Amazon ECS task definition (qa-fetch-worker)
-      id: task-def-worker
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: qa-fetch-worker-definition.json
-        container-name: qa-fetch-worker
-        image: ${{ steps.build-image.outputs.image }}
-
-    - name: Deploy Amazon ECS task definition (fetch)
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def-fetch.outputs.task-definition }}
-        service: qa-fetch
-        cluster: ecs-qa
-        wait-for-service-stability: true
-
-    - name: Deploy Amazon ECS task definition (fetch-worker)
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def-worker.outputs.task-definition }}
-        service: qa-fetch-worker
-        cluster: ecs-qa
-        wait-for-service-stability: true
+    - name: Kick off Terraform deploy in sysops/ if not live
+      id: sysops-deploy
+      run: |
+        BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
+        if [[ "$BRANCH" != master ]]; then
+          curl \
+          -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/meedan/sysops/actions/workflows/deploy_${{ github.event.repository.name }}.yml/dispatches \
+          -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }} \
+          -d '{"ref": "master", "inputs": {"git_sha": "${{ github.sha }}", "branch": "'$BRANCH'"}}'
+        fi
 
     - name: Send Slack Notification
       id: slack-notify

@@ -12,6 +12,8 @@ module ReviewRatingParser
     value = get_rating(item, 'ratingValue')
     if !best.nil? && !worst.nil? && !value.nil? && best - worst > 0
       return (value - worst) / (best - worst)
+    elsif !best.nil? && worst.nil? && !value.nil? && best >= value
+      return value / best.to_f
     end
     return value
   end
