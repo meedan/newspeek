@@ -8,10 +8,10 @@ A Fact / Claim Review aggregation service.
 
 - `docker-compose build`
 - `docker-compose up`
-- Open http://localhost:9292/about for the Claim Review API
+- Open http://localhost:9292/about for the Fetch API
 - Open http://localhost:5601 for the Kibana UI
 - Open http://localhost:9200 for the Elasticsearch API
-- `docker-compose exec fetch bash` to get inside the claim review API bash and directly debug issues.
+- `docker-compose exec fetch bash` to get inside the Fetch service console and directly debug issues
 
 ## Testing
 

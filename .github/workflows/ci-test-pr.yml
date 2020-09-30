@@ -1,14 +1,10 @@
-name: Build Test and Deploy
+name: Build and Run Integration Test
 
 on:
-  push:
-    branches:
-      - 'develop'
-      - 'master'
-      - '*deploy/*'
+  pull_request
 
 jobs:
-  build-test-deploy:
+  integration-test:
     runs-on: ubuntu-latest
 
     services:
@@ -76,50 +72,3 @@ jobs:
         mkdir $GITHUB_WORKSPACE/coverage
         docker run --network ${{ job.container.network }} --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test_integration
         ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
-
-    - name: Docker Buildx (push)
-      id: push-image-to-ecr
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ github.event.repository.name }}
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
-        # push with git sha
-        docker buildx build \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --output "type=image,push=true" \
-          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-          --file ./Dockerfile ./
-        # push docker tag to indicate branch
-        docker buildx build \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --output "type=image,push=true" \
-          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$BRANCH \
-          --file ./Dockerfile ./
-
-    - name: Kick off Terraform deploy in sysops/ if not live
-      id: sysops-deploy
-      run: |
-        BRANCH=$(echo "${GITHUB_REF#refs/*/}" | sed 's/.*\///')
-        if [[ "$BRANCH" != master ]]; then
-          curl \
-          -X POST \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/meedan/sysops/actions/workflows/deploy_${{ github.event.repository.name }}.yml/dispatches \
-          -u ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }} \
-          -d '{"ref": "master", "inputs": {"git_sha": "${{ github.sha }}", "branch": "'$BRANCH'"}}'
-        fi
-
-    - name: Send Slack Notification
-      id: slack-notify
-      if: ${{ always() }}
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        author_name: 'Github Actions'
-        icon_emoji: ':octocat:'
-        fields: repo,message,author # selectable (default: repo,message)
-      env:
-        GITHUB_TOKEN: ${{ secrets.CONFIGURATOR_TOKEN }} # optional
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
