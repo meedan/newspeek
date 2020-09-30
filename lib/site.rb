@@ -6,11 +6,11 @@ class Site < Sinatra::Base
     enable :logging
   end
 
-  get "/ping.json" do
+  get "/ping" do
     return API.pong.to_json
   end
 
-  get '/claim_reviews.json' do
+  get '/claim_reviews' do
     return API.claim_reviews(params).to_json
   end
 
@@ -22,15 +22,15 @@ class Site < Sinatra::Base
     return API.services.to_json
   end
 
-  get '/subscribe.json' do
+  get '/subscribe' do
     return API.get_subscriptions(params).to_json
   end
 
-  post '/subscribe.json' do
+  post '/subscribe' do
     return API.add_subscription(Hashie::Mash[JSON.parse(request.body.read)]).to_json
   end
 
-  delete '/subscribe.json' do
+  delete '/subscribe' do
     return API.remove_subscription(Hashie::Mash[JSON.parse(request.body.read)]).to_json
   end
 end
