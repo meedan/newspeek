@@ -1,4 +1,14 @@
 class About
+  def self.about
+    [
+      {
+        method: 'GET',
+        params: {
+        }
+      }
+    ]
+  end
+
   def self.claim_reviews
     [
       {
