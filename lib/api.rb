@@ -16,9 +16,9 @@ class API
   def self.about
     {
       live_urls: {
-        "/claim_reviews.json": About.claim_reviews,
-        "/services.json": About.services,
-        "/subscribe.json": About.subscribe
+        "/claim_reviews": About.claim_reviews,
+        "/services": About.services,
+        "/subscribe": About.subscribe
       }
     }
   end

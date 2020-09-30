@@ -44,7 +44,7 @@ class About
   
   def self.subscribe_params(include_url=true)
     params = {
-      service: 'string or list of strings (list all service strings via /services.json)',
+      service: 'string or list of strings (list all service strings via /services)',
     }
     params[:url] = '(url-safe) string or list of (url-safe) strings' if include_url
     params

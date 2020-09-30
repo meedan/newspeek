@@ -8,22 +8,22 @@ describe Site do
   end
 
   describe 'endpoints' do
-    it 'returns an empty GET claim_reviews.json response' do
-      response = get "/ping.json"
+    it 'returns an empty GET claim_reviews response' do
+      response = get "/ping"
       expect(response.status).to(eq(200))
       expect(JSON.parse(response.body)).to(eq({"pong" => true}))
     end
 
-    it 'returns an empty GET claim_reviews.json response' do
+    it 'returns an empty GET claim_reviews response' do
       ClaimReview.stub(:search).with({:offset=>0, :per_page=>20}).and_return([])
-      response = get "/claim_reviews.json"
+      response = get "/claim_reviews"
       expect(response.status).to(eq(200))
       expect(JSON.parse(response.body)).to(eq([]))
     end
 
-    it 'returns a non-empty GET claim_reviews.json response' do
+    it 'returns a non-empty GET claim_reviews response' do
       ClaimReview.stub(:search).with({:offset=>0, :per_page=>20}).and_return([{ bloop: 1 }])
-      response = get "/claim_reviews.json"
+      response = get "/claim_reviews"
       expect(response.status).to(eq(200))
       expect(JSON.parse(response.body)).to(eq([{ 'bloop' => 1 }]))
     end
@@ -42,19 +42,19 @@ describe Site do
     end
 
     it 'gets subscriptions' do
-      response = get "/subscribe.json", "service=blah"
+      response = get "/subscribe", "service=blah"
       expect(response.status).to(eq(200))
       expect(JSON.parse(response.body).class).to(eq(Array))
     end
 
     it 'adds subscriptions' do
-      response = post "/subscribe.json", {service: 'blah', url: 'http://blah.com/respond'}.to_json
+      response = post "/subscribe", {service: 'blah', url: 'http://blah.com/respond'}.to_json
       expect(response.status).to(eq(200))
       expect(JSON.parse(response.body)).to(eq(["http://blah.com/respond"]))
     end
 
     it 'removes subscriptions' do
-      response = delete "/subscribe.json", {service: 'blah', url: 'http://blah.com/respond'}.to_json
+      response = delete "/subscribe", {service: 'blah', url: 'http://blah.com/respond'}.to_json
       expect(response.status).to(eq(200))
       expect(JSON.parse(response.body)).to(eq([]))
     end

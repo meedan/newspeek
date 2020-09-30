@@ -48,7 +48,7 @@ describe 'integration test with ElasticSearch' do#, integration: true do
     end
 
     it "ensures access of #{subclass} via Site-layer" do
-      response = get "/claim_reviews.json", "service=#{subclass.service}"
+      response = get "/claim_reviews", "service=#{subclass.service}"
       expect(JSON.parse(response.body)[0]["url"]).to(eq(@storage_results[subclass][0][:claim_review_url]))
     end
     
