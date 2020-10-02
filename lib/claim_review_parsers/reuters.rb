@@ -54,7 +54,7 @@ class Reuters < ClaimReviewParser
     news_article = extract_ld_json_script_block(raw_claim_review["page"], 0)
     {
       id: raw_claim_review['url'],
-      created_at: Time.parse(raw_claim_review['page'].search('div.ArticleHeader_date').text.split('/')[0..1].join('')),
+      created_at: Time.parse(news_article["dateCreated"]),
       author: news_article["author"]["name"],
       author_link: nil,
       claim_review_headline: news_article["headline"],
