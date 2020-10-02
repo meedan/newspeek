@@ -50,9 +50,7 @@ class ClaimReview
   end
 
   def self.delete_by_service(service)
-    Retriable.retriable do
-      ClaimReview.client.delete_by_query(self.service_query(service))["deleted"]
-    end
+    ClaimReview.client.delete_by_query(self.service_query(service).merge(conflicts: "proceed"))["deleted"]
   end
 
   def self.get_count_for_service(service)
