@@ -40,14 +40,28 @@ class TFCTaiwan < ClaimReviewParser
     claim_review["datePublished"] &&
     Time.parse(claim_review["datePublished"])
   end
+
+  def author_from_claim_review(claim_review)
+    claim_review &&
+    claim_review["author"] &&
+    claim_review["author"]["name"] ||
+    "TFC Taiwan"
+  end
+
+  def author_link_from_claim_review(claim_review)
+    claim_review &&
+    claim_review["author"] &&
+    claim_review["author"]["url"] ||
+    hostname
+  end
   
   def parse_raw_claim_review(raw_claim_review)
     claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0)
     {
       id: raw_claim_review['url'],
       created_at: created_at_from_claim_review(claim_review),
-      author: claim_review["author"]["name"],
-      author_link: claim_review["author"]["url"],
+      author: author_from_claim_review(claim_review),
+      author_link: author_link_from_claim_review(claim_review),
       claim_review_headline: claim_review_headline_from_raw_claim_review(raw_claim_review),
       claim_review_body: claim_review_body_from_raw_claim_review(raw_claim_review),
       claim_review_reviewed: claim_review["claimReviewed"],
