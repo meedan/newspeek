@@ -106,6 +106,9 @@ class ElasticSearchQuery
     if opts[:search_query]
       query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('claim_review_headline', opts[:search_query])
     end
+    if opts[:language]
+      query[:query][:bool][:filter] << ElasticSearchQuery.query_match_clause('language', opts[:language])
+    end
     time_clause = ElasticSearchQuery.start_end_date_range_query('created_at', opts[:start_time], opts[:end_time])
     query[:query][:bool][:filter] << time_clause unless time_clause.empty?
     query
