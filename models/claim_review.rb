@@ -32,7 +32,7 @@ class ClaimReview
   end
 
   def self.save_claim_review(parsed_claim_review, service)
-    validated_claim_review = validate_claim_review(Hashie::Mash[parsed_claim_review.merge(service: service)])
+    validated_claim_review = validate_claim_review(QuietHashie[parsed_claim_review.merge(service: service)])
     if validated_claim_review
       repository.save(ClaimReview.new(validated_claim_review))
       NotifySubscriber.perform_async(self.convert_to_claim_review(validated_claim_review), service)

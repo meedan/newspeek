@@ -17,7 +17,7 @@ class Globo < ClaimReviewParser
   end
 
   def parsed_fact_page(fact_page_response)
-    [fact_page_response["content"]["url"], parse_raw_claim_review(Hashie::Mash[{ raw_response: fact_page_response, url: fact_page_response["content"]["url"] }])]
+    [fact_page_response["content"]["url"], parse_raw_claim_review(QuietHashie[{ raw_response: fact_page_response, url: fact_page_response["content"]["url"] }])]
   end
 
   def hostname

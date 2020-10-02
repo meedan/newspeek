@@ -27,10 +27,10 @@ class Site < Sinatra::Base
   end
 
   post '/subscribe' do
-    return API.add_subscription(Hashie::Mash[JSON.parse(request.body.read)]).to_json
+    return API.add_subscription(QuietHashie[JSON.parse(request.body.read)]).to_json
   end
 
   delete '/subscribe' do
-    return API.remove_subscription(Hashie::Mash[JSON.parse(request.body.read)]).to_json
+    return API.remove_subscription(QuietHashie[JSON.parse(request.body.read)]).to_json
   end
 end

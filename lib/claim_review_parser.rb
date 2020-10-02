@@ -31,7 +31,7 @@ class ClaimReviewParser
   end
 
   def self.parsers
-    Hashie::Mash[
+    QuietHashie[
       Hash[ClaimReviewParser.subclasses.map do |sc|
         [sc.service, sc]
       end]
@@ -44,7 +44,7 @@ class ClaimReviewParser
 
   def store_to_db(claim_reviews, service)
     claim_reviews.each do |parsed_claim_review|
-      ClaimReview.store_claim_review(Hashie::Mash[parsed_claim_review], service, @overwrite_existing_claims)
+      ClaimReview.store_claim_review(QuietHashie[parsed_claim_review], service, @overwrite_existing_claims)
     end
   end
 
@@ -100,7 +100,7 @@ class ClaimReviewParser
   end
 
   def finished_iterating?(claim_reviews)
-    times = claim_reviews.map { |x| Hashie::Mash[x][:created_at] }.compact
+    times = claim_reviews.map { |x| QuietHashie[x][:created_at] }.compact
     oldest_time = if times.empty?
                     @cursor_back_to_date
                   else
