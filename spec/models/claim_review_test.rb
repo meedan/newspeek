@@ -65,7 +65,7 @@ describe ClaimReview do
 
     it 'expects empty get hits' do
       Elasticsearch::Transport::Client.any_instance.stub(:delete_by_query).with(anything).and_return({"took"=>5, "timed_out"=>false, "total"=>0, "deleted"=>0, "batches"=>0, "version_conflicts"=>0, "noops"=>0, "retries"=>{"bulk"=>0, "search"=>0}, "throttled_millis"=>0, "requests_per_second"=>-1.0, "throttled_until_millis"=>0, "failures"=>[]})
-      expect(described_class.delete_by_service("foo")).to(eq(0))
+      expect(described_class.delete_by_service("foo").class).to(eq(Hash))
     end
 
 
