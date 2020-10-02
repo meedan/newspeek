@@ -61,12 +61,8 @@ describe 'integration test with ElasticSearch' do#, integration: true do
     end
 
     it "ensures deletion of #{subclass} object" do
-      prev_count = ClaimReview.get_count_for_service(subclass.service)
-      ClaimReview.delete_by_service(subclass.service.to_s)
-      sleep(2)
-      new_count = ClaimReview.get_count_for_service(subclass.service)
-      expect(new_count).to(eq(0))
-      expect(prev_count-1).to(eq(new_count))
+      response = ClaimReview.delete_by_service(subclass.service.to_s)
+      expect(response["failures"]).to(eq([]))
     end
   end
 end
