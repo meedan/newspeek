@@ -90,7 +90,7 @@ describe PaginatedReviewClaims do
     it 'expects parsed_fact_page' do
       response = StubReviewJSON.new.parsed_fact_page(StubReviewJSON.new.hostname)
       expect(response[0]).to(eq('http://examplejson.com'))
-      expect(response[1].class).to(eq(Hashie::Mash))
+      expect(response[1].class).to(eq(QuietHashie))
       expect(response[1].keys.sort).to(eq(%w[page url]))
     end
 
@@ -139,7 +139,7 @@ describe PaginatedReviewClaims do
     it 'expects safe_parsed_fact_page' do
       response = StubReviewJSON.new.safe_parsed_fact_page(StubReviewJSON.new.hostname)
       expect(response[0]).to(eq('http://examplejson.com'))
-      expect(response[1].class).to(eq(Hashie::Mash))
+      expect(response[1].class).to(eq(QuietHashie))
       expect(response[1].keys.sort).to(eq(%w[page url]))
     end
 

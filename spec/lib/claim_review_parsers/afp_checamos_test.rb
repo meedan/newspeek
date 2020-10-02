@@ -28,7 +28,7 @@ describe AFPChecamos do
       parsed_claim_review = described_class.new.parse_raw_claim_review(raw)
       expect(parsed_claim_review.class).to(eq(Hash))
       ClaimReview.mandatory_fields.each do |field|
-        expect(Hashie::Mash[parsed_claim_review][field].nil?).to(eq(false))
+        expect(QuietHashie[parsed_claim_review][field].nil?).to(eq(false))
       end
     end
   end

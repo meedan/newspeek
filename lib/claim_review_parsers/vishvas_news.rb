@@ -19,7 +19,7 @@ class VishvasNews < ClaimReviewParser
   def parsed_fact_page(fact_page_response)
     parsed_page = parsed_page_from_url(fact_page_response["link"])
     return if parsed_page.nil?
-    [fact_page_response["link"], parse_raw_claim_review(Hashie::Mash[{ raw_response: fact_page_response, page: parsed_page, url: fact_page_response["link"] }])]
+    [fact_page_response["link"], parse_raw_claim_review(QuietHashie[{ raw_response: fact_page_response, page: parsed_page, url: fact_page_response["link"] }])]
   end
 
   def hostname

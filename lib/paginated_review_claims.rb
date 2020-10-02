@@ -52,7 +52,7 @@ module PaginatedReviewClaims
   def parsed_fact_page(fact_page_url)
     parsed_page = parsed_page_from_url(fact_page_url)
     return if parsed_page.nil?
-    [fact_page_url, parse_raw_claim_review(Hashie::Mash[{ page: parsed_page, url: fact_page_url }])]
+    [fact_page_url, parse_raw_claim_review(QuietHashie[{ page: parsed_page, url: fact_page_url }])]
   end
 
   def get_new_fact_page_urls(page)
