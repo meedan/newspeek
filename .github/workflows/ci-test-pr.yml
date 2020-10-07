@@ -67,7 +67,7 @@ jobs:
         GIT_SHA: ${{ github.sha }}
         BUILD_NUMBER: ${{ github.run_number }}
       run: |
-        if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true"]]; then
+        if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
           ./cc-test-reporter before-build
           mkdir $GITHUB_WORKSPACE/coverage
