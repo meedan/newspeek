@@ -22,5 +22,7 @@ test: configurator
 test_unit: configurator
 	bundle exec rake test:unit
 
+test_unit_fork: bundle exec rake test:unit
+
 test_integration: configurator
 	bundle exec rake test:integration

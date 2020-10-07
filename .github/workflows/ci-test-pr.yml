@@ -60,15 +60,23 @@ jobs:
           --file ./Dockerfile ./
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-    - name: Run Integration Tests
-      id: run-int-tests
+    - name: Run PR Tests
+      id: run-tests
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         GIT_SHA: ${{ github.sha }}
         BUILD_NUMBER: ${{ github.run_number }}
       run: |
-        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
-        ./cc-test-reporter before-build
-        mkdir $GITHUB_WORKSPACE/coverage
-        docker run --network ${{ job.container.network }} --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test_integration
-        ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
+        if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true"]]; then
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
+          ./cc-test-reporter before-build
+          mkdir $GITHUB_WORKSPACE/coverage
+          docker run --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=none test_unit_fork
+          ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
+        else
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && chmod +x ./cc-test-reporter
+          ./cc-test-reporter before-build
+          mkdir $GITHUB_WORKSPACE/coverage
+          docker run --network ${{ job.container.network }} --rm -v $GITHUB_WORKSPACE/coverage:/app/coverage ${{ steps.build-image.outputs.image }} -e APP=fetch -e DEPLOY_ENV=travis -e GITHUB_TOKEN=${{ secrets.CONFIGURATOR_TOKEN }} test_integration
+          ./cc-test-reporter after-build --exit-code 0 -t simplecov -p /app
+        fi
