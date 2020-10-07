@@ -61,7 +61,10 @@ describe 'integration test with ElasticSearch' do#, integration: true do
     end
 
     it "ensures access of #{subclass} via Search-layer" do
-      expect(ClaimReview.search(language: "en")[0][:url]).to(eq(@storage_results[subclass][0][:claim_review_url]))
+      language = Language.get_reliable_language(@storage_results[subclass][0][:claim_review_headline])
+      if language
+        expect(ClaimReview.search(language: language)[0][:inLanguage]).to(eq(language))
+      end
     end
 
     it "ensures deletion of #{subclass} object" do
