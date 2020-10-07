@@ -10,6 +10,7 @@ module ClaimReviewExport
         "name": claim_review['author'],
         "url": claim_review['author_link']
       },
+      "inLanguage": claim_review['language'],
       "claimReviewed": claim_review['claim_review_headline'],
       "text": claim_review['claim_review_body'],
       "image": claim_review['claim_review_image_url'],
