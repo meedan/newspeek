@@ -59,6 +59,10 @@ describe 'integration test with ElasticSearch' do#, integration: true do
     it "ensures access of #{subclass} via Search-layer" do
       expect(ClaimReview.search(service: subclass.service.to_s)[0][:url]).to(eq(@storage_results[subclass][0][:claim_review_url]))
     end
+    
+    it "ensures access of #{subclass} via Search-layer" do
+      expect(ClaimReview.search(language: "en")[0][:url]).to(eq(@storage_results[subclass][0][:claim_review_url]))
+    end
 
     it "ensures deletion of #{subclass} object" do
       prev_count = ClaimReview.get_count_for_service(subclass.service)
