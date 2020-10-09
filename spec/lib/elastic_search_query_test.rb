@@ -46,5 +46,9 @@ describe ElasticSearchQuery do
       t = Time.parse('2020-01-01').to_s
       expect(described_class.claim_review_search_query({service: 'google', start_time: t})).to(eq({ size: 20, from: 0, sort: [{created_at:{order: 'desc'}}], query: { bool: { must: [{ match_all: {} }], filter: [{ match_phrase: { 'service' => 'google' } }, { range: { 'created_at' => { format: 'strict_date_optional_time', gte: '2020-01-01T00:00:00.000Z' } } }], should: [], must_not: [] } } }))
     end
+
+    it 'expects claim_review_search_query hash with a language specified' do
+      expect(described_class.claim_review_search_query({service: 'google', language: "en"})).to(eq({ size: 20, from: 0, sort: [{created_at:{order: 'desc'}}], query: { bool: { must: [{ match_all: {} }], filter: [{ match_phrase: { 'service' => 'google' } }, { match_phrase: { "language" => "en" } }] , should: [], must_not: [] } } }))
+    end
   end
 end
