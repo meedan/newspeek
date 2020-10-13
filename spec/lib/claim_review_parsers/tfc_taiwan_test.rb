@@ -26,7 +26,7 @@ describe TFCTaiwan do
       described_class.any_instance.stub(:og_image_url_from_raw_claim_review).with(anything()).and_raise(StandardError)
       expect(described_class.new.claim_review_image_url_from_raw_claim_review({"page" => Nokogiri.parse("<a href='/blah'>wow</a>")})).to(eq(nil))
     end
-
+    
     it 'parses a raw_claim_review' do
       raw = JSON.parse(File.read('spec/fixtures/tfc_taiwan_raw.json'))
       raw['page'] = Nokogiri.parse(raw['page'])
@@ -35,6 +35,13 @@ describe TFCTaiwan do
       ClaimReview.mandatory_fields.each do |field|
         expect(QuietHashie[parsed_claim][field].nil?).to(eq(false))
       end
+    end
+
+    it 'parses a missing raw_claim_review page' do
+      raw = JSON.parse(File.read('spec/fixtures/tfc_taiwan_missing_page.json'))
+      raw['page'] = Nokogiri.parse(raw['page'])
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
+      expect(parsed_claim.class).to(eq(Hash))
     end
   end
 end
