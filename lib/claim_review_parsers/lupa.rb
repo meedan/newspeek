@@ -47,15 +47,20 @@ class Lupa < ClaimReviewParser
     claim_review["reviewRating"]["alternateName"].strip
   end
 
+  def headline_from_reportage_news_article_or_raw_page(reportage_news_article, raw_page)
+    reportage_news_article["headline"] ||
+    raw_page.search("div.post-header div.inner h2.bloco-title").text
+  end
+
   def parse_raw_claim_review(raw_claim_review)
-    reportage_news_article = extract_ld_json_script_block(raw_claim_review["page"], 1)
+    reportage_news_article = extract_ld_json_script_block(raw_claim_review["page"], 1) || {}
     claim_review = extract_ld_json_script_block(raw_claim_review["page"], -1)
     {
       id: raw_claim_review['url'],
       created_at: created_at_from_news_article_or_claim_review(claim_review, reportage_news_article),
       author: author_from_news_article_or_claim_review(claim_review, reportage_news_article),
       author_link: author_link_from_news_article_or_claim_review(claim_review, reportage_news_article),
-      claim_review_headline: reportage_news_article["headline"],
+      claim_review_headline: headline_from_reportage_news_article_or_raw_page(reportage_news_article, raw_claim_review["page"]),
       claim_review_body: raw_claim_review['page'].search('div.wrapper div.post-inner p').text,
       claim_review_image_url: claim_review_image_url_from_raw_claim_review(raw_claim_review),
       claim_review_result: claim_review_result_from_claim_review(claim_review),

@@ -43,12 +43,12 @@ class VishvasNews < ClaimReviewParser
 
   def parse_raw_claim_review(raw_claim_review)
     api_response = raw_claim_review["raw_response"]
-    claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0)
+    claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0) || {}
     {
       id: api_response["id"].to_s,
-      created_at: Time.parse(claim_review["datePublished"]),
-      author: claim_review["author"]["name"],
-      author_link: claim_review["author"]["url"],
+      created_at: claim_review["datePublished"] && Time.parse(claim_review["datePublished"]),
+      author: claim_review["author"] && claim_review["author"]["name"],
+      author_link: claim_review["author"] && claim_review["author"]["url"],
       claim_review_headline: api_response["title"],
       claim_review_body: raw_claim_review["page"].search("div.lhs-area p").text.strip,
       claim_review_reviewed: claim_review["claimReviewed"],

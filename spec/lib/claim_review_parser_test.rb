@@ -93,6 +93,10 @@ describe ClaimReviewParser do
       AFP.any_instance.stub(:get_claim_reviews).and_return('stubbed')
       expect(described_class.run('afp')).to(eq('stubbed'))
     end
+  
+    it 'rescues broken json' do
+      expect(AFP.new.extract_ld_json_script_block(Nokogiri.parse("<html><script type='application/ld+json'>blah</script></html>"), 0)).to(eq(nil))
+    end
   end
 end
 
