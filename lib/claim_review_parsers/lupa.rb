@@ -54,7 +54,7 @@ class Lupa < ClaimReviewParser
 
   def parse_raw_claim_review(raw_claim_review)
     reportage_news_article = extract_ld_json_script_block(raw_claim_review["page"], 1) || {}
-    claim_review = extract_ld_json_script_block(raw_claim_review["page"], -1)
+    claim_review = extract_ld_json_script_block(raw_claim_review["page"], -1) || {}
     {
       id: raw_claim_review['url'],
       created_at: created_at_from_news_article_or_claim_review(claim_review, reportage_news_article),
