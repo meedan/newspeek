@@ -23,12 +23,12 @@ class GoogleFactCheck < ClaimReviewParser
     begin
       make_get_request(path, params)
     rescue RestClient::ServiceUnavailable => e
-      Error.log(e)
       if retry_count < 3
         retry_count += 1
         sleep(1)
         retry
       else
+        Error.log(e)
         return {}
       end
     end
