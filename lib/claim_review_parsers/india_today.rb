@@ -28,7 +28,8 @@ class IndiaToday < ClaimReviewParser
   end
 
   def claim_review_from_raw_claim_review(raw_claim_review)
-    JSON.parse(raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}.select{|x| JSON.parse(x.text)["@type"] == "ClaimReview"}.first.text)
+    ld_json_blocks = raw_claim_review["page"].search("script").select{|x| x.attributes["type"] && x.attributes["type"].value == "application/ld+json"}
+    JSON.parse(ld_json_blocks.select{|x| b = JSON.parse(x.text); b.class == Hash && b["@type"] == "ClaimReview"}.first.text)
   rescue JSON::ParserError, NoMethodError
     #send back stubbed claim_review when there's a parse error or no verifiable ClaimReview object in the document
     {}

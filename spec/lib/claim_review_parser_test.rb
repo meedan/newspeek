@@ -97,6 +97,11 @@ describe ClaimReviewParser do
     it 'rescues broken json' do
       expect(AFP.new.extract_ld_json_script_block(Nokogiri.parse("<html><script type='application/ld+json'>blah</script></html>"), 0)).to(eq(nil))
     end
+
+    it 'tests a parser on a url' do
+      RestClient.stub(:get).with(anything).and_return(JSON.parse(File.read('spec/fixtures/india_today_raw.json'))["page"])
+      expect(IndiaToday.test_parser_on_url("http://blah.org").class).to(eq(Hash))
+    end
   end
 end
 

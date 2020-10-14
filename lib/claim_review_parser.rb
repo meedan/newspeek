@@ -127,4 +127,9 @@ class ClaimReviewParser
       end
     end
   end
+
+  def self.test_parser_on_url(url)
+    params = {"page" => Nokogiri.parse(RestClient.get(url)), "url" => url}
+    self.new.parse_raw_claim_review(params)
+  end
 end
