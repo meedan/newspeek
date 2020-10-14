@@ -32,6 +32,16 @@ describe IndiaToday do
       end
     end
 
+    it 'parses a raw_claim_review with mixed ld+json block types' do
+      raw = JSON.parse(File.read('spec/fixtures/india_today_mixed_ld_json_types.json'))
+      raw['page'] = Nokogiri.parse(raw['page'])
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
+      expect(parsed_claim.class).to(eq(Hash))
+      ClaimReview.mandatory_fields.each do |field|
+        expect(QuietHashie[parsed_claim][field].nil?).to(eq(false))
+      end
+    end
+
     it 'stubs a raw_claim_review response' do
       raw = {"page" => Nokogiri.parse("<a href='/blah'>wow</a>"), "url" => "blah"}
       parsed_claim = described_class.new.parse_raw_claim_review(raw)
