@@ -34,7 +34,6 @@ class Subscription
       self.send_webhook_notification(webhook_url, claim_review)
     rescue => e
       Error.log(e, {}, raise_error)
-      return nil
     end
   end
 
