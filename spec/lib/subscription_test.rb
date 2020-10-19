@@ -35,5 +35,11 @@ describe Subscription do
       described_class.stub(:get_subscriptions).with('blah').and_return(['http://blah.com/respond'])
       expect(described_class.notify_subscribers('blah', {}).class).to(eq(Array))
     end
+
+    it 'responds to notify_subscribers' do
+      described_class.stub(:get_subscriptions).with('blah').and_return(['http://blah.com/respond'])
+      described_class.stub(:send_webhook_notification).with('http://blah.com/respond', {}).and_raise(RestClient::ServiceUnavailable)
+      expect { described_class.notify_subscribers('blah', {}) }.to raise_error(RestClient::ServiceUnavailable)
+    end
   end
 end

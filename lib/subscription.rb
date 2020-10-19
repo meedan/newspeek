@@ -25,9 +25,21 @@ class Subscription
     end.flatten
   end
 
+  def self.send_webhook_notification(webhook_url, claim_review)
+    RestClient.post(webhook_url, {claim_review: claim_review}.to_json)
+  end
+
+  def self.safe_send_webhook_notification(webhook_url, claim_review, raise_error=true)
+    begin
+      self.send_webhook_notification(webhook_url, claim_review)
+    rescue => e
+      Error.log(e, {}, raise_error)
+    end
+  end
+
   def self.notify_subscribers(services, claim_review)
     self.get_subscriptions(services).each do |webhook_url|
-      RestClient.post(webhook_url, {claim_review: claim_review}.to_json)
+      self.safe_send_webhook_notification(webhook_url, claim_review)
     end
   end
 end
