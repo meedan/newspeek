@@ -44,6 +44,16 @@ describe GESISClaims do
       end
     end
 
+    it 'runs get_fact_ids with unavailable error' do
+      described_class.any_instance.stub(:post_request_get_fact_ids).with(anything, anything).and_raise(RestClient::ServiceUnavailable)
+      expect(described_class.new.get_fact_ids(1, 1)).to(eq([]))
+    end
+
+    it 'runs get_fact with unavailable error' do
+      described_class.any_instance.stub(:post_request_fact_id).with(anything).and_raise(RestClient::BadGateway)
+      expect(described_class.new.get_fact(1)).to(eq({}))
+    end
+
     it 'rescues from id_from_raw_claim_review' do
       expect(described_class.new.id_from_raw_claim_review({})).to(eq(nil))
     end
