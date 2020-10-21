@@ -35,7 +35,7 @@ class ClaimReview
     validated_claim_review = validate_claim_review(QuietHashie[parsed_claim_review.merge(service: service)])
     if validated_claim_review
       repository.save(ClaimReview.new(validated_claim_review))
-      NotifySubscriber.perform_async(self.convert_to_claim_review(validated_claim_review), service)
+      NotifySubscriber.perform_async(service, self.convert_to_claim_review(validated_claim_review))
     end
   rescue StandardError => e
     Error.log(e, {validated_claim_review: validated_claim_review})
