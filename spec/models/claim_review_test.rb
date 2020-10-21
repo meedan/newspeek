@@ -34,6 +34,7 @@ describe ClaimReview do
       validated = described_class.validate_claim_review(QuietHashie[{ service: 'google', raw_claim_review: {}, claim_review_headline: 'wow', claim_review_url: 'http://example.com', created_at: Time.parse('2020-01-01'), id: 123 }])
       ClaimReviewRepository.any_instance.stub(:save).with(anything).and_raise(StandardError)
       expect(Error).to receive(:log).with(anything(), {validated_claim_review: validated})
+      expect(Sidekiq::Queue.new.collect{|x| x.item["args"].first.class}.uniq).to(eq([String]))
       expect(described_class.save_claim_review(claim, 'google')).to(eq(nil))
     end
 
@@ -42,6 +43,7 @@ describe ClaimReview do
       ClaimReviewRepository.any_instance.stub(:save).with(anything).and_return({ _index: 'claim_reviews', _type: 'claim_review', _id: 'vhV84XIBOGf2XeyOAD12', _version: 1, result: 'created', _shards: { total: 2, successful: 1, failed: 0 }, _seq_no: 130_821, _primary_term: 2 })
       response = described_class.save_claim_review(claim, 'google')
       expect(response.length).to(eq(24))
+      expect(Sidekiq::Queue.new.collect{|x| x.item["args"].first.class}.uniq).to(eq([String]))
       expect(response.class).to(eq(String))
     end
 

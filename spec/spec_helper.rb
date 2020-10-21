@@ -16,6 +16,7 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 ENV['env'] = 'test'
+require('sidekiq/api')
 require('rack/test')
 require('rspec/autorun')
 require('webmock/rspec')
