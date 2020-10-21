@@ -19,11 +19,14 @@ class Estadao < ClaimReviewParser
     atag.parent.attributes["href"].value
   end
   
-  def claim_review_image_url_from_claim_review(claim_review)
+  def claim_review_image_url_from_claim_review_and_raw_page(claim_review, raw_page)
     claim_review &&
     claim_review["image"] &&
     claim_review["image"]["url"] &&
-    claim_review["image"]["url"][0]
+    claim_review["image"]["url"][0] ||
+    raw_page.search("section.col-content img.size-full").first && 
+    raw_page.search("section.col-content img.size-full").first.attributes["src"] &&
+    raw_page.search("section.col-content img.size-full").first.attributes["src"].value
   end
 
   def claim_review_result_from_claim_review(claim_review)
@@ -41,16 +44,16 @@ class Estadao < ClaimReviewParser
   end
 
   def parse_raw_claim_review(raw_claim_review)
-    claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0)
+    claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0) || {}
     {
       id: raw_claim_review['url'],
-      created_at: Time.parse(claim_review["datePublished"]),
-      author: claim_review["author"]["name"],
-      author_link: claim_review["author"]["url"],
+      created_at: claim_review["datePublished"] && Time.parse(claim_review["datePublished"]),
+      author: claim_review["author"] && claim_review["author"]["name"],
+      author_link: claim_review["author"] && claim_review["author"]["url"],
       claim_review_headline: claim_review_headline_from_raw_claim_review(raw_claim_review),
       claim_review_body: claim_review_body_from_raw_claim_review(raw_claim_review),
       claim_review_reviewed: claim_review["claimReviewed"],
-      claim_review_image_url: claim_review_image_url_from_claim_review(claim_review),
+      claim_review_image_url: claim_review_image_url_from_claim_review_and_raw_page(claim_review, raw_claim_review["page"]),
       claim_review_result: claim_review_result_from_claim_review(claim_review),
       claim_review_result_score: claim_result_score_from_raw_claim_review(claim_review),
       claim_review_url: raw_claim_review['url'],
