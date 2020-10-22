@@ -18,6 +18,14 @@ describe Estadao do
       expect(described_class.new.url_extractor(Nokogiri.parse("<a href='/blah'><h3>wow</h3></a>").search('h3')[0])).to(eq('/blah'))
     end
 
+    it 'still plucks an image when claimreview object does not contain one' do
+      described_class.any_instance.stub(:extract_ld_json_script_block).with(anything, anything).and_return(nil)
+      raw = JSON.parse(File.read('spec/fixtures/estadao_raw.json'))
+      raw['page'] = Nokogiri.parse(raw['page'])
+      parsed_claim = described_class.new.parse_raw_claim_review(raw)
+      expect(parsed_claim[:claim_review_image_url].class).to(eq(String))
+    end
+
     it 'parses a raw_claim_review' do
       raw = JSON.parse(File.read('spec/fixtures/estadao_raw.json'))
       raw['page'] = Nokogiri.parse(raw['page'])
