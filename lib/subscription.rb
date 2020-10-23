@@ -26,7 +26,7 @@ class Subscription
   end
 
   def self.send_webhook_notification(webhook_url, claim_review)
-    RestClient.post(webhook_url, {claim_review: claim_review}.to_json)
+    RestClient.post(webhook_url, {claim_review: claim_review})
   end
 
   def self.safe_send_webhook_notification(webhook_url, claim_review, raise_error=true)
