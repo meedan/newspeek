@@ -40,6 +40,10 @@ class Settings
     Settings.get('env') == 'test'
   end
 
+  def self.in_qa_mode?
+    Settings.get('env') == 'qa'
+  end
+
   def self.attempt_elasticsearch_connect
     url = URI.parse(Settings.get('es_host'))
     Net::HTTP.start(
@@ -73,6 +77,10 @@ class Settings
 
   def self.elastic_search_error
     StandardError.new("Could not connect to elasticsearch host located at #{Settings.get('es_host')}!")
+  end
+
+  def self.task_interevent_time
+    self.in_qa_mode? ? 60 * 60 * 2 : 60 * 60
   end
   
   def self.default_task_count(task)

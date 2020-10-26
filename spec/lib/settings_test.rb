@@ -36,5 +36,15 @@ describe Settings do
     it 'expects specified parallel task count for get_claim_reviews of 10' do
       expect(Settings.default_task_count(:get_claim_reviews)).to(eq(10))
     end
+    
+    it 'returns 2 hours on QA interevent time' do
+      Settings.stub(:in_qa_mode?).and_return(true)
+      expect(Settings.task_interevent_time).to(eq(60*60*2))
+    end
+
+    it 'returns 1 hour on QA interevent time' do
+      Settings.stub(:in_qa_mode?).and_return(false)
+      expect(Settings.task_interevent_time).to(eq(60*60))
+    end
   end
 end
