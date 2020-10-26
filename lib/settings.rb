@@ -80,7 +80,7 @@ class Settings
   end
 
   def self.task_interevent_time
-    self.in_qa_mode? ? 60 * 60 * 2 : 60 * 60
+    self.in_qa_mode? ? 60 * 60 * 24 : 60 * 60
   end
   
   def self.default_task_count(task)

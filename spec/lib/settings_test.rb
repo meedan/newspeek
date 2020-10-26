@@ -39,7 +39,7 @@ describe Settings do
     
     it 'returns 2 hours on QA interevent time' do
       Settings.stub(:in_qa_mode?).and_return(true)
-      expect(Settings.task_interevent_time).to(eq(60*60*2))
+      expect(Settings.task_interevent_time).to(eq(60*60*24))
     end
 
     it 'returns 1 hour on QA interevent time' do
