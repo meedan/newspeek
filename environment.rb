@@ -6,7 +6,7 @@ require('json')
 require('logger')
 require('delegate')
 require('rack')
-
+require('digest')
 require('airbrake')
 require('faraday')
 require('sinatra')
