@@ -28,7 +28,7 @@ describe Subscription do
     end
 
     it 'responds to get_subscriptions' do
-      expect(described_class.get_subscriptions('blah').class).to(eq(Array))
+      expect(described_class.get_subscriptions('blah').class).to(eq(Hash))
     end
 
     it 'responds to notify_subscribers' do
@@ -65,5 +65,12 @@ describe Subscription do
       described_class.add_subscription("blah", "http://blah.com/respond", "en")
       expect(described_class.get_existing_params_for_url("http://blah.com/respond")).to(eq({"language"=>["en"]}))
     end
+
+    it 'removes subscription with languages passed' do
+      described_class.add_subscription("blah", "http://blah.com/respond", "en")
+      described_class.remove_subscription("blah", "http://blah.com/respond")
+      expect(described_class.get_subscriptions('blah')).to(eq({"blah"=>{}}))
+    end
   end
 end
+

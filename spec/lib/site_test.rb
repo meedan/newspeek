@@ -44,19 +44,19 @@ describe Site do
     it 'gets subscriptions' do
       response = get "/subscribe", "service=blah"
       expect(response.status).to(eq(200))
-      expect(JSON.parse(response.body).class).to(eq(Array))
+      expect(JSON.parse(response.body).class).to(eq(Hash))
     end
 
     it 'adds subscriptions' do
       response = post "/subscribe", {service: 'blah', url: 'http://blah.com/respond'}.to_json
       expect(response.status).to(eq(200))
-      expect(JSON.parse(response.body)).to(eq(["http://blah.com/respond"]))
+      expect(JSON.parse(response.body)).to(eq({"blah" => {"http://blah.com/respond"=>{"language"=>[]}}}))
     end
 
     it 'removes subscriptions' do
       response = delete "/subscribe", {service: 'blah', url: 'http://blah.com/respond'}.to_json
       expect(response.status).to(eq(200))
-      expect(JSON.parse(response.body)).to(eq([]))
+      expect(JSON.parse(response.body)).to(eq({"blah" => {}}))
     end
   end
 end

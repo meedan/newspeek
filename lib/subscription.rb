@@ -50,9 +50,10 @@ class Subscription
   end
 
   def self.get_subscriptions(services)
-    [services].flatten.collect do |service|
-      $REDIS_CLIENT.smembers(self.keyname(service)) || []
-    end.flatten
+    Hash[[services].flatten.collect do |service|
+      webhooks = $REDIS_CLIENT.smembers(self.keyname(service)) || []
+      [service, Hash[webhooks.collect{|url| [url, self.get_existing_params_for_url(url)]}]]
+    end]
   end
 
   def self.claim_review_can_be_sent(webhook_url, claim_review)
