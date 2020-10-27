@@ -37,7 +37,7 @@ class API
   end
 
   def self.add_subscription(params)
-    Subscription.add_subscription(params[:service], params[:url])
+    Subscription.add_subscription(params[:service], params[:url], params[:language])
     Subscription.get_subscriptions(params[:service])
   end
 
