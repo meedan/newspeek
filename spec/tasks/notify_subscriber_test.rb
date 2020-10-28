@@ -17,8 +17,12 @@ describe NotifySubscriber do
 
   describe 'instance' do
     it 'responds to perform' do
-      Subscription.stub(:get_subscriptions).with('blah').and_return(['http://blah.com/respond'])
-      expect(described_class.new.perform('blah', {})).to(eq(['http://blah.com/respond']))
+      Subscription.add_subscription("blah", "http://blah.com/respond", "en")
+      Subscription.add_subscription("blah", "http://blah.com/respond2")
+      response = described_class.new.perform('blah', {})
+      Subscription.remove_subscription("blah", "http://blah.com/respond")
+      Subscription.remove_subscription("blah", "http://blah.com/respond2")
+      expect(response).to(eq([{"http://blah.com/respond"=>{"language"=>["en"]}, "http://blah.com/respond2"=>{"language"=>[]}}]))
     end
   end
 end

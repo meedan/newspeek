@@ -32,19 +32,26 @@ describe Subscription do
     end
 
     it 'responds to notify_subscribers' do
-      described_class.stub(:get_subscriptions).with('blah').and_return(['http://blah.com/respond'])
-      expect(described_class.notify_subscribers('blah', {}).class).to(eq(Array))
+      described_class.add_subscription("blah", "http://blah.com/respond", "en")
+      described_class.add_subscription("blah", "http://blah.com/respond2")
+      response = described_class.notify_subscribers('blah', {inLanguage: "en"})
+      described_class.remove_subscription("blah", "http://blah.com/respond")
+      described_class.remove_subscription("blah", "http://blah.com/respond2")
+      expect(response.class).to(eq(Array))
     end
 
     it 'responds to notify_subscribers' do
-      described_class.stub(:get_subscriptions).with('blah').and_return(['http://blah.com/respond'])
-      described_class.stub(:send_webhook_notification).with('http://blah.com/respond', {}).and_raise(RestClient::ServiceUnavailable)
+      described_class.add_subscription("blah", "http://blah.com/respond", "en")
+      described_class.add_subscription("blah", "http://blah.com/respond2")
+      described_class.stub(:send_webhook_notification).with(anything(), anything(), anything()).and_raise(RestClient::ServiceUnavailable)
       expect { described_class.notify_subscribers('blah', {}) }.to raise_error(RestClient::ServiceUnavailable)
+      described_class.add_subscription("blah", "http://blah.com/respond")
+      described_class.remove_subscription("blah", "http://blah.com/respond2")
     end
     
     it 'indicates no sending for mismatched languages' do
       described_class.store_params_for_url("http://blah.com/respond", {language: ["en"]})
-      expect(described_class.claim_review_can_be_sent("http://blah.com/respond", {inLanguage: "es"})).to(eq(false))
+      expect(described_class.claim_review_can_be_sent("http://blah.com/respond", {'language' => ["en"]}, {inLanguage: "es"})).to(eq(false))
     end
 
     it 'stores params for url' do
