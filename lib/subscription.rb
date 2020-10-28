@@ -56,30 +56,32 @@ class Subscription
     end]
   end
 
-  def self.claim_review_can_be_sent(webhook_url, claim_review)
-    params = self.get_existing_params_for_url(webhook_url)
-    no_language_restriction = params["language"].nil?
-    language_matches = (params["language"] && params["language"].include?(claim_review[:inLanguage]))
+  def self.claim_review_can_be_sent(webhook_url, webhook_params, claim_review)
+    webhook_params ||= {}
+    no_language_restriction = webhook_params["language"].nil?
+    language_matches = (webhook_params["language"] && webhook_params["language"].include?(claim_review[:inLanguage]))
     return no_language_restriction || language_matches
   end
 
-  def self.send_webhook_notification(webhook_url, claim_review)
-    if self.claim_review_can_be_sent(webhook_url, claim_review)
+  def self.send_webhook_notification(webhook_url, webhook_params, claim_review)
+    if self.claim_review_can_be_sent(webhook_url, webhook_params, claim_review)
       RestClient.post(webhook_url, {claim_review: claim_review})
     end
   end
 
-  def self.safe_send_webhook_notification(webhook_url, claim_review, raise_error=true)
+  def self.safe_send_webhook_notification(webhook_url, webhook_params, claim_review, raise_error=true)
     begin
-      self.send_webhook_notification(webhook_url, claim_review)
+      self.send_webhook_notification(webhook_url, webhook_params, claim_review)
     rescue => e
       Error.log(e, {}, raise_error)
     end
   end
 
   def self.notify_subscribers(services, claim_review)
-    self.get_subscriptions(services).each do |webhook_url|
-      self.safe_send_webhook_notification(webhook_url, claim_review)
+    self.get_subscriptions(services).values.each do |subscription|
+      subscription.each do |webhook_url, webhook_params|
+        self.safe_send_webhook_notification(webhook_url, webhook_params, claim_review)
+      end
     end
   end
 end
