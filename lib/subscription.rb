@@ -58,7 +58,7 @@ class Subscription
 
   def self.claim_review_can_be_sent(webhook_url, webhook_params, claim_review)
     webhook_params ||= {}
-    no_language_restriction = webhook_params["language"].nil?
+    no_language_restriction = webhook_params["language"].nil? || webhook_params["language"].empty?
     language_matches = (webhook_params["language"] && webhook_params["language"].include?(claim_review[:inLanguage]))
     return no_language_restriction || language_matches
   end
