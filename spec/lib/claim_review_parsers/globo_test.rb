@@ -31,6 +31,15 @@ describe Globo do
       expect(described_class.new.get_new_fact_page_urls(1)).to(eq([{"content"=>{"url"=>"/blah"}}]))
     end
 
+    it 'tests false result for headline' do
+      response = described_class.new.claim_review_result_from_api_response({"content" => {"title" => "É #FATO que imagens mostrem caminhões descartando cédulas com votos em Donald Trump em local descampado"}})
+      expect(response).to(eq([1, "true"]))
+    end
+
+    it 'tests true result for headline' do
+      response = described_class.new.claim_review_result_from_api_response({"content" => {"title" => "É #FAKE que imagens mostrem caminhões descartando cédulas com votos em Donald Trump em local descampado"}})
+      expect(response).to(eq([0, "false"]))
+    end
     it 'extracts parsed_fact_page results' do
       keys = [:author, :author_link, :claim_review_body, :claim_review_headline, :claim_review_image_url, :claim_review_result, :claim_review_result_score, :claim_review_reviewed, :claim_review_url, :created_at, :id, :raw_claim_review].sort
       response = described_class.new.parsed_fact_page({"created" => "2020-01-01", "content" => {"url" => described_class.new.hostname+"/blah"}})

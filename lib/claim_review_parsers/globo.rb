@@ -36,8 +36,19 @@ class Globo < ClaimReviewParser
     api_response["content"]["image"]["sizes"]["L"]["url"] rescue nil
   end
 
+  def claim_review_result_from_api_response(api_response)
+    title_lead = api_response["content"] && api_response["content"]["title"] && api_response["content"]["title"][0..6]
+    if title_lead == "É #FAKE"
+      return [0, "false"]
+    elsif title_lead == "É #FATO"
+      return [1, "true"]
+    else
+    end
+  end
+
   def parse_raw_claim_review(raw_claim_review)
     api_response = raw_claim_review["raw_response"]
+    score, result = claim_review_result_from_api_response(api_response)
     {
       id: api_response["id"].to_s,
       created_at: Time.parse(api_response["created"]),
@@ -47,8 +58,8 @@ class Globo < ClaimReviewParser
       claim_review_body: api_response["content"]["summary"],
       claim_review_reviewed: nil,
       claim_review_image_url: claim_review_image_url_from_api_response(api_response),
-      claim_review_result: nil,
-      claim_review_result_score: nil,
+      claim_review_result: result,
+      claim_review_result_score: score,
       claim_review_url: raw_claim_review['url'],
       raw_claim_review: raw_claim_review
     }
