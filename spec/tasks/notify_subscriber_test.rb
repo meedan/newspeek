@@ -13,6 +13,17 @@ describe NotifySubscriber do
   	  'User-Agent'=>/.*/
       }).
     to_return(status: 200, body: "", headers: {})
+    stub_request(:post, "http://blah.com/respond2").
+    with(
+      body: /.*/,
+      headers: {
+  	  'Accept'=>'*/*',
+  	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+  	  'Content-Length'=>/.*/,
+  	  'Host'=>'blah.com',
+  	  'User-Agent'=>/.*/
+      }).
+    to_return(status: 200, body: "", headers: {})
   end
 
   describe 'instance' do

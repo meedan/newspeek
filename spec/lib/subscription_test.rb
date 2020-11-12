@@ -13,6 +13,17 @@ describe Subscription do
   	  'User-Agent'=>/.*/
       }).
     to_return(status: 200, body: "", headers: {})
+    stub_request(:post, "http://blah.com/respond2").
+    with(
+      body: /.*/,
+      headers: {
+  	  'Accept'=>'*/*',
+  	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+  	  'Content-Length'=>/.*/,
+  	  'Host'=>'blah.com',
+  	  'User-Agent'=>/.*/
+      }).
+    to_return(status: 200, body: "", headers: {})
   end
   describe 'class' do
     it 'responds to keyname' do
@@ -52,6 +63,10 @@ describe Subscription do
     it 'indicates no sending for mismatched languages' do
       described_class.store_params_for_url("http://blah.com/respond", {language: ["en"]})
       expect(described_class.claim_review_can_be_sent("http://blah.com/respond", {'language' => ["en"]}, {inLanguage: "es"})).to(eq(false))
+    end
+
+    it 'indicates no sending for mismatched languages' do
+      expect(described_class.claim_review_can_be_sent("http://blah.com/respond", {'language' => []}, {inLanguage: "es"})).to(eq(true))
     end
 
     it 'stores params for url' do
