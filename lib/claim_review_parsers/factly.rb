@@ -50,13 +50,34 @@ class Factly < ClaimReviewParser
     return fact_result
   end
 
+  def person_from_schema_object(schema_object)
+    schema_object["@graph"].select{|x| x["@type"] == "Person"}.first
+  end
+
+  def author_from_raw_claim_review_and_schema_object(raw_claim_review, schema_object)
+    person = person_from_schema_object(schema_object)
+    raw_claim_review['raw_response'] && 
+    raw_claim_review['raw_response']['author_meta'] &&
+    raw_claim_review['raw_response']['author_meta']['display_name'] ||
+    person && person["name"]
+  end
+
+  def author_link_from_raw_claim_review_and_schema_object(raw_claim_review, schema_object)
+    person = person_from_schema_object(schema_object)
+    raw_claim_review['raw_response'] && 
+    raw_claim_review['raw_response']['author_meta'] &&
+    raw_claim_review['raw_response']['author_meta']['author_link'] ||
+    person && person["@id"]
+  end
+
   def parse_raw_claim_review(raw_claim_review)
     article = extract_ld_json_script_block(raw_claim_review["page"], -1)
+    schema_object = extract_ld_json_script_block(raw_claim_review["page"], 0)
     {
       id: raw_claim_review['url'],
       created_at: Time.parse(raw_claim_review['raw_response']['date']),
-      author: raw_claim_review['raw_response']['author_meta']['display_name'],
-      author_link: raw_claim_review['raw_response']['author_meta']['author_link'],
+      author: author_from_raw_claim_review_and_schema_object(raw_claim_review, schema_object),
+      author_link: author_link_from_raw_claim_review_and_schema_object(raw_claim_review, schema_object),
       claim_review_headline: raw_claim_review['raw_response']['title']['rendered'],
       claim_review_body: raw_claim_review['raw_response']['content']['rendered'],
       claim_review_image_url: claim_review_image_url_from_raw_claim_review(raw_claim_review),
