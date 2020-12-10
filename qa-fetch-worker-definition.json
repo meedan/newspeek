@@ -25,6 +25,38 @@
                 {
                     "name": "GITHUB_TOKEN",
                     "valueFrom": "arn:aws:secretsmanager:eu-west-1:848416313321:secret:GithubToken-Plain-BUhwIw"
+                },
+                {
+                    "name": "redis_host",
+                    "valueFrom": "/QA/fetch/redis_host"
+                },
+                {
+                    "name": "redis_database",
+                    "valueFrom": "/QA/fetch/redis_database"
+                },
+                {
+                    "name": "es_host",
+                    "valueFrom": "/QA/fetch/es_host"
+                },
+                {
+                    "name": "es_index_name",
+                    "valueFrom": "/QA/fetch/es_index_name"
+                },
+                {
+                    "name": "google_api_key",
+                    "valueFrom": "/QA/fetch/google_api_key"
+                },
+                {
+                    "name": "boom_live_api_key",
+                    "valueFrom": "/QA/fetch/boom_live_api_key"
+                },
+                {
+                    "name": "airbrake_api_host",
+                    "valueFrom": "/QA/fetch/airbrake_api_host"
+                },
+                {
+                    "name": "airbrake_api_key",
+                    "valueFrom": "/QA/fetch/airbrake_api_key"
                 }
             ],
             "logConfiguration": {
