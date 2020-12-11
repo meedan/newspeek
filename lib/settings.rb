@@ -29,6 +29,7 @@ class Settings
       'redis_port' => 6379,
       'redis_database' => 1,
       'env' => 'test',
+      'cookie_file' => 'config/cookies.json'
     }
   end
 
@@ -36,6 +37,9 @@ class Settings
     "redis://#{Settings.get('redis_host')}:#{Settings.get('redis_port')}/#{Settings.get('redis_database')}"
   end
 
+  def self.s3_client
+    self.in_test_mode? ? Aws::S3::Client.new(stub_responses: true) : Aws::S3::Client.new
+  end
   def self.in_test_mode?
     Settings.get('env') == 'test'
   end

@@ -11,19 +11,24 @@ class ClaimReviewParser
     @persistable != false
   end
 
-  def initialize(cursor_back_to_date = nil, overwrite_existing_claims = false)
+  def initialize(cursor_back_to_date = nil, overwrite_existing_claims = false, client=Settings.s3_client)
     @fact_list_page_parser ||= 'html'
     @simple_page_urls ||= true
     @run_in_parallel = true
     @logger = Logger.new(STDOUT)
     @current_claims = []
-    @cookies = get_cookies
+    @cookies = get_cookies(client)
     @overwrite_existing_claims = overwrite_existing_claims
     @cursor_back_to_date = cursor_back_to_date
   end
 
-  def get_cookies
-    JSON.parse(File.read("config/cookies.json"))[self.class.service.to_s]||{}
+  def get_cookies(client)
+    if URI.parse(Settings.get('cookie_file')).scheme == "s3"
+      bucket, key = Settings.get('cookie_file').gsub("s3://", "").split("/")
+      JSON.parse(client.get_object(bucket: bucket, key: key).body.read)
+    else
+      JSON.parse(File.read(Settings.get('cookie_file')))[self.class.service.to_s]||{}
+    end
   end
 
   def self.service
