@@ -25,6 +25,7 @@ require('elasticsearch')
 require('elasticsearch/dsl')
 require('elasticsearch/persistence')
 require('retriable')
+require('aws-sdk-s3')
 
 require_relative('lib/settings')
 Settings.check_into_elasticsearch

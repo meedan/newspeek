@@ -3,6 +3,7 @@
 source('https://rubygems.org')
 gem('activesupport', '6.0.3.1')
 gem('airbrake', '~> 5.0')
+gem('aws-sdk-s3', '~> 1')
 gem('cld')
 gem('connection_pool', '2.2.2')
 gem('dgaff')
