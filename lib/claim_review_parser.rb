@@ -25,10 +25,11 @@ class ClaimReviewParser
   def get_cookies(client)
     if URI.parse(Settings.get('cookie_file')).scheme == "s3"
       bucket, key = Settings.get('cookie_file').gsub("s3://", "").split("/")
-      JSON.parse(client.get_object(bucket: bucket, key: key).body.read)
+      all_cookies = JSON.parse(client.get_object(bucket: bucket, key: key).body.read)
     else
-      JSON.parse(File.read(Settings.get('cookie_file')))[self.class.service.to_s]||{}
+      all_cookies = JSON.parse(File.read(Settings.get('cookie_file')))
     end
+    all_cookies[self.class.service.to_s]||{}
   end
 
   def self.service
