@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class Tattle < ClaimReviewParser
+  def self.deprecated
+    true
+  end
+
   def self.dataset_path
     'datasets/tattle_claims.json'
   end

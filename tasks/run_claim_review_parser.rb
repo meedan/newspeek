@@ -7,4 +7,12 @@ class RunClaimReviewParser
     ClaimReviewParser.run(service, cursor_back_to_date, overwrite_existing_claims)
     RunClaimReviewParser.perform_in(Settings.task_interevent_time, service)
   end
+
+  def self.requeue(service)
+    if $REDIS_CLIENT.get(ClaimReview.service_heartbeat_key(service)).nil?
+      RunClaimReviewParser.perform_async(service)
+      return true
+    end
+    false
+  end
 end

@@ -3,6 +3,14 @@
 # Eventually all subclasses here will need standardization about
 class ClaimReviewParser
   attr_accessor :fact_list_page_parser, :run_in_parallel, :overwrite_existing_claims
+  def self.enabled_subclasses
+    self.subclasses.reject(&:deprecated)
+  end
+
+  def self.deprecated
+    false
+  end
+
   def self.persistable_raw_claim_reviews
     ClaimReviewParser.parsers.select{|k,v| v.persistable?}.keys.uniq
   end
@@ -38,7 +46,7 @@ class ClaimReviewParser
 
   def self.parsers
     QuietHashie[
-      Hash[ClaimReviewParser.subclasses.map do |sc|
+      Hash[ClaimReviewParser.enabled_subclasses.map do |sc|
         [sc.service, sc]
       end]
     ]
@@ -46,6 +54,11 @@ class ClaimReviewParser
 
   def self.run(service, cursor_back_to_date = nil, overwrite_existing_claims = false)
     parsers[service].new(cursor_back_to_date, overwrite_existing_claims).get_claim_reviews
+    self.record_service_heartbeat(service)
+  end
+
+  def self.record_service_heartbeat(service)
+    $REDIS_CLIENT.setex(ClaimReview.service_heartbeat_key(service), Settings.get('service_heartbeat_ttl'), service)
   end
 
   def store_to_db(claim_reviews, service)

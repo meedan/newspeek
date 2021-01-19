@@ -3,11 +3,11 @@
 describe Class do
   describe 'instance' do
     it 'lists subclasses' do
-      expect(ClaimReviewParser.subclasses.class).to(eq(Array))
+      expect(ClaimReviewParser.enabled_subclasses.class).to(eq(Array))
     end
 
     it 'lists nonempty subclasses for ClaimReviewParser' do
-      expect(ClaimReviewParser.subclasses.empty?).to(eq(false))
+      expect(ClaimReviewParser.enabled_subclasses.empty?).to(eq(false))
     end
 
     it 'lists empty subclasses for API' do
