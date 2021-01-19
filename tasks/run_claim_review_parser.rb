@@ -2,6 +2,7 @@
 
 class RunClaimReviewParser
   include Sidekiq::Worker
+  sidekiq_options lock: :until_and_while_executing
   def perform(service, cursor_back_to_date = nil, overwrite_existing_claims=false)
     cursor_back_to_date = Time.parse(cursor_back_to_date) unless cursor_back_to_date.nil?
     ClaimReviewParser.run(service, cursor_back_to_date, overwrite_existing_claims)

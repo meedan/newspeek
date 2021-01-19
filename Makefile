@@ -14,7 +14,7 @@ collect_all: configurator
 	set -o allexport && source .env_file && set +o allexport && bundle exec rake collect_all
 
 run_worker: configurator
-	set -o allexport && source .env_file && set +o allexport && bundle exec sidekiq -r ./environment.rb -c 5
+	set -o allexport && source .env_file && set +o allexport && bundle exec rake requeue && bundle exec sidekiq -r ./environment.rb -c 5
 
 test: configurator
 	bundle exec rake test
