@@ -6,6 +6,10 @@
 class DataCommons < ClaimReviewParser
   include GenericRawClaimParser
   include ReviewRatingParser
+  def self.deprecated
+    true
+  end
+
   def self.dataset_path
     'datasets/datacommons_claims.json'
   end

@@ -99,7 +99,7 @@ describe ClaimReviewParser do
 
     it 'expects to be able to run' do
       AFP.any_instance.stub(:get_claim_reviews).and_return('stubbed')
-      expect(described_class.run('afp')).to(eq('stubbed'))
+      expect(described_class.run('afp')).to(eq('OK'))
     end
   
     it 'rescues broken json' do
@@ -126,7 +126,7 @@ RSpec.describe "ClaimReviewParser subclasses" do
        to_return(status: 200, body: "", headers: {})
   end
 
-  (ClaimReviewParser.subclasses-[StubReviewJSON]).each do |subclass|
+  (ClaimReviewParser.enabled_subclasses-[StubReviewJSON]).each do |subclass|
     it "ensures #{subclass} returns ES-storable objects" do 
       raw = JSON.parse(File.read("spec/fixtures/#{subclass.service}_raw.json"))
       raw['page'] = Nokogiri.parse(raw['page']) if raw['page']
@@ -134,7 +134,7 @@ RSpec.describe "ClaimReviewParser subclasses" do
       expect(parsed_claim_review.values_at(*(parsed_claim_review.keys-[:raw_claim_review])).collect(&:class).uniq-[NilClass, String, Float, Time, Integer]).to(eq([]))
     end
   end
-  (ClaimReviewParser.subclasses-[StubReviewJSON]).each do |subclass|
+  (ClaimReviewParser.enabled_subclasses-[StubReviewJSON]).each do |subclass|
     it "ensures #{subclass} can run as a task" do
       subclass.any_instance.stub(:get_claim_reviews).and_return(nil)
       RunClaimReviewParser.stub(:perform_in).and_return(nil)

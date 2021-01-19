@@ -41,6 +41,10 @@ class ClaimReview
     Error.log(e, {validated_claim_review: validated_claim_review})
   end
   
+  def self.service_heartbeat_key(service)
+    "#{service}_heartbeat"
+  end
+
   def self.es_index_key
     'es_index_name'
   end

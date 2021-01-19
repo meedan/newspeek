@@ -8,7 +8,7 @@ describe 'integration test with ElasticSearch' do#, integration: true do
   before do
     @storage_results ||= {}
     WebMock.allow_net_connect!
-    ClaimReviewParser.subclasses.each do |subclass|
+    ClaimReviewParser.enabled_subclasses.each do |subclass|
       raw = JSON.parse(File.read("spec/fixtures/#{subclass.service}_raw.json"))
       raw['page'] = Nokogiri.parse(raw['page']) if raw['page']
       parsed_claim_review = subclass.new.parse_raw_claim_review(raw)
@@ -20,7 +20,7 @@ describe 'integration test with ElasticSearch' do#, integration: true do
     WebMock.disable_net_connect!
   end
     
-  ClaimReviewParser.subclasses.each do |subclass|
+  ClaimReviewParser.enabled_subclasses.each do |subclass|
     it "ensures #{subclass}'s response looks as if it were saved" do
       expect(@storage_results[subclass].class).to(eq(Array))
       expect(@storage_results[subclass][0].class).to(eq(Hash))
