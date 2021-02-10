@@ -59,24 +59,25 @@ class GESISClaims < ClaimReviewParser
   end
 
   def get_fact(fact_id)
-    retry_count = 0
-    begin
-      JSON.parse(
-        self.post_request_fact_id(fact_id)
-      )['results']['bindings'][0]
-    rescue RestClient::ServiceUnavailable, RestClient::BadGateway => e
-      if retry_count < 3
-        retry_count += 1
-        sleep(1)
-        retry
-      else
-        Error.log(e)
-        return {}
-      end
-    rescue StandardError => e
-      Error.log(e)
-      {}
-    end
+    return {}
+    # retry_count = 0
+    # begin
+    #   JSON.parse(
+    #     self.post_request_fact_id(fact_id)
+    #   )['results']['bindings'][0]
+    # rescue RestClient::ServiceUnavailable, RestClient::BadGateway => e
+    #   if retry_count < 3
+    #     retry_count += 1
+    #     sleep(1)
+    #     retry
+    #   else
+    #     Error.log(e)
+    #     return {}
+    #   end
+    # rescue StandardError => e
+    #   Error.log(e)
+    #   {}
+    # end
   end
 
   def get_claim_reviews

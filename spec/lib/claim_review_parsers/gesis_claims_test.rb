@@ -19,6 +19,12 @@ describe GESISClaims do
       expect(described_class.new.get_fact_ids(1)).to(eq([%w[123 123]]))
     end
 
+    it 'executes post_request_fact_id' do
+      response = { 'results' => { 'bindings' => [{ 'id' => { 'value' => '/123' } }] } }.to_json
+      RestClient.stub(:post).with(anything, anything, anything).and_return(response)
+      expect(described_class.new.post_request_fact_id("1")).to(eq(response))
+    end
+
     it 'walks through the get_request' do
       RestClient.stub(:post).with(anything, anything, anything).and_return({}.to_json)
       expect(described_class.new.get_fact('123')).to(eq({}))
