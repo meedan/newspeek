@@ -7,19 +7,19 @@ describe AfricaCheck do
     end
 
     it 'has a fact_list_path' do
-      expect(described_class.new.fact_list_path(1)).to(eq('/latest-reports/page/1/'))
+      expect(described_class.new.fact_list_path(1)).to(eq('/fact-checks?field_article_type_value=reports&field_rated_value=All&field_country_value=All&sort_bef_combine=created_DESC&sort_by=created&sort_order=DESC&page=1'))
     end
 
     it 'has a url_extraction_search' do
-      expect(described_class.new.url_extraction_search).to(eq('div#main div.article-content h2 a'))
+      expect(described_class.new.url_extraction_search).to(eq('article'))
     end
 
     it 'rescues against a claim_review_image_url_from_raw_claim_review' do
-      expect(described_class.new.claim_review_image_url_from_raw_claim_review({"page" => Nokogiri.parse("<a href='/blah'>wow</a>")})).to(eq(nil))
+      expect(described_class.new.claim_review_image_url_from_raw_claim_review({"page" => Nokogiri.parse("<article about='/blah'>wow</article>")})).to(eq(nil))
     end
 
     it 'extracts a url' do
-      expect(described_class.new.url_extractor(Nokogiri.parse("<a href='/blah'>wow</a>").search('a')[0])).to(eq('/blah'))
+      expect(described_class.new.url_extractor(Nokogiri.parse("<article about='/blah'>wow</article>").search('a')[0])).to(eq('/blah'))
     end
 
     it 'expects a claim_result_text_map' do
