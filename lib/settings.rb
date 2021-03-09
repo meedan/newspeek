@@ -39,7 +39,7 @@ class Settings
   end
 
   def self.s3_client
-    (self.in_test_mode? || self.in_live_mode?) ? Aws::S3::Client.new(stub_responses: true) : Aws::S3::Client.new
+    (self.in_test_mode? || self.in_local_mode?) ? Aws::S3::Client.new(stub_responses: true) : Aws::S3::Client.new
   end
 
   def self.in_test_mode?
