@@ -43,7 +43,7 @@ class AfricaCheck < ClaimReviewParser
   end
 
   def rating_from_raw_claim_review(raw_claim_review)
-    if raw_claim_review
+    if raw_claim_review && raw_claim_review["page"]
       rating_text = raw_claim_review["page"].search('div.article-details__verdict div').first.attributes["class"].value.split(" ").select{|x| x.include?("rating--")}.first.split("--").last
       [rating_text, rating_map[rating_text]]
     else

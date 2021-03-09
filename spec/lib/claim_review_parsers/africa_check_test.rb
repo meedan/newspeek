@@ -19,11 +19,11 @@ describe AfricaCheck do
     end
 
     it 'extracts a url' do
-      expect(described_class.new.url_extractor(Nokogiri.parse("<article about='/blah'>wow</article>").search('article')[0])).to(eq('/blah'))
+      expect(described_class.new.url_extractor(Nokogiri.parse("<article about='/blah'>wow</article>").search('article')[0])).to(eq(described_class.new.hostname+'/blah'))
     end
 
     it 'expects a claim_result_text_map' do
-      expect(described_class.new.claim_result_text_map.class).to(eq(Hash))
+      expect(described_class.new.rating_map.class).to(eq(Hash))
     end
 
     it 'stubs the resposne for a nil get_claim_review_from_raw_claim_review' do
