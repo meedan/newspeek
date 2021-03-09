@@ -5,6 +5,6 @@ require('rack')
 load('environment.rb')
 
 set(:root, File.dirname(__FILE__))
-set(:environment, :development)
+set(:environment, :local)
 set(:run, false)
 run(Site)
