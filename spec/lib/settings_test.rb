@@ -37,6 +37,14 @@ describe Settings do
       expect(Settings.default_task_count(:get_claim_reviews)).to(eq(10))
     end
     
+    it 'returns fals for local mode while running test' do
+      expect(Settings.in_local_mode?).to(eq(false))
+    end
+
+    it 'returns fals for qa mode while running test' do
+      expect(Settings.in_qa_mode?).to(eq(false))
+    end
+
     it 'returns 2 hours on QA interevent time' do
       Settings.stub(:in_qa_mode?).and_return(true)
       expect(Settings.task_interevent_time).to(eq(60*60*24))
