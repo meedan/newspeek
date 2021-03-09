@@ -29,7 +29,8 @@ require('aws-sdk-s3')
 
 require_relative('lib/settings')
 Settings.check_into_elasticsearch
-ENV['env'] ||= 'development'
+ENV['env'] ||= 'local'
+ENV['APP_ENV'] ||= ENV['env']
 REDIS_URL = {url: Settings.redis_url}
 $REDIS_CLIENT = Redis.new(REDIS_URL)
 $REDIS_CLIENT.auth(Settings.get('redis_password')) if Settings.get('redis_password')

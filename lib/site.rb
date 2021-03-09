@@ -2,7 +2,7 @@
 
 class Site < Sinatra::Base
   use Airbrake::Rack::Middleware unless Settings.blank?('airbrake_api_host')
-  configure :production, :development, :test do
+  configure :production, :local, :test do
     enable :logging
   end
 
