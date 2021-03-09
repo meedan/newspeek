@@ -19,19 +19,6 @@ class AfricaCheck < ClaimReviewParser
     atag.attributes['about'] && atag.attributes['about'].value && hostname+atag.attributes['about'].value
   end
 
-  def claim_result_text_map
-    {
-      'correct' => 1,
-      'mostly-correct' => 0.75,
-      'unproven' => 0.5,
-      'misleading' => 0.5,
-      'exaggerated' => 0.5,
-      'downplayed' => 0.5,
-      'incorrect' => 0,
-      'checked' => 0.5
-    }
-  end
-
   def claim_review_image_url_from_raw_claim_review(raw_claim_review)
     raw_claim_review["page"].search("img.attachment-articleMain").first.attributes["src"].value
   rescue StandardError => e
@@ -42,21 +29,36 @@ class AfricaCheck < ClaimReviewParser
     raw_claim_review["page"].search("div.article-details__claims div").text
   end
 
-  def rating_from_rating_text(rating_text)
+  def rating_map
     {
-      "correct" => 1,
-      "mostly-correct" => 0.75,
-      "checked" => 0.5,
-      "unproven" => 0.5,
-      "incorrect" => 0.0,
+      'correct' => 1.0,
+      'mostly-correct' => 0.75,
+      'unproven' => 0.5,
+      'misleading' => 0.5,
+      'exaggerated' => 0.5,
+      'downplayed' => 0.5,
+      'incorrect' => 0,
+      'checked' => 0.5
     }
   end
+
   def rating_from_raw_claim_review(raw_claim_review)
-    rating_text = raw_claim_review["page"].search('div.article-details__verdict div').first.attributes["class"].value.split(" ").select{|x| x.include?("rating--")}.first.split("--").last
-    [rating_text, rating_from_rating_text[rating_text]]
+    if raw_claim_review
+      rating_text = raw_claim_review["page"].search('div.article-details__verdict div').first.attributes["class"].value.split(" ").select{|x| x.include?("rating--")}.first.split("--").last
+      [rating_text, rating_map[rating_text]]
+    else
+      [nil, nil]
+    end
   end
+
+  def extract_news_article_from_ld_json_script_block(ld_json_script_block)
+    ld_json_script_block &&
+    ld_json_script_block["@graph"] &&
+    ld_json_script_block["@graph"].select{|x| x["@type"] == "NewsArticle"}[0]
+  end
+
   def parse_raw_claim_review(raw_claim_review)
-    claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0)["@graph"].select{|x| x["@type"] == "NewsArticle"}[0]
+    claim_review = extract_news_article_from_ld_json_script_block(extract_ld_json_script_block(raw_claim_review["page"], 0))
     claim_review_result, claim_review_result_score = rating_from_raw_claim_review(raw_claim_review)
     if claim_review
       {

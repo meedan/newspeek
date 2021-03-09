@@ -19,7 +19,7 @@ describe AfricaCheck do
     end
 
     it 'extracts a url' do
-      expect(described_class.new.url_extractor(Nokogiri.parse("<article about='/blah'>wow</article>").search('a')[0])).to(eq('/blah'))
+      expect(described_class.new.url_extractor(Nokogiri.parse("<article about='/blah'>wow</article>").search('article')[0])).to(eq('/blah'))
     end
 
     it 'expects a claim_result_text_map' do
