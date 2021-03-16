@@ -61,7 +61,7 @@ class TheQuint < ClaimReviewParser
     raw_claim_review['story']['metadata'] &&
     raw_claim_review['story']['metadata']['story-attributes'] &&
     raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'] &&
-    Integer(raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'].first, 10)
+    Integer(raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'].first.to_s, 10)
   rescue StandardError => e
     Error.log(e)
   end
