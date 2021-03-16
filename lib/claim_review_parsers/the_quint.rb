@@ -57,11 +57,12 @@ class TheQuint < ClaimReviewParser
   end
 
   def claim_result_score_from_raw_claim_review(raw_claim_review)
-    raw_claim_review['story'] &&
+    value = raw_claim_review['story'] &&
     raw_claim_review['story']['metadata'] &&
     raw_claim_review['story']['metadata']['story-attributes'] &&
     raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'] &&
-    Integer(raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'].first.to_s, 10)
+    raw_claim_review['story']['metadata']['story-attributes']['claimreviewrating'].first.to_s
+    value.empty? ? 0 : Integer(value, 10)
   rescue StandardError => e
     Error.log(e)
   end
