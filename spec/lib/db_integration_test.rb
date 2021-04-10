@@ -55,6 +55,7 @@ describe 'integration test with ElasticSearch' do#, integration: true do
         expect(gg[0]["url"]).to(eq(gz[0][:claim_review_url]))
         puts gg.inspect
         puts gz.inspect
+        
       # rescue
       #   binding.pry
       # end
