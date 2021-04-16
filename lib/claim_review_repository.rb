@@ -19,4 +19,10 @@ class ClaimReviewRepository
   def self.init_index
     ClaimReviewRepository.new.create_index!(force: true)
   end
+
+  def self.safe_init_index
+    if !ClaimReview.client.indices.exists(index: Settings.get_es_index_name)
+      self.init_index
+    end
+  end
 end
