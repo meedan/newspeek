@@ -51,6 +51,10 @@ task :init_index do
   ClaimReviewRepository.init_index
 end
 
+task :safe_init_index do
+  ClaimReviewRepository.safe_init_index
+end
+
 task :requeue do
   ClaimReviewParser.enabled_subclasses.map(&:service).each do |datasource|
     puts "Updating #{datasource}..."

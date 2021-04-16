@@ -8,7 +8,7 @@ else
 endif
 
 start_server: configurator
-	set -o allexport && source .env_file && set +o allexport && bundle exec rackup -o 0.0.0.0
+	set -o allexport && source .env_file && set +o allexport && bundle exec rake safe_init_index && bundle exec rackup -o 0.0.0.0
 
 collect_all: configurator
 	set -o allexport && source .env_file && set +o allexport && bundle exec rake collect_all
