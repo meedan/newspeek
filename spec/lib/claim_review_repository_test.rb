@@ -18,5 +18,17 @@ describe ClaimReviewRepository do
       described_class.any_instance.stub(:create_index!).and_return(nil)
       expect(described_class.init_index).to(eq(nil))
     end
+
+    it 'expects perfunctory walkthrough of failed safe_init_index' do
+      described_class.any_instance.stub(:create_index!).and_return(nil)
+      Elasticsearch::API::Indices::IndicesClient.any_instance.stub(:exists).and_return(true)
+      expect(described_class.safe_init_index).to(eq(false))
+    end
+
+    it 'expects perfunctory walkthrough of successful safe_init_index' do
+      described_class.any_instance.stub(:create_index!).and_return(nil)
+      Elasticsearch::API::Indices::IndicesClient.any_instance.stub(:exists).and_return(false)
+      expect(described_class.safe_init_index).to(eq(true))
+    end
   end
 end

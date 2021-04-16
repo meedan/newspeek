@@ -23,6 +23,8 @@ class ClaimReviewRepository
   def self.safe_init_index
     if !ClaimReview.client.indices.exists(index: Settings.get_es_index_name)
       self.init_index
+      return true
     end
+    return false
   end
 end
