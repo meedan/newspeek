@@ -19,6 +19,10 @@ class ClaimReviewParser
     @persistable != false
   end
 
+  def service_key
+    nil
+  end
+
   def initialize(cursor_back_to_date = nil, overwrite_existing_claims = false, client=Settings.s3_client)
     @fact_list_page_parser ||= 'html'
     @simple_page_urls ||= true
@@ -150,5 +154,13 @@ class ClaimReviewParser
   def self.test_parser_on_url(url)
     params = {"page" => Nokogiri.parse(RestClient.get(url)), "url" => url}
     self.new.parse_raw_claim_review(params)
+  end
+
+  def service_key_is_needed?
+    if service_key && Settings.blank?(service_key)
+      puts "#{service_key} is missing. Can't update #{self.class.service.to_s}"
+      return true
+    end
+    false
   end
 end

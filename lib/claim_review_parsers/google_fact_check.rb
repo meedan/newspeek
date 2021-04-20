@@ -9,8 +9,12 @@ class GoogleFactCheck < ClaimReviewParser
     '/v1alpha1/claims:search'
   end
 
+  def service_key
+    'google_api_key'
+  end
+
   def make_get_request(path, params)
-    url = host + path + '?' + URI.encode_www_form(params.merge(key: Settings.get('google_api_key')))
+    url = host + path + '?' + URI.encode_www_form(params.merge(key: Settings.get(service_key)))
     JSON.parse(
       RestClient.get(
         url
@@ -31,6 +35,9 @@ class GoogleFactCheck < ClaimReviewParser
         Error.log(e)
         return {}
       end
+    rescue RestClient::Forbidden, RestClient::BadRequest => e
+      Error.log(e)
+      return {}
     end
   end
 
@@ -107,6 +114,7 @@ class GoogleFactCheck < ClaimReviewParser
   end
 
   def get_claim_reviews(seed_queries = default_queries)
+    return false if service_key_is_needed?
     snowball_claim_reviews_from_publishers(
       snowball_publishers_from_queries(
         seed_queries
