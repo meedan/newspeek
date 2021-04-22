@@ -158,7 +158,7 @@ class ClaimReviewParser
 
   def service_key_is_needed?
     if service_key && Settings.blank?(service_key)
-      puts "#{service_key} is missing. Can't update #{self.class.service.to_s}"
+      puts "#{service_key} is missing. Can't update #{self.class.service}"
       return true
     end
     false
