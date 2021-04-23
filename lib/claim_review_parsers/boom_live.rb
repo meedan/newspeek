@@ -6,8 +6,12 @@ class BoomLive < ClaimReviewParser
     'http://boomlive.in/'
   end
 
+  def service_key
+    'boom_live_api_key'
+  end
+
   def api_params
-    { "s-id": Settings.get('boom_live_api_key') }
+    { "s-id": Settings.get(service_key) }
   end
 
   def get_path(path)
@@ -58,6 +62,7 @@ class BoomLive < ClaimReviewParser
   end
 
   def get_claim_reviews
+    return false if service_key_is_needed?
     fact_categories.each do |_category_path, category_id|
       get_all_stories_by_category(category_id)
     end

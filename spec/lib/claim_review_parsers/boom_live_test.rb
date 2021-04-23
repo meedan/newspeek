@@ -41,6 +41,7 @@ describe BoomLive do
     end
 
     it 'walks through get_claim_reviews' do
+      described_class.any_instance.stub(:service_key_is_needed?).and_return(false)
       described_class.any_instance.stub(:get_all_stories_by_category).with(anything).and_return([{}])
       expect(described_class.new.get_claim_reviews).to(eq(described_class.new.fact_categories))
     end

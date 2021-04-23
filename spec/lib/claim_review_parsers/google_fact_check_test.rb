@@ -69,6 +69,16 @@ describe GoogleFactCheck do
       expect(described_class.new.get('foo', {})).to(eq({}))
     end
 
+    it 'runs get with forbidden error' do
+      RestClient.stub(:get).with(anything).and_raise(RestClient::Forbidden)
+      expect(described_class.new.get('foo', {})).to(eq({}))
+    end
+
+    it 'runs get with bad request error' do
+      RestClient.stub(:get).with(anything).and_raise(RestClient::BadRequest)
+      expect(described_class.new.get('foo', {})).to(eq({}))
+    end
+
     it 'runs get_new_from_publisher' do
       ClaimReview.stub(:existing_urls).with(anything, anything).and_return([])
       raw = JSON.parse(File.read('spec/fixtures/google_fact_check_raw.json'))
@@ -112,6 +122,7 @@ describe GoogleFactCheck do
 
     it 'runs get_claim_reviews' do
       RestClient.stub(:get).with(anything).and_return(RestClient::Response.new('{}'))
+      described_class.any_instance.stub(:service_key_is_needed?).and_return(false)
       described_class.any_instance.stub(:store_claim_reviews_for_publisher_and_offset).with(anything, 0).and_return([{}])
       described_class.any_instance.stub(:store_claim_reviews_for_publisher_and_offset).with(anything, 100).and_return([])
       raw = JSON.parse(File.read('spec/fixtures/google_fact_check_raw.json'))

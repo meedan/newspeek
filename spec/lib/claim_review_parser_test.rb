@@ -85,6 +85,20 @@ describe ClaimReviewParser do
       expect(rp.parse_raw_claim_reviews([{}, {}])).to(eq([{}, {}]))
     end
 
+    it 'expects to verify when a claim review parser needs a service key but config is missing' do
+      described_class.any_instance.stub(:service_key).and_return('class_service_key')
+      Settings.stub(:blank?).with('class_service_key').and_return(true)
+      rp = described_class.new
+      expect(rp.service_key_is_needed?).to(eq(true))
+    end
+
+    it 'expects to verify when a claim review parser needs a service key and config is present' do
+      described_class.any_instance.stub(:service_key).and_return('class_service_key')
+      Settings.stub(:blank?).with('class_service_key').and_return(false)
+      rp = described_class.new
+      expect(rp.service_key_is_needed?).to(eq(false))
+    end
+
   end
 
   describe 'class' do
