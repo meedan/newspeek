@@ -11,5 +11,5 @@ fi
 # d=configurator/check/${DEPLOY_ENV}/${APP}/; for f in $(find $d -type f); do cp "$f" "${f/$d/}"; done
 
 cp config/cookies.json.example config/cookies.json
-cp .env_file.test.env_file
+cp .env_file.test .env_file
 
