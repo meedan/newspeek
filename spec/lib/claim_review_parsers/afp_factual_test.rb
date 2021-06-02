@@ -15,7 +15,7 @@ describe AFPFactual do
     end
 
     it 'extracts a url' do
-      expect(described_class.new.url_extractor(Nokogiri.parse("<a href='/blah'>wow</a>").search('a')[0])).to(eq('https://checamos.afp.com/blah'))
+      expect(described_class.new.url_extractor(Nokogiri.parse("<a href='/blah'>wow</a>").search('a')[0])).to(eq('https://factual.afp.com/blah'))
     end
 
     it 'rescues against a claim_review_image_url_from_raw_claim_review' do
