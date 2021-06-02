@@ -7,6 +7,8 @@ if [[ -z ${GITHUB_TOKEN+x} || -z ${DEPLOY_ENV+x} || -z ${APP+x} ]]; then
 	exit 1
 fi
 
-cp config/cookies.json.example config/cookies.json
-cp .env_file.test .env_file
-
+if [[ "$DEPLOY_ENV" != "qa" && "$DEPLOY_ENV" != "live" ]]; then
+	# Only use the test configurations if we're not deploying to QA or Live.
+	cp config/cookies.json.example config/cookies.json
+	cp .env_file.test .env_file
+fi
