@@ -138,6 +138,18 @@ RSpec.describe "ClaimReviewParser subclasses" do
         "User-Agent": /.*/
          }).
        to_return(status: 200, body: "", headers: {})
+     stub_request(:post, "https://yudistira.turnbackhoax.id/api/antihoax/get_authors").
+       with(
+         body: /.*/,
+         headers: {
+     	  'Accept'=>'*/*',
+     	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+     	  'Content-Length'=>/.*/,
+     	  'Content-Type'=>'application/x-www-form-urlencoded',
+     	  'Host'=>'yudistira.turnbackhoax.id',
+     	  'User-Agent'=>/.*/
+         }).
+       to_return(status: 200, body: '[{"website":"blah","nama":"foo"}]', headers: {})
   end
 
   (ClaimReviewParser.enabled_subclasses-[StubReviewJSON]).each do |subclass|
