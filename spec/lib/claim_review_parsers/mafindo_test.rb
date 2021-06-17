@@ -12,7 +12,7 @@ describe Mafindo do
     	  'Host'=>'yudistira.turnbackhoax.id',
     	  'User-Agent'=>/.*/
         }).
-      to_return(status: 200, body: '[{"website":"blah","nama":"foo"}]', headers: {})
+      to_return(status: 200, body: '[{"id":36,"website":"blah","nama":"foo"}]', headers: {})
     stub_request(:post, "https://yudistira.turnbackhoax.id/api/antihoax").
       with(
         body: /.*/,
