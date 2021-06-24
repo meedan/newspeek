@@ -125,4 +125,20 @@ class ClaimReview
     self.get_first_date_for_service_by_sort(service, ElasticSearchQuery.created_at_desc)
   end
 
+  def self.export_to_file(filename="claim_review_exports_#{Time.now.strftime("%H-%m-%d")}.json")
+    end_time = Time.parse(Time.now.strftime("%Y-%m-%d"))
+    time_clause = ElasticSearchQuery.start_end_date_range_query('created_at', (end_time-60*60*24).to_s, end_time.to_s)
+    hits = ClaimReview.get_hits({size: 10000, body: {query: {bool: {filter: time_clause}}}})
+    f = File.open(filename, "w")
+    while !hits.empty?
+      hits.each do |hit|
+        f.write(hit.to_json.gsub("\n", " ")+"\n")
+      end
+      end_time -= 60*60*24
+      time_clause = ElasticSearchQuery.start_end_date_range_query('created_at', (end_time-60*60*24).to_s, end_time.to_s)
+      hits = ClaimReview.get_hits({size: 10000, body: {query: {bool: {filter: time_clause}}}})
+    end
+    f.close
+    return filename
+  end
 end

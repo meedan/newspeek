@@ -58,5 +58,16 @@ describe Site do
       expect(response.status).to(eq(200))
       expect(JSON.parse(response.body)).to(eq({"blah" => {}}))
     end
+    
+    it 'gets the export file' do
+      end_time = Time.parse(Time.now.strftime("%Y-%m-%d"))
+      time_clause = ElasticSearchQuery.start_end_date_range_query('created_at', (end_time-60*60*24).to_s, end_time.to_s)
+      end_time -= 60*60*24
+      time_clause2 = ElasticSearchQuery.start_end_date_range_query('created_at', (end_time-60*60*24).to_s, end_time.to_s)
+      ClaimReview.stub(:get_hits).with({size: 10000, body: {query: {bool: {filter: time_clause}}}}).and_return([{ '_source' => { 'claim_review_url' => 1 } }])
+      ClaimReview.stub(:get_hits).with({size: 10000, body: {query: {bool: {filter: time_clause2}}}}).and_return([])
+      response = get "/export"
+      expect(response.body.split("\n").collect{|x| JSON.parse(x)}).to(eq([{ '_source' => { 'claim_review_url' => 1 } }]))
+    end
   end
 end

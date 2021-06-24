@@ -160,4 +160,17 @@ describe ClaimReview do
       )
     )
   end
+
+  it 'exports to a file' do
+    end_time = Time.parse(Time.now.strftime("%Y-%m-%d"))
+    time_clause = ElasticSearchQuery.start_end_date_range_query('created_at', (end_time-60*60*24).to_s, end_time.to_s)
+    end_time -= 60*60*24
+    time_clause2 = ElasticSearchQuery.start_end_date_range_query('created_at', (end_time-60*60*24).to_s, end_time.to_s)
+    ClaimReview.stub(:get_hits).with({size: 10000, body: {query: {bool: {filter: time_clause}}}}).and_return([{ '_source' => { 'claim_review_url' => 1 } }])
+    ClaimReview.stub(:get_hits).with({size: 10000, body: {query: {bool: {filter: time_clause2}}}}).and_return([])
+    filename = ClaimReview.export_to_file("blah.json")
+    result = File.read(filename).split("\n").collect{|x| JSON.parse(x)}
+    expect(result).to(eq([{ '_source' => { 'claim_review_url' => 1 } }]))
+  end
+  
 end
