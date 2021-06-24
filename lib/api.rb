@@ -45,4 +45,8 @@ class API
     Subscription.remove_subscription(params[:service], params[:url])
     Subscription.get_subscriptions(params[:service])
   end
+
+  def self.export_to_file(filename="claim_review_exports_#{Time.now.strftime("%H-%m-%d")}.json")
+    ClaimReview.export_to_file(filename)
+  end
 end
