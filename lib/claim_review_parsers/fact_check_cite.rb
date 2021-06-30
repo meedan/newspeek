@@ -67,6 +67,7 @@ class FactCheckCite < ClaimReviewParser
     Time.parse(claim_review['datePublished'] || created_at_from_raw_claim_review(raw_claim_review)) rescue nil
   end
   def parse_raw_claim_review(raw_claim_review)
+    return {} if raw_claim_review["url"].include?("https://factcheck.cite.org.zw/category/")
     claim_review = extract_ld_json_script_block(raw_claim_review["page"], 0)[0] rescue {}
     {
       id: raw_claim_review['url'],
