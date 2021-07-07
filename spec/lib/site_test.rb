@@ -66,7 +66,7 @@ describe Site do
       time_clause2 = ElasticSearchQuery.start_end_date_range_query('created_at', (end_time-60*60*24).to_s, end_time.to_s)
       ClaimReview.stub(:get_hits).with({size: 10000, body: {query: {bool: {filter: time_clause}}}}).and_return([{ '_source' => { 'claim_review_url' => 1 } }])
       ClaimReview.stub(:get_hits).with({size: 10000, body: {query: {bool: {filter: time_clause2}}}}).and_return([])
-      response = get "/export"
+      response = get "/export?start_time=#{end_time}&end_time=#{end_time+60*60*24}"
       expect(response.body.split("\n").collect{|x| JSON.parse(x)}).to(eq([{ '_source' => { 'claim_review_url' => 1 } }]))
     end
   end

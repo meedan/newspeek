@@ -11,7 +11,7 @@ describe FactCheckCite do
     	  'Content-Length'=>'51',
     	  'Content-Type'=>'application/x-www-form-urlencoded',
     	  'Host'=>'factcheck.cite.org.zw',
-    	  'User-Agent'=>'rest-client/2.1.0 (linux x86_64) ruby/2.7.3p183'
+    	  'User-Agent'=>/.*/
         }).
       to_return(status: 200, body: '{"data": {"content": "<article><a href=\"/blah\">blah</a></article><article><a href=\"/blah2\">blah2</a></article>"}}', headers: {})
   end
