@@ -46,7 +46,8 @@ class API
     Subscription.get_subscriptions(params[:service])
   end
 
-  def self.export_to_file(filename="claim_review_exports_#{Time.now.strftime("%H-%m-%d")}.json")
-    ClaimReview.export_to_file(filename)
+  def self.export_to_file(start_time, end_time, filename=nil)
+    filename ||= "claim_review_exports_#{Time.parse(start_time).strftime("%Y-%m-%d")}_#{Time.parse(end_time).strftime("%Y-%m-%d")}.json"
+    ClaimReview.export_to_file(start_time, end_time, filename)
   end
 end

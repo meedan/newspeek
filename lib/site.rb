@@ -35,7 +35,7 @@ class Site < Sinatra::Base
   end
 
   get '/export' do
-    filename = API.export_to_file
+    filename = API.export_to_file(params[:start_time], params[:end_time])
     send_file "./#{filename}", :filename => filename, :type => 'application/json'
   end
 end
